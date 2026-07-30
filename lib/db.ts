@@ -265,6 +265,12 @@ export async function executeDbOperation(collection: string, action: string, id?
 
   if (action === "eliminar") {
     if (!id) return { success: false, message: "No se envió ID para eliminar." };
+    
+    // Mantenimiento de integridad: si borramos de maestros, borramos su cronograma
+    if (table === 'maestros') {
+      await supabase.from('cronograma_maestros').delete().eq('id', id);
+    }
+    
     const { error } = await supabase.from(table).delete().eq('id', id);
     if (error) return { success: false, message: `Error: ${error.message}` };
     return { success: true, message: `Registro ${id} eliminado de ${collection}.` };
