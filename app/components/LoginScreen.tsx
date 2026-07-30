@@ -77,10 +77,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
       </div>
 
-      <div className="w-full flex-1 flex flex-col items-center justify-center p-6 z-10 gap-8">
+      <div className="w-full flex-1 flex flex-col items-center justify-center p-4 z-10 gap-4">
         
         {/* BRANDING LOGO */}
-        <div className="relative w-full max-w-[260px] animate-in fade-in slide-in-from-top-10 duration-1000">
+        <div className="relative w-full max-w-[220px] animate-in fade-in slide-in-from-top-10 duration-1000">
            {/* Glowing backdrop */}
            <div className="absolute inset-0 bg-sky-500/20 blur-3xl rounded-full" />
            
@@ -105,11 +105,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           <div className="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-3xl shadow-2xl overflow-hidden">
             
             {/* Header */}
-            <div className="px-8 pt-10 pb-6 border-b border-white/5">
-              <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-sky-500/20">
-                <Command className="w-6 h-6 text-white" />
+            <div className="px-6 pt-6 pb-4 border-b border-white/5">
+              <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-sky-500/20">
+                <Command className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-white tracking-tight">
+              <h2 className="text-xl font-bold text-white tracking-tight">
                 {isRegistering ? "Crear una cuenta" : "Bienvenido de nuevo"}
               </h2>
               <p className="text-sm text-slate-400 mt-1.5 font-medium">
@@ -118,7 +118,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="px-8 py-8 space-y-5">
+            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
               {isRegistering && (
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Correo Electrónico</label>
@@ -130,7 +130,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 bg-slate-950/50 border border-slate-800 focus:border-sky-500 rounded-2xl text-white placeholder-slate-600 font-medium outline-none transition-all focus:ring-4 focus:ring-sky-500/10"
+                      className="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-sky-500 rounded-2xl text-white placeholder-slate-600 font-medium outline-none transition-all focus:ring-4 focus:ring-sky-500/10"
                       placeholder="tu@correo.com"
                     />
                   </div>
@@ -147,7 +147,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-950/50 border border-slate-800 focus:border-sky-500 rounded-2xl text-white placeholder-slate-600 font-medium outline-none transition-all focus:ring-4 focus:ring-sky-500/10"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-sky-500 rounded-2xl text-white placeholder-slate-600 font-medium outline-none transition-all focus:ring-4 focus:ring-sky-500/10"
                     placeholder="ej. admin"
                   />
                 </div>
@@ -170,7 +170,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-950/50 border border-slate-800 focus:border-sky-500 rounded-2xl text-white placeholder-slate-600 font-medium outline-none transition-all focus:ring-4 focus:ring-sky-500/10"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 focus:border-sky-500 rounded-2xl text-white placeholder-slate-600 font-medium outline-none transition-all focus:ring-4 focus:ring-sky-500/10"
                     placeholder="••••••••"
                   />
                 </div>
@@ -186,7 +186,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group w-full py-4 bg-white hover:bg-slate-100 text-slate-900 rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                className="group w-full py-3.5 bg-white hover:bg-slate-100 text-slate-900 rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
