@@ -4,14 +4,6 @@
     "history": [
       {
         "role": "user",
-        "content": "quiero saber la medidas del plano interactivo de yoar"
-      },
-      {
-        "role": "assistant",
-        "content": "El plano de \"ARQUITECTURA Y DISTRIBUCIÓ\" de Yoar Daniel Maza Suxe tiene un tamaño de **2.0 MB**. \n\nSi necesitas más información o detalles específicos sobre las medidas, por favor házmelo saber. 😊"
-      },
-      {
-        "role": "user",
         "content": "puedes revisar los parametros del plano de yoar"
       },
       {
@@ -41,6 +33,14 @@
       {
         "role": "assistant",
         "content": "\n✅ Ficha generada y enviada con éxito."
+      },
+      {
+        "role": "user",
+        "content": "Quiero saber si hay financieras registradas en el sistema"
+      },
+      {
+        "role": "assistant",
+        "content": "En este momento, no hay ninguna financiera registrada en el sistema. Si necesitas información adicional o deseas registrar una nueva financiera, ¡házmelo saber! 😊"
       }
     ]
   }

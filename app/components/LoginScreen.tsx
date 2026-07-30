@@ -27,11 +27,13 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         if (!email || !username || !password) {
           setError("Por favor completa todos los campos.");
         } else {
+          localStorage.setItem(`user_${username}`, password);
           onLogin();
         }
         setIsLoading(false);
       } else {
-        if (username === "admin" && password === "admin123") {
+        const savedPassword = localStorage.getItem(`user_${username}`);
+        if ((username === "admin" && password === "admin123") || (savedPassword && savedPassword === password)) {
           onLogin();
         } else {
           setError("Usuario o contraseña incorrectos");

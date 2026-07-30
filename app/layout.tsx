@@ -9,8 +9,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Techo Propio Pro | Sistema de Expediente Técnico",
-  description: "Sistema inteligente para la automatización, cálculo de metrados, APU y presupuestos para la modalidad de Construcción en Sitio Propio (CSP).",
+  title: "CONSTRUCTORA MAZA QUIROZ",
+  description: "Sistema de gestión técnica para expedientes de Techo Propio",
 };
 
 export default function RootLayout({
