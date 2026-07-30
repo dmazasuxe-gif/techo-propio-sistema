@@ -4,43 +4,43 @@
     "history": [
       {
         "role": "user",
-        "content": "puedes revisar los parametros del plano de yoar"
+        "content": "a los dos"
       },
       {
         "role": "assistant",
-        "content": "Claro, aquí están los parámetros del plano \"ARQUITECTURA Y DISTRIBUCIÓ\" de Yoar Daniel Maza Suxe:\n\n- **Título:** ARQUITECTURA Y DISTRIBUCIÓ\n- **Tipo:** DWG (AutoCAD)\n- **Nombre del archivo:** planos DANIEL.pdf\n- **URL del archivo:** /uploads/planos/1785370556867_planos DANIEL.pdf\n- **Tamaño del archivo:** 2.0 MB\n- **Fecha de creación:** 30 de julio de 2026\n\nSi necesitas más información o alguna otra consulta, ¡estaré encantado de ayudarte! 😊"
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro MAE-001 eliminado de maestros.\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro MAE-002 eliminado de maestros."
       },
       {
         "role": "user",
-        "content": "hola"
+        "content": "hay alguna informacion en el sistema?"
       },
       {
         "role": "assistant",
-        "content": "¡Hola! 😊 ¿En qué puedo ayudarte hoy? Si tienes alguna consulta sobre los beneficiarios, maestros o cualquier otro tema relacionado con el Sistema Techo Propio, no dudes en decírmelo."
+        "content": "Sí, actualmente hay información registrada en el sistema. Aquí te detallo lo que hay:\n\n1. **Cronograma de Obras**: Hay varias actividades registradas, como \"Obras Preliminares & Excavación\" y \"Cimentación & Sobrecimientos\", entre otras.\n2. **Planos de Ingeniería**: Hay varios planos técnicos, incluyendo \"Arquitectura y Distribución\" y \"Cimentación, Columnas y Estructuras\".\n\nSi necesitas información específica sobre alguna de estas secciones o deseas realizar alguna acción, ¡házmelo saber! 😊"
       },
       {
         "role": "user",
-        "content": "cuantos beneficiarios hay en el sistema"
+        "content": "cronograma de obras"
       },
       {
         "role": "assistant",
-        "content": "Actualmente, hay **1 beneficiario** registrado en el sistema. Se trata de Yoar Daniel Maza Suxe. \n\nSi necesitas más información sobre él o cualquier otro tema, ¡estaré aquí para ayudarte! 😊"
+        "content": "Aquí tienes el cronograma de obras registrado en el sistema:\n\n1. **Actividad**: 01. Obras Preliminares & Excavación\n   - **Avance**: 70%\n   - **Inicio Semana**: 1\n   - **Duración**: 1 semana\n   - **Responsable**: Maestro de Obra\n\n2. **Actividad**: 02. Cimentación & Sobrecimientos\n   - **Avance**: 40%\n   - **Inicio Semana**: 1\n   - **Duración**: 2 semanas\n   - **Responsable**: Estructuras\n\n3. **Actividad**: 03. Muros de Ladrillo Soga\n   - **Avance**: 0%\n   - **Inicio Semana**: 2\n   - **Duración**: 2 semanas\n   - **Responsable**: Albañilería\n\n4. **Actividad**: 04. Columnas y Vigas de Concreto\n   - **Avance**: 0%\n   - **Inicio Semana**: 3\n   - **Duración**: 2 semanas\n   - **Responsable**: Estructuras\n\n5. **Actividad**: 05. Techo Aligerado & Vaciado\n   - **Avance**: 0%\n   - **Inicio Semana**: 4\n   - **Duración**: 2 semanas\n   - **Responsable**: Estructuras\n\n6. **Actividad**: 06. Tarrajeo, Pisos & Zócalos\n   - **Avance**: 0%\n   - **Inicio Semana**: 5\n   - **Duración**: 2 semanas\n   - **Responsable**: Acabados\n\n7. **Actividad**: 07. Instalaciones Sanitarias & Eléctricas\n   - **Avance**: 0%\n   - **Inicio Semana**: 6\n   - **Duración**: 2 semanas\n   - **Responsable**: Instalaciones\n\n8. **Actividad**: 08. Pintura & Puertas / Ventanas\n   - **Avance**: 0%\n   - **Inicio Semana**: 7\n   - **Duración**: 2 semanas\n   - **Responsable**: Pintura\n\nSi necesitas más detalles o deseas realizar alguna acción sobre este cronograma, ¡dímelo! 😊"
       },
       {
         "role": "user",
-        "content": "puedes enviarme la ficha de ese beneficiario"
+        "content": "elimina toda esa informacion de cronograma de obras"
       },
       {
         "role": "assistant",
-        "content": "\n✅ Ficha generada y enviada con éxito."
+        "content": "\n\n⚠️ <b>Atención:</b> No se envió ID para actualizar."
       },
       {
         "role": "user",
-        "content": "Quiero saber si hay financieras registradas en el sistema"
+        "content": "cuantos maestros de obra hay en el sistema"
       },
       {
         "role": "assistant",
-        "content": "En este momento, no hay ninguna financiera registrada en el sistema. Si necesitas información adicional o deseas registrar una nueva financiera, ¡házmelo saber! 😊"
+        "content": "Actualmente, no hay maestros de obra registrados en el sistema. Todos los registros de maestros han sido eliminados. Si necesitas agregar nuevos maestros o realizar alguna otra acción, ¡házmelo saber! 😊"
       }
     ]
   }

@@ -128,3 +128,15 @@ CREATE POLICY "Permitir todo a anon (Desarrollo) - Financieras" ON financieras F
 CREATE POLICY "Permitir todo a anon (Desarrollo) - Cronog. Maestros" ON cronograma_maestros FOR ALL USING (true);
 CREATE POLICY "Permitir todo a anon (Desarrollo) - Cronog. Obra" ON cronograma_obra FOR ALL USING (true);
 CREATE POLICY "Permitir todo a anon (Desarrollo) - Planos" ON planos_ingenieria FOR ALL USING (true);
+
+-- 7. Tabla de Usuarios (Autenticación Global)
+CREATE TABLE usuarios (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
+  password TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir todo a anon (Desarrollo) - Usuarios" ON usuarios FOR ALL USING (true);

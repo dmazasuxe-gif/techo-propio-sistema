@@ -16,31 +16,52 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // Simulate network delay for premium feel
-    setTimeout(() => {
+    try {
       if (isRegistering) {
         if (!email || !username || !password) {
           setError("Por favor completa todos los campos.");
-        } else {
-          localStorage.setItem(`user_${username}`, password);
-          onLogin();
-        }
-        setIsLoading(false);
-      } else {
-        const savedPassword = localStorage.getItem(`user_${username}`);
-        if ((username === "admin" && password === "admin123") || (savedPassword && savedPassword === password)) {
-          onLogin();
-        } else {
-          setError("Usuario o contraseña incorrectos");
           setIsLoading(false);
+          return;
+        }
+
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, username, password })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          onLogin();
+        } else {
+          setError(data.message || "Error al registrar la cuenta.");
+        }
+      } else {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await res.json();
+
+        if (data.success) {
+          onLogin();
+        } else {
+          setError(data.message || "Usuario o contraseña incorrectos");
         }
       }
-    }, 1200);
+    } catch (err) {
+      setError("Error de conexión al servidor");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
