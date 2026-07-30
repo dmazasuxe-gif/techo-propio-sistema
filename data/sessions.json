@@ -1,0 +1,47 @@
+{
+  "7638775325": {
+    "type": "IDLE",
+    "history": [
+      {
+        "role": "user",
+        "content": "quiero saber la medidas del plano interactivo de yoar"
+      },
+      {
+        "role": "assistant",
+        "content": "El plano de \"ARQUITECTURA Y DISTRIBUCIÓ\" de Yoar Daniel Maza Suxe tiene un tamaño de **2.0 MB**. \n\nSi necesitas más información o detalles específicos sobre las medidas, por favor házmelo saber. 😊"
+      },
+      {
+        "role": "user",
+        "content": "puedes revisar los parametros del plano de yoar"
+      },
+      {
+        "role": "assistant",
+        "content": "Claro, aquí están los parámetros del plano \"ARQUITECTURA Y DISTRIBUCIÓ\" de Yoar Daniel Maza Suxe:\n\n- **Título:** ARQUITECTURA Y DISTRIBUCIÓ\n- **Tipo:** DWG (AutoCAD)\n- **Nombre del archivo:** planos DANIEL.pdf\n- **URL del archivo:** /uploads/planos/1785370556867_planos DANIEL.pdf\n- **Tamaño del archivo:** 2.0 MB\n- **Fecha de creación:** 30 de julio de 2026\n\nSi necesitas más información o alguna otra consulta, ¡estaré encantado de ayudarte! 😊"
+      },
+      {
+        "role": "user",
+        "content": "hola"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! 😊 ¿En qué puedo ayudarte hoy? Si tienes alguna consulta sobre los beneficiarios, maestros o cualquier otro tema relacionado con el Sistema Techo Propio, no dudes en decírmelo."
+      },
+      {
+        "role": "user",
+        "content": "cuantos beneficiarios hay en el sistema"
+      },
+      {
+        "role": "assistant",
+        "content": "Actualmente, hay **1 beneficiario** registrado en el sistema. Se trata de Yoar Daniel Maza Suxe. \n\nSi necesitas más información sobre él o cualquier otro tema, ¡estaré aquí para ayudarte! 😊"
+      },
+      {
+        "role": "user",
+        "content": "puedes enviarme la ficha de ese beneficiario"
+      },
+      {
+        "role": "assistant",
+        "content": "\n✅ Ficha generada y enviada con éxito."
+      }
+    ]
+  }
+}

@@ -1,0 +1,257 @@
+{
+  "beneficiarios": [
+    {
+      "id": "REG-0001",
+      "expediente": "SAN MARTIN",
+      "departamento": "SAN MARTIN",
+      "provincia": "MOYOBAMBA",
+      "distrito": "JEPELACIO",
+      "centroPoblado": "ninguno",
+      "barrioSector": "miraflores",
+      "calle": "jiron moyobamba",
+      "manzana": "18",
+      "lote": "15",
+      "coordenadaX": "12.25658",
+      "coordenadaY": "98.236584",
+      "partidaElectronica": "1145897",
+      "codigoCatastral": "97438714144151",
+      "postulante": "yoar daniel maza suxe",
+      "apellidoPaterno": "maza",
+      "apellidoMaterno": "suxe",
+      "nombres": "yoar daniel",
+      "dniPostulante": "76573126",
+      "fechaNacimiento": "30/09/1998",
+      "celular": "987456321",
+      "correo": "ninguno",
+      "estadoCivil": "soltero",
+      "tieneConyuge": false,
+      "conyuge": "",
+      "dniConyuge": "",
+      "fechaNacimientoConyuge": "",
+      "direccion": "jiron moyobamba Mz 18 Lt 15",
+      "areaTotal": "150",
+      "porFrente": "8",
+      "porDerecha": "20",
+      "porIzquierda": "20",
+      "porFondo": "8",
+      "areaTechada": "53",
+      "areaConstruida": "45",
+      "estado": "inscrito",
+      "notas": "predio cuenta con vivienda de material rustico que sera delido en su totalidad",
+      "etapaVivienda": "Obras Preliminares",
+      "avanceViviendaPct": 10,
+      "documentos": [
+        {
+          "id": "DOC-1785355921287-259",
+          "tipo": "DNI Postulante",
+          "nombre": "Imagen_Fotografía.jpg",
+          "url": "/uploads/1785355921284_Fotografia.jpg",
+          "fecha": "29/7/2026"
+        },
+        {
+          "id": "DOC-1785359267447",
+          "tipo": "Otro",
+          "nombre": "Fotografía Adicional",
+          "url": "/uploads/1785359264819_Fotografia.jpg",
+          "fecha": "2026-07-29"
+        },
+        {
+          "id": "DOC-1785359311051",
+          "tipo": "Otro",
+          "nombre": "Copia Literal",
+          "url": "/uploads/1785359308630_Fotografia.jpg",
+          "fecha": "2026-07-29"
+        }
+      ],
+      "licenciaConstruccion": "",
+      "conformidadObra": "",
+      "maestroAsignadoId": "MAE-001",
+      "maestroAsignadoNombre": "tomy maza suxe",
+      "presupuesto": [
+        {
+          "producto": "Bolsas de cemento",
+          "cantidad": 50,
+          "precioUnitario": 33,
+          "total": 1650
+        }
+      ]
+    }
+  ],
+  "maestros": [
+    {
+      "id": "MAE-002",
+      "nombre": "/start",
+      "dni": "hola",
+      "celular": "eliminar",
+      "especialidad": "hola",
+      "tarifaVivienda": "hola",
+      "beneficiarioAsignadoId": "",
+      "beneficiarioAsignadoNombre": ""
+    },
+    {
+      "id": "MAE-001",
+      "nombre": "tomy maza suxe",
+      "dni": "87456321",
+      "celular": "987451236",
+      "especialidad": "albañileria",
+      "tarifaVivienda": "6000",
+      "beneficiarioAsignadoId": "REG-0001",
+      "beneficiarioAsignadoNombre": "yoar daniel maza suxe"
+    }
+  ],
+  "financieras": [
+    {
+      "id": "f1785363910266",
+      "nombre": "Financiera PIME",
+      "expandida": false,
+      "desembolsos": [
+        {
+          "id": "d1785363932991",
+          "hito": "Desembolso 1",
+          "fecha": "2026-07-01",
+          "monto": 150000,
+          "estado": "Desembolsado",
+          "beneficiariosAsignados": [
+            "REG-0001"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f1785363910265",
+      "nombre": "FINANCIERA MY CASITA ",
+      "expandida": false,
+      "desembolsos": [
+        {
+          "id": "d1785363932991",
+          "hito": "Desembolso 1",
+          "fecha": "2026-07-01",
+          "monto": 150000,
+          "estado": "Desembolsado",
+          "beneficiariosAsignados": [
+            "REG-0001"
+          ]
+        }
+      ]
+    }
+  ],
+  "cronogramaMaestros": [
+    {
+      "id": "MAE-001",
+      "nombre": "tomy maza suxe",
+      "dni": "87456321",
+      "celular": "987451236",
+      "especialidad": "albañileria",
+      "montoPorVivienda": 6000,
+      "beneficiariosAsignados": [
+        "REG-0001"
+      ],
+      "pagos": [],
+      "expandido": false
+    }
+  ],
+  "cronogramaObra": [
+    {
+      "id": "t1",
+      "actividad": "01. Obras Preliminares & Excavación",
+      "inicioSemana": 1,
+      "duracionSemanas": 1,
+      "avancePct": 70,
+      "responsable": "Maestro de Obra"
+    },
+    {
+      "id": "t2",
+      "actividad": "02. Cimentación & Sobrecimientos",
+      "inicioSemana": 1,
+      "duracionSemanas": 2,
+      "avancePct": 40,
+      "responsable": "Estructuras"
+    },
+    {
+      "id": "t3",
+      "actividad": "03. Muros de Ladrillo Soga",
+      "inicioSemana": 2,
+      "duracionSemanas": 2,
+      "avancePct": 0,
+      "responsable": "Albañilería"
+    },
+    {
+      "id": "t4",
+      "actividad": "04. Columnas y Vigas de Concreto",
+      "inicioSemana": 3,
+      "duracionSemanas": 2,
+      "avancePct": 0,
+      "responsable": "Estructuras"
+    },
+    {
+      "id": "t5",
+      "actividad": "05. Techo Aligerado & Vaciado",
+      "inicioSemana": 4,
+      "duracionSemanas": 2,
+      "avancePct": 0,
+      "responsable": "Estructuras"
+    },
+    {
+      "id": "t6",
+      "actividad": "06. Tarrajeo, Pisos & Zócalos",
+      "inicioSemana": 5,
+      "duracionSemanas": 2,
+      "avancePct": 0,
+      "responsable": "Acabados"
+    },
+    {
+      "id": "t7",
+      "actividad": "07. Instalaciones Sanitarias & Eléctricas",
+      "inicioSemana": 6,
+      "duracionSemanas": 2,
+      "avancePct": 0,
+      "responsable": "Instalaciones"
+    },
+    {
+      "id": "t8",
+      "actividad": "08. Pintura & Puertas / Ventanas",
+      "inicioSemana": 7,
+      "duracionSemanas": 2,
+      "avancePct": 0,
+      "responsable": "Pintura"
+    }
+  ],
+  "planosIngenieria": [
+    {
+      "id": "PLN-1785370502127",
+      "title": "ARQUITECTURA Y DISTRIBUCIÓ",
+      "type": "DWG (AutoCAD)",
+      "fileName": "planos DANIEL.pdf",
+      "fileUrl": "/uploads/planos/1785370556867_planos DANIEL.pdf",
+      "fileSize": "2.0 MB",
+      "createdAt": "2026-07-30T00:15:02.127Z"
+    },
+    {
+      "id": "PLN-1785370515122",
+      "title": "Cimentación, Columnas y Estructuras",
+      "type": "DWG (AutoCAD)",
+      "fileName": "",
+      "fileUrl": "",
+      "fileSize": "",
+      "createdAt": "2026-07-30T00:15:15.122Z"
+    },
+    {
+      "id": "PLN-1785370525982",
+      "title": "Instalaciones Eléctricas (Alumbrado y Tomacorrientes)",
+      "type": "DWG (AutoCAD)",
+      "fileName": "",
+      "fileUrl": "",
+      "fileSize": "",
+      "createdAt": "2026-07-30T00:15:25.982Z"
+    },
+    {
+      "id": "PLN-1785370538423",
+      "title": "Instalaciones Sanitarias (Agua y Desagüe)",
+      "type": "DWG (AutoCAD)",
+      "fileName": "",
+      "fileUrl": "",
+      "fileSize": "",
+      "createdAt": "2026-07-30T00:15:38.423Z"
+    }
+  ]
+}
