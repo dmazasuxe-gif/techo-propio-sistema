@@ -11,6 +11,10 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "CONSTRUCTORA MAZA QUIROZ",
   description: "Sistema de gestión técnica para expedientes de Techo Propio",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
