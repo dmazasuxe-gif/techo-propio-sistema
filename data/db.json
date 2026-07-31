@@ -79,16 +79,6 @@
   ],
   "maestros": [
     {
-      "id": "MAE-002",
-      "nombre": "/start",
-      "dni": "hola",
-      "celular": "eliminar",
-      "especialidad": "hola",
-      "tarifaVivienda": "hola",
-      "beneficiarioAsignadoId": "",
-      "beneficiarioAsignadoNombre": ""
-    },
-    {
       "id": "MAE-001",
       "nombre": "tomy maza suxe",
       "dni": "87456321",

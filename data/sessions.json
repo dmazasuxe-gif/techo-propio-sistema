@@ -17,43 +17,43 @@
     "history": [
       {
         "role": "user",
-        "content": "cuantos maestros de obra hay en el sistema"
-      },
-      {
-        "role": "assistant",
-        "content": "Actualmente, no hay maestros de obra registrados en el sistema. Todos los registros de maestros han sido eliminados. Si necesitas agregar nuevos maestros o realizar alguna otra acción, ¡házmelo saber! 😊"
-      },
-      {
-        "role": "user",
-        "content": "cuanto es 100+150"
-      },
-      {
-        "role": "assistant",
-        "content": "100 + 150 es igual a 250. 😊 Si necesitas ayuda con algo más, ¡no dudes en preguntar!"
-      },
-      {
-        "role": "user",
-        "content": "quien es presidente del peru"
-      },
-      {
-        "role": "assistant",
-        "content": "Hasta la fecha de mi última actualización en octubre de 2023, la presidenta de Perú es Dina Boluarte. Sin embargo, te recomiendo verificar la información actual, ya que la situación política puede cambiar. Si necesitas más información o asistencia, ¡estaré encantado de ayudarte! 😊"
-      },
-      {
-        "role": "user",
-        "content": "/start"
-      },
-      {
-        "role": "assistant",
-        "content": "¡Hola! 😊 Estoy aquí para ayudarte con cualquier consulta relacionada con el Sistema Techo Propio. Si necesitas información sobre beneficiarios, maestros, cronogramas de obra o cualquier otra cosa, no dudes en decírmelo. ¡Estoy a tu disposición!"
-      },
-      {
-        "role": "user",
         "content": "hola"
       },
       {
         "role": "assistant",
         "content": "¡Hola! 😊 ¿En qué puedo ayudarte hoy? Si tienes alguna consulta sobre beneficiarios, maestros, cronogramas de obra o cualquier otro tema relacionado, no dudes en decírmelo. ¡Estoy aquí para ayudarte!"
+      },
+      {
+        "role": "user",
+        "content": "Quiero saber si hay beneficiarios registrados en el sistema"
+      },
+      {
+        "role": "assistant",
+        "content": "Actualmente, no hay beneficiarios registrados en el sistema. Si necesitas agregar nuevos beneficiarios o realizar alguna otra acción, ¡házmelo saber! 😊"
+      },
+      {
+        "role": "user",
+        "content": "quiero registrar un nuevo beneficiario"
+      },
+      {
+        "role": "assistant",
+        "content": "Por favor, proporcióname la siguiente información para registrar al nuevo beneficiario:\n\n1. **Expediente**\n2. **Estado**\n3. **Postulante**\n4. **DNI del postulante**\n5. **Celular**\n6. **Departamento**\n7. **Provincia**\n8. **Distrito**\n9. **Dirección**\n10. **Código Catastral**\n\nCon estos datos, podré proceder a registrar al beneficiario. ¡Gracias! 😊"
+      },
+      {
+        "role": "user",
+        "content": "espediente san martin"
+      },
+      {
+        "role": "assistant",
+        "content": "Parece que solo me has proporcionado el expediente \"San Martín\". Para completar el registro del beneficiario, necesito la información adicional que mencioné anteriormente. Por favor, proporciona los siguientes datos:\n\n1. **Estado**\n2. **Postulante**\n3. **DNI del postulante**\n4. **Celular**\n5. **Departamento**\n6. **Provincia**\n7. **Distrito**\n8. **Dirección**\n9. **Código Catastral**\n\nCon toda esta información, podré registrar al beneficiario. ¡Gracias! 😊"
+      },
+      {
+        "role": "user",
+        "content": "preguntame paso por paso que es lo siguiente que quieres"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Claro! Vamos a hacerlo paso a paso. 😊\n\n1. **Estado**: ¿Cuál es el estado del beneficiario? (Ejemplo: \"Activo\", \"Inactivo\", etc.)"
       }
     ]
   }
