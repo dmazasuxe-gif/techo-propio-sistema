@@ -1,1 +1,47 @@
-{}
+{
+  "7638775325": {
+    "type": "IDLE",
+    "history": [
+      {
+        "role": "user",
+        "content": "yoar daniel maza suxe"
+      },
+      {
+        "role": "assistant",
+        "content": "Gracias por el nombre del postulante. Ahora, por favor, necesito que me proporciones los siguientes datos restantes:\n\n1. **DNI del Postulante**: \n2. **Celular**: \n3. **Departamento**: \n4. **Provincia**: \n5. **Distrito**: \n6. **Dirección**: \n\nUna vez que tenga toda esta información, procederé a registrar al beneficiario. 😊"
+      },
+      {
+        "role": "user",
+        "content": "76573126"
+      },
+      {
+        "role": "assistant",
+        "content": "Gracias por proporcionar el DNI del postulante. Solo me faltan los siguientes datos para completar el registro:\n\n1. **Celular**: \n2. **Departamento**: \n3. **Provincia**: \n4. **Distrito**: \n5. **Dirección**: \n\nPor favor, comparte esta información y procederé a registrar al beneficiario. 😊"
+      },
+      {
+        "role": "user",
+        "content": "985863449"
+      },
+      {
+        "role": "assistant",
+        "content": "Gracias por el número de celular. Ahora solo me faltan los siguientes datos para completar el registro del beneficiario:\n\n1. **Departamento**: \n2. **Provincia**: \n3. **Distrito**: \n4. **Dirección**: \n\nCon esta información, podré proceder a registrar al beneficiario. 😊"
+      },
+      {
+        "role": "user",
+        "content": "departamento san martin, provincia moyobamba, distrito jepelacio"
+      },
+      {
+        "role": "assistant",
+        "content": "Perfecto, ya tengo el departamento, provincia y distrito. Solo me falta la **dirección** para completar el registro del beneficiario. Por favor, proporciónamela. 😊"
+      },
+      {
+        "role": "user",
+        "content": "jiron. moyobamba"
+      },
+      {
+        "role": "assistant",
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro creado exitosamente en beneficiarios con ID: 1"
+      }
+    ]
+  }
+}

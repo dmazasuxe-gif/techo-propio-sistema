@@ -47,9 +47,7 @@ export interface Beneficiario {
   nombres?: string;
   dniPostulante: string;
   fechaNacimiento?: string;
-  sexo?: "Masculino" | "Femenino" | "Otro" | string;
   celular: string;
-  correo?: string;
   estadoCivil?: string;
   tieneConyuge?: boolean;
 
