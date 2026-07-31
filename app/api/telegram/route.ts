@@ -3,6 +3,8 @@ import path from "path";
 import { NextResponse } from "next/server";
 import { processUserMessage } from "@/lib/nlu-engine";
 
+export const maxDuration = 60;
+
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 
 async function sendTelegramMessage(chatId: number | string, text: string, parseMode: "HTML" | "Markdown" = "HTML") {

@@ -13,7 +13,9 @@ export async function sendDocumentToTelegram(chatId: number | string, fileUrlOrP
 
   try {
     let actualPath = fileUrlOrPath;
-    if (fileUrlOrPath.startsWith("/uploads/")) {
+    if (fs.existsSync(actualPath)) {
+      // path is already correct and exists
+    } else if (fileUrlOrPath.startsWith("/uploads/")) {
       actualPath = path.join(process.cwd(), "public", fileUrlOrPath);
     } else if (!path.isAbsolute(actualPath)) {
       actualPath = path.join(process.cwd(), "public", fileUrlOrPath);

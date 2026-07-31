@@ -4,13 +4,15 @@ import puppeteer from 'puppeteer';
 import { Beneficiario, MaestroObra } from '../app/types';
 import { getDb } from './db';
 
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'fichas');
+const UPLOADS_DIR = process.env.VERCEL 
+  ? path.join('/tmp', 'fichas') 
+  : path.join(process.cwd(), 'public', 'uploads', 'fichas');
 
 function ensureDirectoryExistence(filePath: string) {
   const dirname = path.dirname(filePath);
   if (fs.existsSync(dirname)) return true;
   ensureDirectoryExistence(dirname);
-  fs.mkdirSync(dirname);
+  fs.mkdirSync(dirname, { recursive: true });
 }
 
 function getStatusHtmlClass(estado: string): string {
@@ -193,7 +195,7 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '18mm', bottom: '18mm', left: '15mm', right: '15mm' } });
     await browser.close();
-    return `/uploads/fichas/${fileName}`;
+    return filePath;
   } catch (error) {
     console.error("Puppeteer error generating beneficiary PDF:", error);
     return null;
@@ -332,7 +334,7 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
     await browser.close();
-    return `/uploads/fichas/${fileName}`;
+    return filePath;
   } catch (error) {
     console.error("Puppeteer error generating maestro PDF:", error);
     return null;
@@ -501,7 +503,7 @@ export async function generarPresupuestoPDFFromData(data: PresupuestoData): Prom
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' } });
     await browser.close();
-    return `/uploads/fichas/${fileName}`;
+    return filePath;
   } catch (error) {
     console.error("Puppeteer error generating presupuesto PDF:", error);
     return null;
