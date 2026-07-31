@@ -251,6 +251,13 @@ export async function executeDbOperation(collection: string, action: string, id?
   if (action === "crear") {
     if (!data) return { success: false, message: "No se enviaron datos para crear." };
     if (!data.id) data.id = `${collection.substring(0,3).toUpperCase()}-${Date.now()}`;
+    
+    if (table === 'maestros') {
+      const added = await addMaestro(data as MaestroObra);
+      if (!added) return { success: false, message: `Error al crear el maestro y su cronograma.` };
+      return { success: true, message: `Registro creado exitosamente en ${collection} con ID: ${data.id}` };
+    }
+
     const { error } = await supabase.from(table).insert(convertKeysToSnakeCase(data));
     if (error) return { success: false, message: `Error: ${error.message}` };
     return { success: true, message: `Registro creado exitosamente en ${collection} con ID: ${data.id}` };

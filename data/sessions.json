@@ -4,11 +4,43 @@
     "history": [
       {
         "role": "user",
-        "content": "hay el campo notas en mi registro de beneficiarios?"
+        "content": "olvidalo. quiero saber si hay beneficiarios en mi sistema"
       },
       {
         "role": "assistant",
-        "content": "Sí, el campo \"notas\" está incluido en la estructura del registro de beneficiarios. Este campo es opcional y se puede utilizar para agregar información adicional sobre el beneficiario. Si necesitas hacer alguna modificación o agregar información, no dudes en decírmelo. 😊"
+        "content": "Actualmente, no hay beneficiarios registrados en el sistema. Si necesitas agregar alguno o tienes alguna otra consulta, no dudes en decírmelo. Estoy aquí para ayudarte. 😊"
+      },
+      {
+        "role": "user",
+        "content": "registrar un maestro de obra"
+      },
+      {
+        "role": "assistant",
+        "content": "Para registrar un maestro de obra, necesitaré algunos datos específicos. Por favor, proporciona la siguiente información:\n\n1. **Nombre**:\n2. **DNI**:\n3. **Celular**:\n4. **Especialidad**:\n5. **Tarifa por Vivienda**:\n6. **Beneficiario Asignado (ID y Nombre)** (si aplica):\n\nCon estos datos, podré crear el registro del maestro de obra. ¡Gracias! 😊"
+      },
+      {
+        "role": "user",
+        "content": "su nombre es daniel antonio maza vasquez y su dni es 98563214"
+      },
+      {
+        "role": "assistant",
+        "content": "Gracias por la información. Para completar el registro del maestro de obra, necesitaré los siguientes datos adicionales:\n\n1. **Celular**:\n2. **Especialidad**:\n3. **Tarifa por Vivienda**:\n4. **Beneficiario Asignado (ID y Nombre)** (si aplica):\n\nUna vez que tenga estos datos, procederé a registrar a Daniel Antonio Maza Vásquez. 😊"
+      },
+      {
+        "role": "user",
+        "content": "su celular es 987456321 su especialidad es albañil"
+      },
+      {
+        "role": "assistant",
+        "content": "Perfecto, solo me falta la tarifa por vivienda y si hay algún beneficiario asignado (ID y nombre). Con esos datos, podré registrar a Daniel Antonio Maza Vásquez. 😊"
+      },
+      {
+        "role": "user",
+        "content": "la tarifa es 6 mil soles y no tiene beneficiarios asignados aun"
+      },
+      {
+        "role": "assistant",
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro creado exitosamente en maestros con ID: m1"
       }
     ]
   }
