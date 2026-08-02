@@ -257,6 +257,19 @@ export async function executeDbOperation(collection: string, action: string, id?
       return { success: true, message: `Registro creado exitosamente en ${collection} con ID: ${data.id}` };
     }
 
+    if (table === 'beneficiarios') {
+      if (!data.postulante) {
+        data.postulante = `${data.nombres || ""} ${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim();
+      }
+      if (!data.direccion) {
+        const fullDir = `${data.calle || ""} Mz ${data.manzana || ""} Lt ${data.lote || ""}`.trim();
+        data.direccion = fullDir || `Distrito de ${data.distrito || ""}`;
+      }
+      if (!data.codigoCatastral) {
+        data.codigoCatastral = `${Math.floor(10000000000000 + Math.random() * 90000000000000)}`;
+      }
+    }
+
     const { error } = await supabase.from(table).insert(convertKeysToSnakeCase(data));
     if (error) return { success: false, message: `Error: ${error.message}` };
     return { success: true, message: `Registro creado exitosamente en ${collection} con ID: ${data.id}` };
