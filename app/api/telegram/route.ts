@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { processUserMessage } from "@/lib/nlu-engine";
 
 export const maxDuration = 60;
@@ -123,9 +123,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Pass message through NLU Engine (handles typos, natural language, multi-step wizards, safety confirmations)
-    const replyText = await processUserMessage(chatId, text, fileUrl);
-    await sendTelegramMessage(chatId, replyText);
+    // Pass message through NLU Engine asynchronously to avoid Telegram timeouts
+    after(async () => {
+      try {
+        const replyText = await processUserMessage(chatId, text, fileUrl);
+        await sendTelegramMessage(chatId, replyText);
+      } catch (e) {
+        console.error("Error in background NLU execution:", e);
+      }
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -183,8 +183,7 @@ export async function addMaestro(m: MaestroObra): Promise<MaestroObra | null> {
     especialidad: m.especialidad,
     monto_por_vivienda: parseFloat(m.tarifaVivienda) || 0,
     beneficiarios_asignados: m.beneficiarioAsignadoId ? [m.beneficiarioAsignadoId] : [],
-    pagos: [],
-    expandido: false
+    pagos: []
   });
 
   if (m.beneficiarioAsignadoId) {
