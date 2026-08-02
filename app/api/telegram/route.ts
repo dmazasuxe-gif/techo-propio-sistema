@@ -96,15 +96,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Pass message through NLU Engine asynchronously to avoid Telegram timeouts
-    after(async () => {
-      try {
-        const replyText = await processUserMessage(chatId, text, fileUrl);
-        await sendTelegramMessage(chatId, replyText);
-      } catch (e) {
-        console.error("Error in background NLU execution:", e);
-      }
-    });
+    // Procesamos el mensaje directamente con await
+    // (Next.js en Vercel a veces mata los procesos background)
+    try {
+      const replyText = await processUserMessage(chatId, text, fileUrl);
+      await sendTelegramMessage(chatId, replyText);
+    } catch (e) {
+      console.error("Error in NLU execution:", e);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
