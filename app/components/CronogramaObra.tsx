@@ -81,6 +81,12 @@ export default function CronogramaObra() {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => window.open('/api/obras/cronograma/pdf', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold rounded-xl text-sm transition-colors"
+            >
+              Generar PDF
+            </button>
+            <button
               onClick={handleSave}
               disabled={isSaving}
               className="flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl text-sm transition-colors"

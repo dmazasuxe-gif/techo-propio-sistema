@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     // Read the generated PDF and return as binary
-    const absolutePath = path.join(process.cwd(), "public", pdfRelativePath);
+    const absolutePath = pdfRelativePath;
 
     if (!fs.existsSync(absolutePath)) {
       return NextResponse.json({ error: "Archivo PDF no encontrado." }, { status: 404 });

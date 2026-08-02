@@ -131,6 +131,18 @@ ${JSON.stringify(db, null, 2)}`
               required: []
             }
           }
+        },
+        {
+          type: "function",
+          function: {
+            name: "generar_y_enviar_cronograma",
+            description: "Genera un PDF del Cronograma de Obra General (Gantt Interactivo) y lo envía al chat.",
+            parameters: {
+              type: "object",
+              properties: {},
+              required: []
+            }
+          }
         }
       ],
       tool_choice: "auto",
@@ -200,6 +212,20 @@ ${JSON.stringify(db, null, 2)}`
           } catch (e) {
              console.error("Error sending document:", e);
              aiResponseText += `\n⚠️ Ocurrió un error al enviar el documento.`;
+          }
+        }
+        else if (toolCall.function.name === "generar_y_enviar_cronograma") {
+          try {
+            const { generarCronogramaObraPDF } = await import('./pdf-generator');
+            const absolutePath = await generarCronogramaObraPDF();
+            if (!absolutePath) throw new Error("PDF generation failed");
+            
+            const { sendDocumentToTelegram } = require('./telegram-sender');
+            const sent = await sendDocumentToTelegram(chatId, absolutePath, "Aquí tienes el Cronograma de Ejecución de Obra en formato PDF.");
+            aiResponseText += sent ? `\n✅ Cronograma en PDF enviado exitosamente.` : `\n⚠️ No se pudo enviar el PDF a Telegram.`;
+          } catch (e) {
+             console.error("Error generating cronograma PDF:", e);
+             aiResponseText += `\n⚠️ Ocurrió un error al generar el cronograma.`;
           }
         }
         else if (toolCall.function.name === "generar_y_enviar_presupuesto") {

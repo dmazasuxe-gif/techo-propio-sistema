@@ -510,3 +510,118 @@ export async function generarPresupuestoPDFFromData(data: PresupuestoData): Prom
   }
 }
 
+export async function generarCronogramaObraPDF(): Promise<string | null> {
+  const db = await getDb();
+  
+  let tareas = db.cronogramaObra || [];
+  if (tareas.length === 0) {
+    tareas = [
+      { id: "t1", actividad: "01. Obras Preliminares & Excavación",       inicioSemana: 1, duracionSemanas: 1, avancePct: 0, responsable: "Maestro de Obra" },
+      { id: "t2", actividad: "02. Cimentación & Sobrecimientos",          inicioSemana: 1, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
+      { id: "t3", actividad: "03. Muros de Ladrillo Soga",                inicioSemana: 2, duracionSemanas: 2, avancePct: 0, responsable: "Albañilería" },
+      { id: "t4", actividad: "04. Columnas y Vigas de Concreto",          inicioSemana: 3, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
+      { id: "t5", actividad: "05. Techo Aligerado & Vaciado",             inicioSemana: 4, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
+      { id: "t6", actividad: "06. Tarrajeo, Pisos & Zócalos",             inicioSemana: 5, duracionSemanas: 2, avancePct: 0, responsable: "Acabados" },
+      { id: "t7", actividad: "07. Instalaciones Sanitarias & Eléctricas", inicioSemana: 6, duracionSemanas: 2, avancePct: 0, responsable: "Instalaciones" },
+      { id: "t8", actividad: "08. Pintura & Puertas / Ventanas",          inicioSemana: 7, duracionSemanas: 2, avancePct: 0, responsable: "Pintura" },
+    ] as any;
+  }
+
+  const avanceTotalObra = Math.round(
+    tareas.reduce((acc: any, t: any) => acc + (t.avancePct || t.avance_pct || 0), 0) / tareas.length
+  );
+
+  const fileName = `Cronograma_Global_${Date.now()}.pdf`;
+  const filePath = path.join(UPLOADS_DIR, fileName);
+  ensureDirectoryExistence(filePath);
+
+  const itemsHtml = tareas.map((t: any) => {
+    const avance = t.avancePct !== undefined ? t.avancePct : (t.avance_pct || 0);
+    const bgClass = avance === 100 ? 'bg-emerald' : (avance > 0 ? 'bg-sky' : 'bg-slate');
+    return `
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-info">
+            <span class="actividad">${t.actividad}</span>
+            <span class="responsable">Responsable: ${t.responsable}</span>
+          </div>
+          <div class="task-pct">${avance}%</div>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill ${bgClass}" style="width: ${avance}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const printContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Cronograma de Ejecución de Obra</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 15mm 12mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1e293b; font-size: 11px; }
+    
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fff; padding: 18px 22px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .header-title h1 { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+    .header-title p { font-size: 10px; opacity: 0.7; }
+    
+    .global-progress { background: #0f172a; border: 1px solid #1e3a5f; padding: 10px 16px; border-radius: 12px; text-align: right; }
+    .global-progress .label { font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: block; }
+    .global-progress .value { font-size: 16px; font-weight: 900; color: #38bdf8; font-family: monospace; }
+    
+    .task-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .task-info { display: flex; flex-direction: column; gap: 2px; }
+    .actividad { font-size: 12px; font-weight: 800; color: #0f172a; }
+    .responsable { font-size: 10px; color: #64748b; font-weight: 600; }
+    
+    .task-pct { background: rgba(56,189,248,0.15); color: #0284c7; border: 1px solid rgba(56,189,248,0.3); font-weight: 800; font-family: monospace; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+    
+    .progress-bar-bg { width: 100%; background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 999px; }
+    .bg-emerald { background: #10b981; }
+    .bg-sky { background: #38bdf8; }
+    .bg-slate { background: #cbd5e1; }
+    
+    .footer { margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <h1>⏳ Cronograma de Ejecución de Obra</h1>
+      <p>Reporte de Avance Físico General</p>
+    </div>
+    <div class="global-progress">
+      <span class="label">Avance Global</span>
+      <span class="value">${avanceTotalObra}% COMPLETADO</span>
+    </div>
+  </div>
+  
+  <div class="tasks">
+    ${itemsHtml}
+  </div>
+
+  <div class="footer">
+    <div>Sistema Techo Propio — Constructora Maza Quiroz</div>
+    <div>Generado el ${new Date().toLocaleString("es-PE")}</div>
+  </div>
+</body>
+</html>`;
+
+  try {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.setContent(printContent, { waitUntil: 'load' });
+    await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
+    await browser.close();
+    return filePath;
+  } catch (error) {
+    console.error("Puppeteer error generating cronograma PDF:", error);
+    return null;
+  }
+}

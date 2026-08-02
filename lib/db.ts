@@ -275,6 +275,10 @@ export async function executeDbOperation(collection: string, action: string, id?
         const fullDir = `${data.calle || ""} Mz ${data.manzana || ""} Lt ${data.lote || ""}`.trim();
         data.direccion = fullDir || `Distrito de ${data.distrito || ""}`;
       }
+      
+      // Default initial construction progress for newly registered beneficiaries
+      data.etapaVivienda = "Sin Iniciar";
+      data.avanceViviendaPct = 0;
     }
 
     const { error } = await supabase.from(table).insert(convertKeysToSnakeCase(data));
