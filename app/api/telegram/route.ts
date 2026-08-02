@@ -1,7 +1,6 @@
-import fs from "fs";
-import path from "path";
 import { NextResponse, after } from "next/server";
 import { processUserMessage } from "@/lib/nlu-engine";
+
 
 export const maxDuration = 60;
 
@@ -41,43 +40,16 @@ async function downloadTelegramFile(fileId: string, preferredName: string): Prom
     const data = await res.json();
     if (data.ok && data.result && data.result.file_path) {
       const filePathOnTelegram = data.result.file_path;
-      const downloadUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${filePathOnTelegram}`;
-      
-      const fileRes = await fetch(downloadUrl);
-      if (!fileRes.ok) return null;
-      const arrayBuffer = await fileRes.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const ext = path.extname(filePathOnTelegram) || path.extname(preferredName) || ".pdf";
-      const cleanName = `${Date.now()}_${preferredName.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
-      const finalFileName = cleanName.endsWith(ext) ? cleanName : `${cleanName}${ext}`;
-      const targetPath = `telegram/${finalFileName}`;
-
-      const { supabase } = await import("@/lib/supabase");
-      
-      const { data: uploadData, error } = await supabase.storage
-        .from('archivos')
-        .upload(targetPath, buffer, {
-          contentType: 'application/octet-stream',
-          upsert: false
-        });
-
-      if (error) {
-        console.error("Error uploading to Supabase:", error);
-        return `https://placehold.co/600x400/1e293b/38bdf8?text=${encodeURIComponent(finalFileName)}`;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('archivos')
-        .getPublicUrl(targetPath);
-
-      return publicUrlData.publicUrl;
+      // Return the direct Telegram download URL — always accessible from the server
+      const directUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${filePathOnTelegram}`;
+      return directUrl;
     }
   } catch (err) {
-    console.error("Error descargando archivo de Telegram:", err);
+    console.error("Error obteniendo archivo de Telegram:", err);
   }
   return null;
 }
+
 
 export async function GET() {
   return NextResponse.json({

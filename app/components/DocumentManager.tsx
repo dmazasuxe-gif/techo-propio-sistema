@@ -139,20 +139,39 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
       
       setIsUploading(tipo);
 
-      // In a real app, you would upload to Supabase storage here and get the public URL.
-      // For this sandbox we simulate it:
-      const fileName = selectedFile.name;
-      const url = URL.createObjectURL(selectedFile);
-
-      const newDoc: DocumentoAdjunto = {
-        id: `DOC-${Date.now()}`,
-        tipo: tipo,
-        nombre: fileName,
-        url,
-        fecha: new Date().toLocaleDateString("es-PE")
-      };
-
       try {
+        // Step 1: Upload file to Supabase Storage via /api/upload
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("subfolder", "documentos");
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        let finalUrl: string;
+        let finalName = selectedFile.name;
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          finalUrl = uploadData.url;
+          finalName = uploadData.fileName || selectedFile.name;
+        } else {
+          // Fallback: use local blob URL (only works in current session)
+          console.warn("Upload to storage failed, using temporary local URL");
+          finalUrl = URL.createObjectURL(selectedFile);
+        }
+
+        const newDoc: DocumentoAdjunto = {
+          id: `DOC-${Date.now()}`,
+          tipo: tipo,
+          nombre: finalName,
+          url: finalUrl,
+          fecha: new Date().toLocaleDateString("es-PE")
+        };
+
+        // Step 2: Save document reference in Supabase DB
         await fetch("/api/beneficiarios/documentos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -161,7 +180,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
         
         setDocumentosLocal(prev => ({
           ...prev,
-          [selectedBeneficiaryId]: [...(prev[selectedBeneficiaryId] || []).filter(d => d.tipo !== tipo), newDoc] // replace if same type
+          [selectedBeneficiaryId]: [...(prev[selectedBeneficiaryId] || []).filter(d => d.tipo !== tipo), newDoc]
         }));
         
         if (onRefresh) onRefresh();
@@ -467,60 +486,77 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
             {/* Document Viewer Body */}
             <div className="w-full h-[60vh] bg-[#030712] rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center overflow-hidden">
               {(() => {
-                let url = previewDoc.url;
-                if (!url || url === "[URL_DE_LA_IMAGEN]" || url.startsWith("/uploads/")) {
-                  url = `data:image/svg+xml;utf8,${encodeURIComponent(`
-                  <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
-                    <rect width="600" height="400" fill="#0f172a" rx="20"/>
-                    <rect x="20" y="20" width="560" height="360" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="15" stroke-dasharray="6,6"/>
-                    <circle cx="300" cy="110" r="40" fill="#0284c7" opacity="0.2"/>
-                    <path d="M285 125L315 125M300 95L300 125" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-                    <text x="300" y="180" font-family="sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">TECHO PROPIO — MAZA QUIROZ</text>
-                    <text x="300" y="210" font-family="sans-serif" font-size="16" font-weight="bold" fill="#f43f5e" text-anchor="middle">ARCHIVO NO DISPONIBLE</text>
-                    <text x="300" y="250" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">El archivo original no pudo ser recuperado de la nube.</text>
-                    <text x="300" y="280" font-family="sans-serif" font-size="13" font-family="monospace" fill="#cbd5e1" text-anchor="middle">${previewDoc.nombre || previewDoc.tipo}</text>
-                    <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Por favor, elimine este registro y vuelva a subirlo manualmente.</text>
-                  </svg>
-                `)}`;
+                const rawUrl = previewDoc.url || "";
+
+                // Detect invalid URLs
+                const isBroken = !rawUrl || rawUrl === "[URL_DE_LA_IMAGEN]" || rawUrl.includes("placehold.co");
+
+                if (isBroken) {
+                  return (
+                    <div className="flex flex-col items-center gap-4 text-slate-400">
+                      <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                        <FileText className="w-10 h-10 text-rose-400" />
+                      </div>
+                      <div>
+                        <p className="text-rose-400 font-bold text-lg">Archivo no disponible</p>
+                        <p className="text-slate-500 text-sm mt-1">El archivo original no pudo ser recuperado.</p>
+                        <p className="text-slate-600 text-xs mt-1">Elimina este registro y vuelve a subirlo.</p>
+                      </div>
+                    </div>
+                  );
                 }
 
-                const isImg = url.startsWith("data:image/") || 
-                              url.match(/\.(jpg|jpeg|png|gif|svg)$/i) || 
-                              (previewDoc.nombre || "").match(/\.(jpg|jpeg|png|gif)$/i);
+                // Convert Telegram direct URLs to our proxy endpoint
+                const telegramMatch = rawUrl.match(/api\.telegram\.org\/file\/bot[^/]+\/(.+)/);
+                const displayUrl = telegramMatch
+                  ? `/api/file-proxy?path=${encodeURIComponent(telegramMatch[1])}`
+                  : rawUrl;
+
+                const isImg =
+                  displayUrl.startsWith("data:image/") ||
+                  displayUrl.match(/\.(jpg|jpeg|png|gif|svg|webp)(\?|$)/i) ||
+                  (previewDoc.nombre || "").match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
+                  telegramMatch !== null; // Telegram photos are usually images
 
                 if (isImg) {
-                  return <img src={url} alt={previewDoc.nombre} className="max-h-full max-w-full object-contain rounded-lg shadow-xl" />;
+                  return (
+                    <img
+                      src={displayUrl}
+                      alt={previewDoc.nombre || "Documento"}
+                      className="max-h-full max-w-full object-contain rounded-lg shadow-xl"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#0f172a"/><text x="200" y="110" font-family="sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">No se pudo cargar la imagen</text></svg>');
+                      }}
+                    />
+                  );
                 }
-                return <iframe src={url} className="w-full h-full rounded-xl border border-slate-800 bg-white" title={previewDoc.nombre} />;
+                return <iframe src={displayUrl} className="w-full h-full rounded-xl border border-slate-800 bg-white" title={previewDoc.nombre || "Documento"} />;
               })()}
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4">
-              <a
-                href={(() => {
-                  let url = previewDoc.url;
-                  if (!url || url === "[URL_DE_LA_IMAGEN]" || url.startsWith("/uploads/")) {
-                    return `data:image/svg+xml;utf8,${encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
-                      <rect width="600" height="400" fill="#0f172a" rx="20"/>
-                      <rect x="20" y="20" width="560" height="360" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="15" stroke-dasharray="6,6"/>
-                      <circle cx="300" cy="110" r="40" fill="#0284c7" opacity="0.2"/>
-                      <path d="M285 125L315 125M300 95L300 125" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
-                      <text x="300" y="180" font-family="sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">TECHO PROPIO — MAZA QUIROZ</text>
-                      <text x="300" y="210" font-family="sans-serif" font-size="16" font-weight="bold" fill="#f43f5e" text-anchor="middle">ARCHIVO NO DISPONIBLE</text>
-                      <text x="300" y="250" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">El archivo original no pudo ser recuperado de la nube.</text>
-                      <text x="300" y="280" font-family="sans-serif" font-size="13" font-family="monospace" fill="#cbd5e1" text-anchor="middle">${previewDoc.nombre || previewDoc.tipo}</text>
-                      <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Por favor, elimine este registro y vuelva a subirlo manualmente.</text>
-                    </svg>
-                    `)}`;
-                  }
-                  return url;
-                })()}
-                download={previewDoc.nombre}
-                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-sky-600/20 transition-all active:scale-95"
-              >
-                <Download className="w-5 h-5" /> Descargar Archivo Original
-              </a>
+              {(() => {
+                const rawUrl = previewDoc.url || "";
+                const isBroken = !rawUrl || rawUrl === "[URL_DE_LA_IMAGEN]" || rawUrl.includes("placehold.co");
+                if (isBroken) return null;
+
+                const telegramMatch = rawUrl.match(/api\.telegram\.org\/file\/bot[^/]+\/(.+)/);
+                const downloadUrl = telegramMatch
+                  ? `/api/file-proxy?path=${encodeURIComponent(telegramMatch[1])}`
+                  : rawUrl;
+
+                return (
+                  <a
+                    href={downloadUrl}
+                    download={previewDoc.nombre || "documento"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-sky-600/20 transition-all active:scale-95"
+                  >
+                    <Download className="w-5 h-5" /> Descargar Archivo Original
+                  </a>
+                );
+              })()}
             </div>
           </div>
         </div>

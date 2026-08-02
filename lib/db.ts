@@ -288,7 +288,26 @@ export async function executeDbOperation(collection: string, action: string, id?
   
   if (action === "actualizar") {
     if (!id) return { success: false, message: "No se envió ID para actualizar." };
-    const { error } = await supabase.from(table).update(convertKeysToSnakeCase(data)).eq('id', id);
+
+    // Sanitize documentos array: ensure all items are proper DocumentoAdjunto objects
+    if (data && Array.isArray(data.documentos)) {
+      data.documentos = data.documentos.map((doc: any, i: number) => {
+        if (typeof doc === "string") {
+          return {
+            id: `DOC-PATCH-${Date.now()}-${i}`,
+            tipo: "Archivo Recuperado",
+            nombre: doc.split("/").pop()?.split("?")[0] || "Archivo.jpg",
+            url: doc,
+            fecha: new Date().toLocaleDateString("es-PE"),
+          };
+        }
+        // Ensure the doc has an id
+        if (!doc.id) doc.id = `DOC-${Date.now()}-${i}`;
+        return doc;
+      });
+    }
+
+    const { error } = await supabase.from(table).update(convertKeysToSnakeCase(data)).eq("id", id);
     if (error) return { success: false, message: `Error: ${error.message}` };
     return { success: true, message: `Registro ${id} actualizado en ${collection}.` };
   }

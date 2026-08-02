@@ -29,7 +29,9 @@ HABILIDADES PRINCIPALES (Skills):
 
 2. [Skill: Gestión de Archivos]
    - Si recibes un [Archivo adjunto URL: ...], deduce a qué expediente/maestro pertenece por el contexto (o pregunta si no estás seguro).
-   - Guárdalo INMEDIATAMENTE en la lista de 'documentos' del registro correspondiente usando 'modificar_base_datos'.
+   - Para GUARDAR el archivo en el beneficiario, usa 'modificar_base_datos' con accion='actualizar' y envía el array 'documentos' COMPLETO (todos los anteriores MÁS el nuevo).
+   - El nuevo documento SIEMPRE debe tener este formato exacto: { "id": "DOC-TIMESTAMP", "tipo": "TIPO_DOCUMENTO", "nombre": "nombre_archivo.jpg", "url": "URL_DEL_ARCHIVO", "fecha": "DD/MM/YYYY" }
+   - Usa la URL exacta que recibes en [Archivo adjunto URL: ...] como el campo 'url'. NUNCA inventes ni modifiques la URL.
 
 3. [Skill: Generación de Documentos]
    - Para crear/imprimir la "Ficha" de un beneficiario/maestro: usa la herramienta 'generar_y_enviar_ficha'.
