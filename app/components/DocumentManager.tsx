@@ -184,7 +184,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
     }));
 
     try {
-      await fetch(`/api/beneficiarios/documentos?beneficiarioId=${selectedBeneficiaryId}&docId=${docId}`, {
+      await fetch(`/api/beneficiarios/documentos?beneficiarioId=${selectedBeneficiaryId}&docId=${encodeURIComponent(docId)}`, {
         method: "DELETE"
       });
       if (onRefresh) onRefresh();
