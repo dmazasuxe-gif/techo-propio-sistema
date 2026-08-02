@@ -4,43 +4,43 @@
     "history": [
       {
         "role": "user",
-        "content": "1. yoar daniel, 2. maza, 3. suxe, 4. 32145687"
+        "content": "quiero que me envies el presupuesto de obra en pdf"
       },
       {
         "role": "assistant",
-        "content": "¡Perfecto! 😊 Ahora, continuemos con los siguientes datos:\n\n5. Fecha de nacimiento:\n6. Celular:\n7. Estado civil:\n8. ¿Tiene cónyuge? (Sí/No):\n\nPor favor, proporciona esta información y seguiremos completando el registro. 🏡"
+        "content": "\n✅ Presupuesto generado y enviado con éxito."
       },
       {
         "role": "user",
-        "content": "naciemiento el 30/09/1998, celular es 987456321, estdo civil soltero y no tiene conyugue"
+        "content": "quiero que me envies cl cronograma de obra en pdf"
       },
       {
         "role": "assistant",
-        "content": "¡Genial! 😊 Ahora necesitamos un poco más de información para completar el registro. Por favor, proporciona:\n\n9. Departamento:\n10. Provincia:\n11. Distrito:\n12. Centro Poblado:\n13. Barrio/Sector:\n14. Calle:\n15. Manzana:\n16. Lote:\n17. Partida Electrónica:\n18. Coordenada X:\n19. Coordenada Y:\n20. Dirección:\n\nCon estos datos, podremos finalizar el registro del beneficiario. 🏡"
+        "content": "\n✅ Cronograma en PDF enviado exitosamente."
       },
       {
         "role": "user",
-        "content": "departamento san martin, provincia moyobamba, distrito jepelacio, sin centro poblado, barrio miraflores, jiron moyobamba, manzana 15, lote 18, partida 117896548, corrdenada X -19.32658"
+        "content": "quiero subir un documento del beneficiario yoar daniel"
       },
       {
         "role": "assistant",
-        "content": "¡Casi terminamos! 😊 Solo falta un par de datos:\n\n21. Coordenada Y:\n22. Licencia de construcción:\n23. Conformidad de obra:\n24. Área total:\n25. Por frente:\n26. Por derecha:\n27. Por izquierda:\n28. Por fondo:\n29. Notas (si hay alguna):\n\nPor favor, proporciona esta información y completaremos el registro del beneficiario. 🏡"
+        "content": "¡Perfecto! 😊 Por favor, adjunta el documento que deseas subir para el beneficiario Yoar Daniel Maza Suxe, y lo guardaré en su expediente. 🗂️"
       },
       {
         "role": "user",
-        "content": "coordenada y -79.3265894, licencia es GMT-12365984, sin conformidad aun, area total es 150m2, por el frente 8m, por la derecha 20m, por la izquierda 20m, por el fondo 8m. notas: el terreno tiene construcion de adobe y sera demolida."
+        "content": "DNI"
       },
       {
         "role": "assistant",
-        "content": "¡Excelente! 😊 Ahora que tengo toda la información, procederé a registrar al beneficiario con los siguientes datos:\n\n- Nombres: Yoar Daniel\n- Apellido Paterno: Maza\n- Apellido Materno: Suxe\n- DNI: 32145687\n- Fecha de Nacimiento: 30/09/1998\n- Celular: 987456321\n- Estado Civil: Soltero\n- Tiene Cónyuge: No\n- Departamento: San Martín\n- Provincia: Moyobamba\n- Distrito: Jepelacio\n- Centro Poblado: Sin\n- Barrio/Sector: Miraflores\n- Calle: Jirón Moyobamba\n- Manzana: 15\n- Lote: 18\n- Partida Electrónica: 117896548\n- Coordenada X: -19.32658\n- Coordenada Y: -79.3265894\n- Dirección: (combinando los datos anteriores)\n- Licencia de Construcción: GMT-12365984\n- Conformidad de Obra: Sin\n- Área Total: 150 m²\n- Por Frente: 8 m\n- Por Derecha: 20 m\n- Por Izquierda: 20 m\n- Por Fondo: 8 m\n- Notas: El terreno tiene construcción de adobe y será demolida.\n\nVoy a proceder a registrar esta información. 🏡✨\n\n⚠️ <b>Atención:</b> Error: Could not find the 'codigo_catastral' column of 'beneficiarios' in the schema cache"
+        "content": "Parece que necesitas registrar el DNI del beneficiario. Sin embargo, ya tengo el DNI de Yoar Daniel Maza Suxe, que es 32145687. \n\nSi deseas subir un documento, por favor adjunta el archivo correspondiente. ¡Estoy aquí para ayudarte! 📄✨"
       },
       {
         "role": "user",
-        "content": "buelve a registrar a ese mismo beneficiario"
+        "content": "guarda esta imagen como su dni de yoar daniel"
       },
       {
         "role": "assistant",
-        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro creado exitosamente en beneficiarios con ID: beneficiario_1"
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro beneficiario_1 actualizado en beneficiarios."
       }
     ]
   }

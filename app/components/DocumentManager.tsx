@@ -339,7 +339,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div className={`p-3 rounded-xl flex-shrink-0 ${doc ? "bg-sky-500/10 text-sky-400" : "bg-slate-800 text-slate-500"}`}>
                         {doc ? (
-                          (doc.nombre.endsWith(".jpg") || doc.nombre.endsWith(".png")) ? <ImageIcon className="w-6 h-6" /> : <FileText className="w-6 h-6" />
+                          ((doc.nombre || "").toLowerCase().endsWith(".jpg") || (doc.nombre || "").toLowerCase().endsWith(".png")) ? <ImageIcon className="w-6 h-6" /> : <FileText className="w-6 h-6" />
                         ) : (
                           <FolderOpen className="w-6 h-6" />
                         )}
@@ -350,8 +350,8 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                         </h3>
                         {doc ? (
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                            <span className="text-xs text-sky-400 font-medium truncate" title={doc.nombre}>
-                              {doc.nombre}
+                            <span className="text-xs text-sky-400 font-medium truncate" title={doc.nombre || "Documento"}>
+                              {doc.nombre || "Documento sin nombre"}
                             </span>
                             <span className="hidden sm:inline text-slate-600 text-[10px]">•</span>
                             <span className="text-[10px] font-mono text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
@@ -483,7 +483,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
 
                 const isImg = url.startsWith("data:image/") || 
                               url.match(/\.(jpg|jpeg|png|gif|svg)$/i) || 
-                              previewDoc.nombre.match(/\.(jpg|jpeg|png|gif)$/i);
+                              (previewDoc.nombre || "").match(/\.(jpg|jpeg|png|gif)$/i);
 
                 if (isImg) {
                   return <img src={url} alt={previewDoc.nombre} className="max-h-full max-w-full object-contain rounded-lg shadow-xl" />;
