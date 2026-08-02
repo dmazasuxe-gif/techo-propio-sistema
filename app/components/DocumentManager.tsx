@@ -467,19 +467,22 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
             {/* Document Viewer Body */}
             <div className="w-full h-[60vh] bg-[#030712] rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center overflow-hidden">
               {(() => {
-                const url = previewDoc.url || `data:image/svg+xml;utf8,${encodeURIComponent(`
+                let url = previewDoc.url;
+                if (!url || url === "[URL_DE_LA_IMAGEN]" || url.startsWith("/uploads/")) {
+                  url = `data:image/svg+xml;utf8,${encodeURIComponent(`
                   <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
                     <rect width="600" height="400" fill="#0f172a" rx="20"/>
                     <rect x="20" y="20" width="560" height="360" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="15" stroke-dasharray="6,6"/>
                     <circle cx="300" cy="110" r="40" fill="#0284c7" opacity="0.2"/>
                     <path d="M285 125L315 125M300 95L300 125" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
                     <text x="300" y="180" font-family="sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">TECHO PROPIO — MAZA QUIROZ</text>
-                    <text x="300" y="210" font-family="sans-serif" font-size="16" font-weight="bold" fill="#38bdf8" text-anchor="middle">${previewDoc.tipo.toUpperCase()}</text>
-                    <text x="300" y="250" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">Beneficiario: ${selectedBeneficiary?.postulante || "Beneficiario Registrado"}</text>
-                    <text x="300" y="280" font-family="sans-serif" font-size="13" font-family="monospace" fill="#cbd5e1" text-anchor="middle">${previewDoc.nombre}</text>
-                    <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Documento Digital Oficial Verificado en Sistema</text>
+                    <text x="300" y="210" font-family="sans-serif" font-size="16" font-weight="bold" fill="#f43f5e" text-anchor="middle">ARCHIVO NO DISPONIBLE</text>
+                    <text x="300" y="250" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">El archivo original no pudo ser recuperado de la nube.</text>
+                    <text x="300" y="280" font-family="sans-serif" font-size="13" font-family="monospace" fill="#cbd5e1" text-anchor="middle">${previewDoc.nombre || previewDoc.tipo}</text>
+                    <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Por favor, elimine este registro y vuelva a subirlo manualmente.</text>
                   </svg>
                 `)}`;
+                }
 
                 const isImg = url.startsWith("data:image/") || 
                               url.match(/\.(jpg|jpeg|png|gif|svg)$/i) || 
@@ -494,21 +497,25 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
 
             <div className="flex items-center justify-end gap-3 pt-4">
               <a
-                href={
-                  previewDoc.url || `data:image/svg+xml;utf8,${encodeURIComponent(`
+                href={(() => {
+                  let url = previewDoc.url;
+                  if (!url || url === "[URL_DE_LA_IMAGEN]" || url.startsWith("/uploads/")) {
+                    return `data:image/svg+xml;utf8,${encodeURIComponent(`
                     <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
                       <rect width="600" height="400" fill="#0f172a" rx="20"/>
                       <rect x="20" y="20" width="560" height="360" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="15" stroke-dasharray="6,6"/>
                       <circle cx="300" cy="110" r="40" fill="#0284c7" opacity="0.2"/>
                       <path d="M285 125L315 125M300 95L300 125" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
                       <text x="300" y="180" font-family="sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">TECHO PROPIO — MAZA QUIROZ</text>
-                      <text x="300" y="210" font-family="sans-serif" font-size="16" font-weight="bold" fill="#38bdf8" text-anchor="middle">${previewDoc.tipo.toUpperCase()}</text>
-                      <text x="300" y="250" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">Beneficiario: ${selectedBeneficiary?.postulante || "Beneficiario Registrado"}</text>
-                      <text x="300" y="280" font-family="sans-serif" font-size="13" font-family="monospace" fill="#cbd5e1" text-anchor="middle">${previewDoc.nombre}</text>
-                      <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Documento Digital Oficial Verificado en Sistema</text>
+                      <text x="300" y="210" font-family="sans-serif" font-size="16" font-weight="bold" fill="#f43f5e" text-anchor="middle">ARCHIVO NO DISPONIBLE</text>
+                      <text x="300" y="250" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">El archivo original no pudo ser recuperado de la nube.</text>
+                      <text x="300" y="280" font-family="sans-serif" font-size="13" font-family="monospace" fill="#cbd5e1" text-anchor="middle">${previewDoc.nombre || previewDoc.tipo}</text>
+                      <text x="300" y="320" font-family="sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Por favor, elimine este registro y vuelva a subirlo manualmente.</text>
                     </svg>
-                  `)}`
-                }
+                    `)}`;
+                  }
+                  return url;
+                })()}
                 download={previewDoc.nombre}
                 className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-sky-600/20 transition-all active:scale-95"
               >

@@ -4,23 +4,31 @@
     "history": [
       {
         "role": "user",
-        "content": "quiero que me envies el presupuesto de obra en pdf"
+        "content": "GUARDALO COMO DNI POSTULANTE [Archivo adjunto: https://placehold.co/600x400/1e293b/38bdf8?text=1785697783073_Fotografia.jpg]"
       },
       {
         "role": "assistant",
-        "content": "\n✅ Presupuesto generado y enviado con éxito."
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro beneficiario_1 actualizado en beneficiarios."
       },
       {
         "role": "user",
-        "content": "quiero que me envies cl cronograma de obra en pdf"
+        "content": "quiero que registres a este beneficiario - Nombres: Yoar Daniel\n- Apellido Paterno: Maza\n- Apellido Materno: Suxe\n- DNI: 32145687\n- Fecha de Nacimiento: 30/09/1998\n- Celular: 987456321\n- Estado Civil: Soltero\n- Tiene Cónyuge: No\n- Departamento: San Martín\n- Provincia: Moyobamba\n- Distrito: Jepelacio\n- Centro Poblado: Sin\n- Barrio/Sector: Miraflores\n- Calle: Jirón Moyobamba\n- Manzana: 15\n- Lote: 18\n- Partida Electrónica: 117896548\n- Coordenada X: -19.32658\n- Coordenada Y: -79.3265894\n- Dirección: (combinando los datos anteriores)\n- Licencia de Construcción: GMT-12365984\n- Conformidad de Obra: Sin\n- Área Total: 150 m²\n- Por Frente: 8 m\n- Por Derecha: 20 m\n- Por Izquierda: 20 m\n- Por Fondo: 8 m\n- Notas: El terreno tiene construcción de adobe y será demolida."
       },
       {
         "role": "assistant",
-        "content": "\n✅ Cronograma en PDF enviado exitosamente."
+        "content": "¡Genial! 😊 Vamos a registrar al beneficiario Yoar Daniel Maza Suxe. Solo necesito que me indiques el estado del expediente. Por favor, elige uno de los siguientes estados:\n\n1. Expediente en Revisión\n2. Expediente Inscrito\n3. Expediente Elegible\n4. Expediente No Elegible\n5. Expediente con Código de Proyecto\n6. Expediente Aprobado\n\nUna vez que me des esa información, procederé a registrar todos los datos. 📝✨"
       },
       {
         "role": "user",
-        "content": "quiero subir un documento del beneficiario yoar daniel"
+        "content": "1"
+      },
+      {
+        "role": "assistant",
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro creado exitosamente en beneficiarios con ID: beneficiario_1"
+      },
+      {
+        "role": "user",
+        "content": "ahora quiero que subas un documento de ese mismo beneficiario"
       },
       {
         "role": "assistant",
@@ -28,15 +36,7 @@
       },
       {
         "role": "user",
-        "content": "DNI"
-      },
-      {
-        "role": "assistant",
-        "content": "Parece que necesitas registrar el DNI del beneficiario. Sin embargo, ya tengo el DNI de Yoar Daniel Maza Suxe, que es 32145687. \n\nSi deseas subir un documento, por favor adjunta el archivo correspondiente. ¡Estoy aquí para ayudarte! 📄✨"
-      },
-      {
-        "role": "user",
-        "content": "guarda esta imagen como su dni de yoar daniel"
+        "content": "guardalo con nombre de DNI DEL POSTULANTE [Archivo adjunto: https://placehold.co/600x400/1e293b/38bdf8?text=1785698059271_Fotografia.jpg]"
       },
       {
         "role": "assistant",
