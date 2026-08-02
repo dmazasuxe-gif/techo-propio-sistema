@@ -258,6 +258,16 @@ export async function executeDbOperation(collection: string, action: string, id?
     }
 
     if (table === 'beneficiarios') {
+      const normalizeStr = (s?: string) => s ? s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+      
+      data.departamento = normalizeStr(data.departamento);
+      data.provincia = normalizeStr(data.provincia);
+      data.distrito = normalizeStr(data.distrito);
+
+      if (!data.expediente) {
+        data.expediente = data.departamento || "GENERAL";
+      }
+      
       if (!data.postulante) {
         data.postulante = `${data.nombres || ""} ${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim();
       }

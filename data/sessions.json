@@ -4,14 +4,6 @@
     "history": [
       {
         "role": "user",
-        "content": "vamos hacer un nuevo registro de beneficiario"
-      },
-      {
-        "role": "assistant",
-        "content": "¡Claro! 😊 Para registrar un nuevo beneficiario, necesito que me proporciones algunos datos. Comencemos con los siguientes:\n\n1. Nombres:\n2. Apellido Paterno:\n3. Apellido Materno:\n4. DNI del postulante:\n\nPor favor, proporciona esta información y continuaremos con el registro. 🏡"
-      },
-      {
-        "role": "user",
         "content": "1. yoar daniel, 2. maza, 3. suxe, 4. 32145687"
       },
       {
@@ -41,6 +33,14 @@
       {
         "role": "assistant",
         "content": "¡Excelente! 😊 Ahora que tengo toda la información, procederé a registrar al beneficiario con los siguientes datos:\n\n- Nombres: Yoar Daniel\n- Apellido Paterno: Maza\n- Apellido Materno: Suxe\n- DNI: 32145687\n- Fecha de Nacimiento: 30/09/1998\n- Celular: 987456321\n- Estado Civil: Soltero\n- Tiene Cónyuge: No\n- Departamento: San Martín\n- Provincia: Moyobamba\n- Distrito: Jepelacio\n- Centro Poblado: Sin\n- Barrio/Sector: Miraflores\n- Calle: Jirón Moyobamba\n- Manzana: 15\n- Lote: 18\n- Partida Electrónica: 117896548\n- Coordenada X: -19.32658\n- Coordenada Y: -79.3265894\n- Dirección: (combinando los datos anteriores)\n- Licencia de Construcción: GMT-12365984\n- Conformidad de Obra: Sin\n- Área Total: 150 m²\n- Por Frente: 8 m\n- Por Derecha: 20 m\n- Por Izquierda: 20 m\n- Por Fondo: 8 m\n- Notas: El terreno tiene construcción de adobe y será demolida.\n\nVoy a proceder a registrar esta información. 🏡✨\n\n⚠️ <b>Atención:</b> Error: Could not find the 'codigo_catastral' column of 'beneficiarios' in the schema cache"
+      },
+      {
+        "role": "user",
+        "content": "buelve a registrar a ese mismo beneficiario"
+      },
+      {
+        "role": "assistant",
+        "content": "\n\n✅ <b>Operación Autónoma Ejecutada:</b> Registro creado exitosamente en beneficiarios con ID: beneficiario_1"
       }
     ]
   }
