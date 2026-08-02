@@ -61,7 +61,6 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
       coordenadaX: "",
       coordenadaY: "",
       direccion: "",
-      codigoCatastral: "",
       fechaNacimiento: "",
       fechaNacimientoConyuge: "",
       areaTotal: "",

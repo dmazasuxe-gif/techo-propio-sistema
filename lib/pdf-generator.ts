@@ -139,7 +139,7 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
         <div class="field"><label>Partida Registral SUNARP</label><value>${(form as any).partidaElectronica || "—"}</value></div>
       </div>
       <div class="grid-3">
-        <div class="field mono"><label>N° Licencia de Construcción</label><value>${(form as any).licenciaConstruccion || form.codigoCatastral || "—"}</value></div>
+        <div class="field mono"><label>N° Licencia de Construcción</label><value>${(form as any).licenciaConstruccion || "—"}</value></div>
         <div class="field mono"><label>N° Conformidad de Obra</label><value>${(form as any).conformidadObra || "—"}</value></div>
         <div class="field mono"><label>Coordenadas (X / Y)</label><value>${form.coordenadaX || "—"} / ${form.coordenadaY || "—"}</value></div>
       </div>

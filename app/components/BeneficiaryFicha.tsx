@@ -234,7 +234,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
       <div class="grid-3">
         <div class="field mono">
           <label>N° Licencia de Construcción</label>
-          <value>${(form as any).licenciaConstruccion || form.codigoCatastral || "—"}</value>
+          <value>${(form as any).licenciaConstruccion || "—"}</value>
         </div>
         <div class="field mono">
           <label>N° Conformidad de Obra</label>
