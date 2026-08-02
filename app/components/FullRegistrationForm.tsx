@@ -139,8 +139,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
     const finalData: Beneficiario = {
       ...form,
       postulante: fullPostulante,
-      direccion: finalDir,
-      codigoCatastral: form.codigoCatastral || `${Math.floor(10000000000000 + Math.random() * 90000000000000)}`
+      direccion: finalDir
     };
 
     onSave(finalData);

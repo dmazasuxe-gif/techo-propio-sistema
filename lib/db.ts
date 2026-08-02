@@ -265,9 +265,6 @@ export async function executeDbOperation(collection: string, action: string, id?
         const fullDir = `${data.calle || ""} Mz ${data.manzana || ""} Lt ${data.lote || ""}`.trim();
         data.direccion = fullDir || `Distrito de ${data.distrito || ""}`;
       }
-      if (!data.codigoCatastral) {
-        data.codigoCatastral = `${Math.floor(10000000000000 + Math.random() * 90000000000000)}`;
-      }
     }
 
     const { error } = await supabase.from(table).insert(convertKeysToSnakeCase(data));

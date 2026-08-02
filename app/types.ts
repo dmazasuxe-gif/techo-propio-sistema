@@ -72,7 +72,6 @@ export interface Beneficiario {
   coordenadaX?: string;
   coordenadaY?: string;
   direccion: string;
-  codigoCatastral: string;
   licenciaConstruccion?: string;  // N° Licencia de Construcción
   conformidadObra?: string;       // N° Conformidad de Obra
 
