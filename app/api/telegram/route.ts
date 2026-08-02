@@ -55,6 +55,7 @@ export async function GET() {
   return NextResponse.json({
     status: "online",
     botTokenConfigured: Boolean(TELEGRAM_TOKEN),
+    openAiKeyConfigured: Boolean(process.env.OPENAI_API_KEY),
     info: "Telegram Bot NLU Engine — Techo Propio Maza Quiroz",
   });
 }
