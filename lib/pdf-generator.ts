@@ -1,7 +1,24 @@
 import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
 import { Beneficiario, MaestroObra } from '../app/types';
+
+async function getBrowser() {
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    const puppeteerCore = await import('puppeteer-core');
+    return await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
+    return await puppeteer.launch({ 
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
+    });
+  }
+}
 import { getDb } from './db';
 
 const UPLOADS_DIR = process.env.VERCEL 
@@ -190,7 +207,7 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
 </html>`;
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const page = await browser.newPage();
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '18mm', bottom: '18mm', left: '15mm', right: '15mm' } });
@@ -329,7 +346,7 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
 </html>`;
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const page = await browser.newPage();
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
@@ -498,7 +515,7 @@ export async function generarPresupuestoPDFFromData(data: PresupuestoData): Prom
 </html>`;
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const page = await browser.newPage();
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' } });
@@ -614,7 +631,7 @@ export async function generarCronogramaObraPDF(): Promise<string | null> {
 </html>`;
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await getBrowser();
     const page = await browser.newPage();
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
