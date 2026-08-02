@@ -152,7 +152,7 @@ export async function deleteDocumentoFromBeneficiario(beneficiarioId: string, do
   if (fetchError || !ben) return null;
 
   const currentDocs = ben.documentos || [];
-  const updatedDocs = currentDocs.filter((d: any) => d.id !== docId);
+  const updatedDocs = currentDocs.filter((d: any) => d.id !== docId && d.url !== docId && d.tipo !== docId);
 
   const { data, error } = await supabase
     .from('beneficiarios')

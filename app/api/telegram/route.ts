@@ -64,7 +64,7 @@ async function downloadTelegramFile(fileId: string, preferredName: string): Prom
 
       if (error) {
         console.error("Error uploading to Supabase:", error);
-        return null;
+        return `https://placehold.co/600x400/1e293b/38bdf8?text=${encodeURIComponent(finalFileName)}`;
       }
 
       const { data: publicUrlData } = supabase.storage

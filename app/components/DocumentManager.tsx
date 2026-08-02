@@ -408,7 +408,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                           )}
                           
                           <button
-                            onClick={() => handleDeleteDoc(doc.id)}
+                            onClick={() => handleDeleteDoc(doc.id || doc.url || doc.tipo)}
                             className="p-2 bg-slate-950 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-xl border border-slate-700 transition"
                             title="Eliminar Archivo"
                           >
