@@ -127,67 +127,151 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
     setCustomItems(customItems.filter(item => item.id !== id));
   };
 
-  const handleExportToPDF = async () => {
+  const handleExportToPDF = () => {
     setIsExporting(true);
-    try {
-      const allItems = [
-        ...basePresupuestoItems.map(item => ({
-          item: item.item,
-          descripcion: item.descripcion,
-          unidad: item.unidad,
-          metrado: item.metrado,
-          unitario: item.unitario,
-          parcial: item.parcial,
-          isCustom: false,
-        })),
-        ...customItems.map(item => ({
-          item: item.item,
-          descripcion: item.descripcion,
-          unidad: item.unidad,
-          metrado: item.metrado,
-          unitario: item.unitario,
-          parcial: item.parcial,
-          isCustom: true,
-        })),
-      ];
-
-      const payload = {
-        items: allItems,
-        costoDirecto,
-        gastosPct,
-        utilidadPct,
-        gastosGenerales,
-        utilidad,
-        subTotalSinIgv,
-        igvPct,
-        igvMonto,
-        presupuestoTotal,
-        isSelvaExempt,
-      };
-
-      const res = await fetch("/api/presupuesto/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error("Error generando PDF");
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Presupuesto_TechoPropio_${new Date().toISOString().slice(0, 10)}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Error exporting PDF:", err);
-      alert("Error al generar el PDF del presupuesto.");
-    } finally {
+    
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+      alert("Por favor permite ventanas emergentes para descargar el PDF.");
       setIsExporting(false);
+      return;
     }
+
+    const allItems = [
+      ...basePresupuestoItems.map(item => ({ ...item, isCustom: false })),
+      ...customItems.map(item => ({ ...item, isCustom: true })),
+    ];
+
+    const fmt = (n: number) => n.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const itemsHtml = allItems.map((item, idx) => `
+      <tr class="${idx % 2 === 0 ? '' : 'alt-row'}">
+        <td class="code-col">${item.item}</td>
+        <td class="desc-col">${item.descripcion}${item.isCustom ? ' <span class="custom-badge">Personalizado</span>' : ''}</td>
+        <td class="center-col">${item.unidad}</td>
+        <td class="num-col">${item.metrado.toFixed(2)}</td>
+        <td class="num-col">${item.unitario.toFixed(2)}</td>
+        <td class="num-col total-col">${item.parcial.toFixed(2)}</td>
+      </tr>
+    `).join("");
+
+    const printContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Presupuesto de Obra</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 15mm 12mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1e293b; font-size: 10px; }
+    
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fff; padding: 18px 22px; border-radius: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .header-title h1 { font-size: 16px; font-weight: 900; margin-bottom: 2px; letter-spacing: -0.3px; }
+    .header-title p { font-size: 9px; opacity: 0.7; }
+    .header-right { text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+    .selva-badge { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.4); color: #86efac; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    thead th { background: #0f172a; color: #e2e8f0; padding: 7px 8px; font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800; border-bottom: 2px solid #334155; text-align: left; }
+    tbody td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
+    .alt-row { background: #f8fafc; }
+    .code-col { font-weight: 700; color: #3b82f6; font-family: monospace; width: 55px; }
+    .desc-col { font-weight: 600; color: #1e293b; }
+    .center-col { text-align: center; color: #64748b; width: 50px; }
+    .num-col { text-align: right; font-family: monospace; font-weight: 600; color: #334155; width: 85px; }
+    .total-col { color: #059669; font-weight: 700; text-align: right; }
+    .custom-badge { background: rgba(56,189,248,0.15); color: #0284c7; font-size: 7px; font-weight: 700; padding: 1px 4px; border-radius: 3px; margin-left: 4px; }
+    
+    .summary-box { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 7px 14px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row.highlight { background: #f0fdf4; }
+    .summary-row.total { background: #0f172a; color: #fff; font-size: 12px; font-weight: 900; }
+    .summary-row .label { color: #475569; font-weight: 600; }
+    .summary-row .value { font-family: monospace; font-weight: 700; color: #1e293b; }
+    .summary-row.total .value { color: #34d399; font-size: 13px; }
+    
+    .footer { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-left { font-size: 8px; color: #94a3b8; }
+    
+    .watermark { position: fixed; bottom: 30mm; left: 50%; transform: translateX(-50%); font-size: 55px; color: rgba(15,23,42,0.03); font-weight: 900; white-space: nowrap; pointer-events: none; z-index: 0; }
+  </style>
+</head>
+<body>
+  <div class="watermark">TECHO PROPIO</div>
+  
+  <div class="header">
+    <div class="header-title">
+      <h1>📊 Presupuesto Detallado de Obra</h1>
+      <p>Programa Construcción en Sitio Propio (CSP) — Constructora Maza Quiroz</p>
+    </div>
+    <div class="header-right">
+      ${isSelvaExempt ? '<div class="selva-badge">🌿 Ley Selva 27037 — IGV 0%</div>' : ''}
+      <span style="font-size:8px;opacity:0.6">Emitido: ${new Date().toLocaleDateString("es-PE")}</span>
+    </div>
+  </div>
+  
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Item</th>
+        <th style="text-align:left">Descripción de Partida / Producto</th>
+        <th style="text-align:center">Und</th>
+        <th style="text-align:right">Metrado</th>
+        <th style="text-align:right">P. Unit (S/)</th>
+        <th style="text-align:right">Parcial (S/)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemsHtml}
+    </tbody>
+  </table>
+
+  <div class="summary-box" style="page-break-inside: avoid;">
+    <div class="summary-row">
+      <span class="label">Costo Directo</span>
+      <span class="value">S/ ${fmt(costoDirecto)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Gastos Generales (${gastosPct}%)</span>
+      <span class="value">S/ ${fmt(gastosGenerales)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Utilidad (${utilidadPct}%)</span>
+      <span class="value">S/ ${fmt(utilidad)}</span>
+    </div>
+    <div class="summary-row highlight">
+      <span class="label">SUBTOTAL PRESUPUESTO BASE</span>
+      <span class="value" style="color: #059669;">S/ ${fmt(subTotalSinIgv)}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">IGV (${igvPct}%) ${isSelvaExempt ? '<span style="color:#22c55e;font-size:8px;padding-left:4px">(Exonerado)</span>' : ''}</span>
+      <span class="value">S/ ${fmt(igvMonto)}</span>
+    </div>
+    <div class="summary-row total">
+      <span class="label">PRESUPUESTO TOTAL (Referencial)</span>
+      <span class="value">S/ ${fmt(presupuestoTotal)}</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">Sistema Techo Propio — Constructora Maza Quiroz &nbsp;|&nbsp; Generado el ${new Date().toLocaleString("es-PE")}</div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>`;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    setIsExporting(false);
   };
 
   return (

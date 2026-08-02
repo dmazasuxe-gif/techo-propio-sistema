@@ -59,14 +59,113 @@ export default function CronogramaObra() {
     tareas.reduce((acc, t) => acc + t.avancePct, 0) / tareas.length
   );
 
-  return (
-    <div className="max-w-6xl mx-auto animate-in fade-in duration-300">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+  const handleDownloadPDF = () => {
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+      alert("Por favor permite ventanas emergentes para descargar el PDF.");
+      return;
+    }
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-md">
+    const itemsHtml = tareas.map(t => {
+      const avance = t.avancePct || 0;
+      const bgClass = avance === 100 ? 'bg-emerald' : (avance > 0 ? 'bg-sky' : 'bg-slate');
+      return `
+        <div class="task-card">
+          <div class="task-header">
+            <div class="task-info">
+              <span class="actividad">${t.actividad}</span>
+              <span class="responsable">Responsable: ${t.responsable}</span>
+            </div>
+            <div class="task-pct">${avance}%</div>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill ${bgClass}" style="width: ${avance}%"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const printContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Cronograma de Ejecución de Obra</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 15mm 12mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1e293b; font-size: 11px; }
+    
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fff; padding: 18px 22px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .header-title h1 { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+    .header-title p { font-size: 10px; opacity: 0.7; }
+    
+    .global-progress { background: #0f172a; border: 1px solid #1e3a5f; padding: 10px 16px; border-radius: 12px; text-align: right; }
+    .global-progress .label { font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: block; }
+    .global-progress .value { font-size: 16px; font-weight: 900; color: #38bdf8; font-family: monospace; }
+    
+    .task-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .task-info { display: flex; flex-direction: column; gap: 2px; }
+    .actividad { font-size: 12px; font-weight: 800; color: #0f172a; }
+    .responsable { font-size: 10px; color: #64748b; font-weight: 600; }
+    
+    .task-pct { background: rgba(56,189,248,0.15); color: #0284c7; border: 1px solid rgba(56,189,248,0.3); font-weight: 800; font-family: monospace; font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+    
+    .progress-bar-bg { width: 100%; background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 999px; }
+    .bg-emerald { background: #10b981; }
+    .bg-sky { background: #38bdf8; }
+    .bg-slate { background: #cbd5e1; }
+    
+    .footer { margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <h1>⏳ Cronograma de Ejecución de Obra</h1>
+      <p>Reporte de Avance Físico General</p>
+    </div>
+    <div class="global-progress">
+      <span class="label">Avance Global</span>
+      <span class="value">${avanceTotalObra}% COMPLETADO</span>
+    </div>
+  </div>
+  
+  <div class="tasks">
+    ${itemsHtml}
+  </div>
+
+  <div class="footer">
+    <div>Sistema Techo Propio — Constructora Maza Quiroz</div>
+    <div>Generado el ${new Date().toLocaleString("es-PE")}</div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>`;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-300">
+      
+      {/* HEADER SECTION */}
+      <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity" />
+        
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-md">
               <Hourglass className="w-6 h-6" />
             </div>
             <div>
@@ -81,7 +180,7 @@ export default function CronogramaObra() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => window.open('/api/obras/cronograma/pdf', '_blank')}
+              onClick={handleDownloadPDF}
               className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold rounded-xl text-sm transition-colors"
             >
               Generar PDF
