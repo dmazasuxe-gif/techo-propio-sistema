@@ -113,14 +113,21 @@ REGLAS CRÍTICAS:
                 const { generarFichaMaestroPDF } = await import('./pdf-generator');
                 pdfPath = await generarFichaMaestroPDF(id);
               }
-              if (pdfPath) {
-                const { sendDocumentToTelegram } = await import('./telegram-sender');
-                const sent = await sendDocumentToTelegram(chatId, pdfPath, `Aquí tienes la ficha de ${tipo} solicitada.`);
-                return sent ? { mensaje: "Ficha generada y enviada al usuario con éxito." } : { error: "Error enviando PDF a Telegram" };
+              
+              if (!pdfPath) {
+                return { error: `Encontré la intención de generar la ficha, pero no logré ubicar el registro exacto de "${id}" (tipo: ${tipo}) en la base de datos o le faltan datos críticos para el PDF.` };
               }
-              return { error: "No se encontró el registro para generar ficha" };
-            } catch (e) {
-              return { error: "Error interno generando PDF" };
+
+              const { sendDocumentToTelegram } = await import('./telegram-sender');
+              const sent = await sendDocumentToTelegram(chatId, pdfPath, `Aquí tienes la ficha de ${tipo} solicitada.`);
+              
+              if (sent) {
+                return { mensaje: "Ficha generada, guardada en Supabase Storage y enviada al usuario con éxito." };
+              } else {
+                return { error: `El PDF fue generado y guardado correctamente (ruta: ${pdfPath}), pero Telegram rechazó el envío del archivo.` };
+              }
+            } catch (e: any) {
+              return { error: `Error crítico de código al intentar generar el PDF: ${e.message}` };
             }
           }
         }),
