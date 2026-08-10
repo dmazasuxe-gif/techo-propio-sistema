@@ -120,17 +120,24 @@ export const actualizarMaestro = tool({
 // TOOL 6: Asignar beneficiario a maestro — CON ENTITY RESOLUTION CENTRALIZADA
 export const asignarBeneficiarioAMaestro = tool({
   description: 'Asigna un beneficiario a un maestro. Acepta nombres, DNIs o IDs — la herramienta resuelve las entidades automáticamente. IMPORTANTE: Ejecuta esta herramienta DIRECTAMENTE y DE INMEDIATO cuando el usuario pida asignar algo. NUNCA pidas permiso o confirmación. NUNCA respondas que no están asignados; simplemente haz la asignación. Solo pregunta si falta el nombre de una de las dos partes.',
-  parameters: z.object({
-    beneficiario: z.string().describe('Nombre COMPLETO, DNI o ID del beneficiario a asignar'),
-    maestro: z.string().describe('Nombre COMPLETO, DNI o ID del maestro de obra')
-  }),
+  parameters: z.any(),
   // @ts-ignore
   execute: async (args: any) => {
-    const beneficiarioQuery = args.beneficiario || args.beneficiarioQuery;
-    const maestroQuery = args.maestro || args.maestroQuery;
+    try {
+      const { supabase } = await import("./supabase");
+      await supabase.from("ai_logs").insert({
+        action: "DEBUG_ASSIGN_TOOL",
+        table_name: "DEBUG",
+        details: { raw_args: args },
+        status: "info"
+      });
+    } catch(e) {}
+
+    const beneficiarioQuery = args?.beneficiario || args?.beneficiarioQuery || args?.beneficiario_id || "";
+    const maestroQuery = args?.maestro || args?.maestroQuery || args?.maestro_id || "";
     
     if (!beneficiarioQuery || !maestroQuery) {
-      return { status: "error", error: "Faltan datos. Necesitas proporcionar tanto el nombre del beneficiario como el nombre del maestro." };
+      return { status: "error", error: "Faltan datos. Parámetros recibidos por la IA: " + JSON.stringify(args) };
     }
 
     console.log(`[TOOL:asignar] INPUT: beneficiario="${beneficiarioQuery}", maestro="${maestroQuery}"`);
