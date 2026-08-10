@@ -121,11 +121,13 @@ export const actualizarMaestro = tool({
 export const asignarBeneficiarioAMaestro = tool({
   description: 'Asigna un beneficiario a un maestro. Acepta nombres, DNIs o IDs — la herramienta resuelve las entidades automáticamente. IMPORTANTE: Ejecuta esta herramienta DIRECTAMENTE y DE INMEDIATO cuando el usuario pida asignar algo. NUNCA pidas permiso o confirmación. NUNCA respondas que no están asignados; simplemente haz la asignación. Solo pregunta si falta el nombre de una de las dos partes.',
   parameters: z.object({
-    beneficiarioQuery: z.string().describe('Nombre, DNI o ID del beneficiario a asignar'),
-    maestroQuery: z.string().describe('Nombre, DNI o ID del maestro')
+    beneficiario: z.string().describe('Nombre COMPLETO, DNI o ID del beneficiario a asignar'),
+    maestro: z.string().describe('Nombre COMPLETO, DNI o ID del maestro de obra')
   }),
   // @ts-ignore
-  execute: async ({ beneficiarioQuery, maestroQuery }: any) => {
+  execute: async ({ beneficiario, maestro }: any) => {
+    const beneficiarioQuery = beneficiario;
+    const maestroQuery = maestro;
     console.log(`[TOOL:asignar] INPUT: beneficiario="${beneficiarioQuery}", maestro="${maestroQuery}"`);
 
     // PASO 1: Resolver beneficiario usando capa centralizada
