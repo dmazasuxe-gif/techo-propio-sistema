@@ -44,6 +44,7 @@ REGLAS CRÍTICAS:
 - Eres capaz de reintentar si te equivocas.
 - Responde siempre verificando que la acción se realizó.`;
 
+    // @ts-ignore
     const result = await (generateText as any)({
       model: openai("gpt-4o-mini"),
       system: systemPrompt,
@@ -63,6 +64,7 @@ REGLAS CRÍTICAS:
             tipoDocumento: z.string().describe("DNI, Titulo de Propiedad, Fotografia, etc."),
             url: z.string()
           }),
+          // @ts-ignore
           execute: async ({ beneficiarioId, tipoDocumento, url }: any) => {
             const doc = {
               id: `DOC-${Date.now()}`,
@@ -87,6 +89,7 @@ REGLAS CRÍTICAS:
             id: z.string().describe("El ID del beneficiario o maestro"),
             tipo: z.enum(['beneficiario', 'maestro'])
           }),
+          // @ts-ignore
           execute: async ({ id, tipo }: any) => {
             try {
               let pdfPath: string | null = null;
@@ -115,6 +118,7 @@ REGLAS CRÍTICAS:
             url_o_ruta: z.string(),
             mensaje: z.string().optional()
           }),
+          // @ts-ignore
           execute: async ({ url_o_ruta, mensaje }: any) => {
             try {
               const { sendDocumentToTelegram } = require('./telegram-sender');
@@ -129,6 +133,7 @@ REGLAS CRÍTICAS:
         generar_y_enviar_cronograma: tool({
           description: "Genera un PDF del Cronograma de Obra General (Gantt Interactivo) y lo envía al chat.",
           parameters: z.object({}),
+          // @ts-ignore
           execute: async () => {
             try {
               const { generarCronogramaObraPDF } = await import('./pdf-generator');
@@ -148,6 +153,7 @@ REGLAS CRÍTICAS:
           parameters: z.object({
             beneficiario_id: z.string().optional()
           }),
+          // @ts-ignore
           execute: async ({ beneficiario_id }: any) => {
             try {
               const { generarPresupuestoPDFFromData } = await import('./pdf-generator');
