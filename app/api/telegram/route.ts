@@ -96,14 +96,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Procesamos el mensaje directamente con await
-    // (Next.js en Vercel a veces mata los procesos background)
-    try {
-      const replyText = await processUserMessage(chatId, text, fileUrl);
-      await sendTelegramMessage(chatId, replyText);
-    } catch (e) {
-      console.error("Error in NLU execution:", e);
-    }
+    // Procesamos el mensaje en background usando after() de Next.js
+    // Esto responde a Telegram inmediatamente (evitando retries) y le da a Vercel 
+    // todo el tiempo posible para ejecutar Puppeteer o LLMs.
+    after(async () => {
+      try {
+        const replyText = await processUserMessage(chatId, text, fileUrl);
+        await sendTelegramMessage(chatId, replyText);
+      } catch (e) {
+        console.error("Error in NLU execution:", e);
+      }
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
