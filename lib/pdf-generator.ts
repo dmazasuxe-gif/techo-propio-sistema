@@ -6,6 +6,16 @@ import { saveLocalFileToStorage } from './file-manager';
 import { Beneficiario, MaestroObra } from '../app/types';
 
 async function getBrowser() {
+  const browserlessToken = process.env.BROWSERLESS_API_TOKEN;
+
+  if (browserlessToken) {
+    const puppeteerCore = await import('puppeteer-core');
+    return await puppeteerCore.connect({
+      browserWSEndpoint: `wss://chrome.browserless.io?token=${browserlessToken}`,
+      defaultViewport: { width: 1200, height: 800 },
+    });
+  }
+
   if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
     const puppeteerCore = await import('puppeteer-core');
     return await puppeteerCore.launch({
