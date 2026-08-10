@@ -2,24 +2,24 @@ import { supabase } from "./supabase";
 import fs from "fs";
 import fetch from "node-fetch";
 
-export async function uploadToStorage(buffer: Buffer, fileName: string, contentType: string, subfolder: string = "documentos"): Promise<string | null> {
-  const filePath = `${subfolder}/${fileName}`;
+export async function uploadToStorage(buffer: Buffer, fileName: string, contentType: string, subfolder: string = "", bucketName: string = "pdfs_generados"): Promise<string | null> {
+  const filePath = subfolder ? `${subfolder}/${fileName}` : fileName;
 
   try {
     const { error } = await supabase.storage
-      .from("archivos")
+      .from(bucketName)
       .upload(filePath, buffer, {
         contentType,
         upsert: true,
       });
 
     if (error) {
-      console.error("Error subiendo a Supabase Storage:", error);
+      console.error(`Error subiendo a Supabase Storage (${bucketName}):`, error);
       return null;
     }
 
     const { data } = supabase.storage
-      .from("archivos")
+      .from(bucketName)
       .getPublicUrl(filePath);
     
     return data.publicUrl;
@@ -48,7 +48,7 @@ export async function getBufferFromUrl(url: string): Promise<{ buffer: Buffer; c
   }
 }
 
-export async function saveLocalFileToStorage(localPath: string, subfolder: string = "generados"): Promise<string | null> {
+export async function saveLocalFileToStorage(localPath: string, subfolder: string = "", bucketName: string = "pdfs_generados"): Promise<string | null> {
   if (!fs.existsSync(localPath)) return null;
   
   const buffer = fs.readFileSync(localPath);
@@ -57,5 +57,5 @@ export async function saveLocalFileToStorage(localPath: string, subfolder: strin
   if (fileName.endsWith(".jpg")) contentType = "image/jpeg";
   if (fileName.endsWith(".png")) contentType = "image/png";
 
-  return await uploadToStorage(buffer, fileName, contentType, subfolder);
+  return await uploadToStorage(buffer, fileName, contentType, subfolder, bucketName);
 }

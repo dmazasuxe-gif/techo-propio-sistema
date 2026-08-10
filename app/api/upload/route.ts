@@ -37,11 +37,11 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Ensure bucket exists, create if necessary
-    const bucketReady = await ensureBucketExists("archivos");
+    const bucketReady = await ensureBucketExists("documentos_beneficiarios");
 
     if (bucketReady) {
       const { error } = await supabase.storage
-        .from("archivos")
+        .from("documentos_beneficiarios")
         .upload(filePath, buffer, {
           contentType: file.type || "application/octet-stream",
           upsert: true,
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
       if (!error) {
         const { data: publicUrlData } = supabase.storage
-          .from("archivos")
+          .from("documentos_beneficiarios")
           .getPublicUrl(filePath);
 
         return NextResponse.json({
