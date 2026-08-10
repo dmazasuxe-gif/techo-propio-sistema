@@ -140,3 +140,10 @@ CREATE TABLE usuarios (
 
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Permitir todo a anon (Desarrollo) - Usuarios" ON usuarios FOR ALL USING (true);
+
+-- 6. Tabla de Memoria del Chat (Agentic AI)
+CREATE TABLE chat_history (
+  chat_id TEXT PRIMARY KEY,
+  history JSONB DEFAULT '[]'::jsonb,
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
