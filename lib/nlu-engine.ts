@@ -7,7 +7,8 @@ import {
   buscarBeneficiarios, 
   obtenerDetalleBeneficiario, 
   actualizarBeneficiario, 
-  buscarMaestros, 
+  buscarMaestros,
+  actualizarMaestro,
   consultarDesembolsos 
 } from "./ai-tools";
 import { executeDbOperation } from "./db";
@@ -59,6 +60,7 @@ REGLAS CRÍTICAS:
         obtener_detalle_beneficiario: obtenerDetalleBeneficiario,
         actualizar_beneficiario: actualizarBeneficiario,
         buscar_maestros: buscarMaestros,
+        actualizar_maestro: actualizarMaestro,
         consultar_desembolsos: consultarDesembolsos,
 
         agregar_documento_beneficiario: tool({

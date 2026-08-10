@@ -76,6 +76,19 @@ export const buscarMaestros = tool({
   },
 });
 
+export const actualizarMaestro = tool({
+  description: 'Actualiza campos específicos de un maestro de obra, como asignarle un beneficiario.',
+  parameters: z.object({
+    id: z.string().describe('El ID del maestro a actualizar'),
+    campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case. Ej: {"beneficiario_asignado_id": "123", "beneficiario_asignado_nombre": "Juan"}')
+  }),
+  // @ts-ignore
+  execute: async ({ id, campos }: any) => {
+    const result = await executeDbOperation('maestros', 'actualizar', id, campos);
+    return result;
+  },
+});
+
 export const consultarDesembolsos = tool({
   description: 'Lista los desembolsos de las entidades financieras.',
   parameters: z.object({
