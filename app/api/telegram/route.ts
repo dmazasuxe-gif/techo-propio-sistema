@@ -96,6 +96,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    if (text.toLowerCase() === '/reset') {
+      after(async () => {
+        try {
+          const { supabase } = await import("@/lib/supabase");
+          await supabase.from("chat_history").delete().eq("chat_id", String(chatId));
+          await sendTelegramMessage(chatId, "🧹 <b>Memoria borrada.</b> He olvidado todo nuestro historial de conversación. ¡Comencemos de nuevo!");
+        } catch(e) {
+          console.error("Error al resetear:", e);
+        }
+      });
+      return NextResponse.json({ ok: true });
+    }
+
     // Procesamos el mensaje en background usando after() de Next.js
     // Esto responde a Telegram inmediatamente (evitando retries) y le da a Vercel 
     // todo el tiempo posible para ejecutar Puppeteer o LLMs.
