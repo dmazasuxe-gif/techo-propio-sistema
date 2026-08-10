@@ -56,19 +56,22 @@ export const actualizarBeneficiario = tool({
 });
 
 export const buscarMaestros = tool({
-  description: 'Busca maestros de obra por nombre, especialidad o DNI.',
+  description: 'Busca maestros de obra por nombre, especialidad o DNI. Si no se provee un término de búsqueda, devuelve una lista general de maestros registrados.',
   parameters: z.object({
-    terminoBusqueda: z.string().describe('Nombre o DNI del maestro a buscar')
+    terminoBusqueda: z.string().optional().describe('Nombre o DNI del maestro a buscar')
   }),
   // @ts-ignore
   execute: async ({ terminoBusqueda }: any) => {
-    const { data, error } = await supabase
-      .from('maestros')
-      .select('*')
-      .or(`nombre.ilike.%${terminoBusqueda}%,dni.ilike.%${terminoBusqueda}%`)
-      .limit(5);
+    let query = supabase.from('maestros').select('*');
+    
+    if (terminoBusqueda && terminoBusqueda.trim() !== '') {
+      query = query.or(`nombre.ilike.%${terminoBusqueda}%,dni.ilike.%${terminoBusqueda}%`);
+    }
+    
+    const { data, error } = await query.limit(5);
     
     if (error) return { error: error.message };
+    if (!data || data.length === 0) return { mensaje: "No se encontraron maestros." };
     return { maestros: data };
   },
 });
