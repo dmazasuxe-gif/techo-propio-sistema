@@ -66,7 +66,7 @@ REGLAS ABSOLUTAS (NO NEGOCIABLES):
 
 2. NUNCA respondas "no encontré" sin haber EJECUTADO primero una herramienta de búsqueda. Si el usuario menciona un nombre, SIEMPRE llama a buscar_beneficiarios o buscar_maestros ANTES de cualquier otra acción.
 
-3. Para generar fichas PDF: La herramienta generar_y_enviar_ficha acepta un identificador (nombre, DNI o ID). Pasa EXACTAMENTE lo que el usuario dijo. Si el usuario dice "Yoar", pasa "Yoar". La herramienta se encargará de buscar en la base de datos.
+3. Para generar fichas PDF: Usa la herramienta generar_y_enviar_ficha. REQUIERE que le pases 'nombreDeLaPersona' (el nombre, DNI o ID que el usuario mencionó) y 'tipoDeFicha' ('beneficiario' o 'maestro'). NUNCA llames a esta herramienta con campos vacíos.
 
 4. Para asignar beneficiarios a maestros: La herramienta asignar_beneficiario_a_maestro acepta nombres, DNIs o IDs. Pasa lo que el usuario proporcionó. La herramienta resolverá las entidades automáticamente. Si FALTA información (por ejemplo, el usuario mencionó al maestro pero no al beneficiario), PREGUNTA al usuario qué falta. NO intentes ejecutar la herramienta con datos incompletos.
 
@@ -135,69 +135,64 @@ Usa emojis y mantén un tono profesional pero amigable.`;
         }),
 
         generar_y_enviar_ficha: tool({
-          description: 'Genera una ficha en PDF de un beneficiario o maestro y la envía al chat de Telegram. Acepta un nombre, DNI o ID como identificador — la herramienta buscará el registro automáticamente.',
+          description: "Genera el PDF y lo envía a Telegram. DEBES ESCRIBIR LOS PARÁMETROS EXPLÍCITAMENTE en esta llamada (nombreDeLaPersona y tipoDeFicha) aunque el usuario los acabe de mencionar.",
           parameters: z.object({
-            identificador: z.string().describe("El nombre, DNI o ID del beneficiario o maestro. Ejemplo: 'Yoar', '32145687', 'beneficiario_1'"),
-            tipo: z.enum(['beneficiario', 'maestro']).describe("El tipo de ficha a generar")
+            nombreDeLaPersona: z.string().describe("Escribe aquí el nombre, DNI o ID del beneficiario. ES OBLIGATORIO escribirlo aquí."),
+            tipoDeFicha: z.enum(['beneficiario', 'maestro']).describe("Escribe 'beneficiario' o 'maestro'. ES OBLIGATORIO.")
           }),
           // @ts-ignore
-          execute: async ({ identificador, tipo }: any) => {
-            console.log(`[TOOL:generar_y_enviar_ficha] INPUT: identificador="${identificador}", tipo="${tipo}"`);
+          execute: async (args: any) => {
+            let { nombreDeLaPersona, tipoDeFicha } = args || {};
+            console.log(`[TOOL:generar_y_enviar_ficha] ARGS:`, args);
+            
+            // FALLBACK: Si la IA falla en extraer los parámetros (bug conocido de gpt-4o-mini), 
+            // los extraemos directamente del texto del usuario usando regex y NLP básico.
+            if (!nombreDeLaPersona || !tipoDeFicha) {
+              const idMatch = text.match(/(beneficiario_[0-9]+|maestro_[0-9]+)/i);
+              if (idMatch) {
+                nombreDeLaPersona = idMatch[1];
+                tipoDeFicha = idMatch[1].toLowerCase().startsWith('maestro') ? 'maestro' : 'beneficiario';
+                console.log(`[TOOL:generar_y_enviar_ficha] FALLBACK EXTRACTION SUCCESS:`, nombreDeLaPersona, tipoDeFicha);
+              } else {
+                // Extraer el nombre si menciona "Yoar", "Daniel", etc.
+                const words = text.split(' ').filter(w => !['este','es','el','id','del','que','quiero','su','ficha','pdf','envíame','enviame','de','la','para'].includes(w.toLowerCase()) && w.length > 2);
+                if (words.length > 0) {
+                  nombreDeLaPersona = words[0]; // primer nombre potencial
+                  tipoDeFicha = text.toLowerCase().includes('maestro') ? 'maestro' : 'beneficiario';
+                  console.log(`[TOOL:generar_y_enviar_ficha] FALLBACK NLP SUCCESS:`, nombreDeLaPersona, tipoDeFicha);
+                } else {
+                  return { error: "Parámetros inválidos. Debes enviar nombreDeLaPersona y tipoDeFicha." };
+                }
+              }
+            }
 
             try {
-              // ENTITY RESOLUTION — usando capa centralizada
-              const resolucion = tipo === 'beneficiario'
-                ? await resolverBeneficiario(identificador)
-                : await resolverMaestro(identificador);
+              const resolucion = tipoDeFicha === 'beneficiario'
+                ? await resolverBeneficiario(nombreDeLaPersona)
+                : await resolverMaestro(nombreDeLaPersona);
 
-              if (resolucion.code === 'ENTITY_NOT_FOUND') {
-                return { error: resolucion.message };
-              }
-              if (resolucion.code === 'ENTITY_AMBIGUOUS') {
-                return { error: resolucion.message, opciones: resolucion.matches };
-              }
-              if (!resolucion.success) {
-                return { error: resolucion.message };
-              }
+              if (!resolucion.success) return { error: resolucion.message };
+              if (resolucion.code === 'ENTITY_AMBIGUOUS') return { error: resolucion.message, opciones: resolucion.matches };
 
               const registro = resolucion.entity;
-              const registroId = registro.id;
-              const nombreEntidad = tipo === 'beneficiario' ? getNombreBeneficiario(registro) : getNombreMaestro(registro);
-
-              console.log(`[TOOL:generar_y_enviar_ficha] RESUELTO: ${tipo} id=${registroId}, nombre=${nombreEntidad}`);
-
-              // GENERAR PDF usando el ID real resuelto
-              console.log(`[TOOL:generar_y_enviar_ficha] Generando PDF...`);
+              const nombreEntidad = tipoDeFicha === 'beneficiario' ? getNombreBeneficiario(registro) : getNombreMaestro(registro);
+              
               let pdfPath: string | null = null;
-              if (tipo === 'beneficiario') {
+              if (tipoDeFicha === 'beneficiario') {
                 const { generarFichaBeneficiarioPDF } = await import('./pdf-generator');
-                pdfPath = await generarFichaBeneficiarioPDF(registroId);
+                pdfPath = await generarFichaBeneficiarioPDF(registro.id);
               } else {
                 const { generarFichaMaestroPDF } = await import('./pdf-generator');
-                pdfPath = await generarFichaMaestroPDF(registroId);
+                pdfPath = await generarFichaMaestroPDF(registro.id);
               }
               
-              if (!pdfPath) {
-                console.log(`[TOOL:generar_y_enviar_ficha] PDF_GENERATION_FAILED`);
-                return { error: `El registro de ${nombreEntidad} fue encontrado (ID: ${registroId}), pero el generador de PDF falló. Posible problema con Browserless.io.` };
-              }
+              if (!pdfPath) return { error: `Generador de PDF falló para ${nombreEntidad}. Verifica Browserless.` };
 
-              console.log(`[TOOL:generar_y_enviar_ficha] PDF generado: ${pdfPath}`);
-
-              // ENVIAR POR TELEGRAM
               const { sendDocumentToTelegram } = await import('./telegram-sender');
-              const sent = await sendDocumentToTelegram(chatId, pdfPath, `📋 Ficha de ${tipo}: ${nombreEntidad}`);
-              
-              if (sent) {
-                console.log(`[TOOL:generar_y_enviar_ficha] ✅ TELEGRAM_SENT`);
-                return { mensaje: `✅ Ficha PDF de ${nombreEntidad} generada y enviada exitosamente.`, pdf_url: pdfPath };
-              } else {
-                console.log(`[TOOL:generar_y_enviar_ficha] ❌ TELEGRAM_SEND_FAILED`);
-                return { error: `El PDF fue generado (ruta: ${pdfPath}), pero Telegram rechazó el envío.` };
-              }
+              const sent = await sendDocumentToTelegram(chatId, pdfPath, `📋 Ficha de ${tipoDeFicha}: ${nombreEntidad}`);
+              return sent ? { mensaje: `PDF enviado.` } : { error: `Telegram rechazó el envío de ${pdfPath}` };
             } catch (e: any) {
-              console.log(`[TOOL:generar_y_enviar_ficha] CRITICAL_ERROR: ${e.message}`);
-              return { error: `Error crítico generando el PDF: ${e.message}` };
+              return { error: e.message };
             }
           }
         }),
