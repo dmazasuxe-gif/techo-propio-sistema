@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import chromium from '@sparticuz/chromium';
+import { saveLocalFileToStorage } from './file-manager';
 import { Beneficiario, MaestroObra } from '../app/types';
 
 async function getBrowser() {
@@ -212,7 +213,8 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '18mm', bottom: '18mm', left: '15mm', right: '15mm' } });
     await browser.close();
-    return filePath;
+    const publicUrl = await saveLocalFileToStorage(filePath, 'fichas');
+    return publicUrl || filePath;
   } catch (error) {
     console.error("Puppeteer error generating beneficiary PDF:", error);
     return null;
@@ -351,7 +353,8 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
     await browser.close();
-    return filePath;
+    const publicUrl = await saveLocalFileToStorage(filePath, 'fichas_maestros');
+    return publicUrl || filePath;
   } catch (error) {
     console.error("Puppeteer error generating maestro PDF:", error);
     return null;
@@ -520,7 +523,8 @@ export async function generarPresupuestoPDFFromData(data: PresupuestoData): Prom
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' } });
     await browser.close();
-    return filePath;
+    const publicUrl = await saveLocalFileToStorage(filePath, 'presupuestos');
+    return publicUrl || filePath;
   } catch (error) {
     console.error("Puppeteer error generating presupuesto PDF:", error);
     return null;
@@ -636,7 +640,8 @@ export async function generarCronogramaObraPDF(): Promise<string | null> {
     await page.setContent(printContent, { waitUntil: 'load' });
     await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
     await browser.close();
-    return filePath;
+    const publicUrl = await saveLocalFileToStorage(filePath, 'cronogramas');
+    return publicUrl || filePath;
   } catch (error) {
     console.error("Puppeteer error generating cronograma PDF:", error);
     return null;
