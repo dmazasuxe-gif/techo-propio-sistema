@@ -7,7 +7,7 @@ import { UBIGEO_PERU } from "../constants/ubigeoPeru";
 import { getExpedienteStatusBadge } from "@/lib/status-helper";
 import {
   ArrowLeft, Save, ShieldCheck, Download,
-  User, MapPin, FolderCheck, Ruler, FileText, ChevronDown
+  User, MapPin, FolderCheck, Ruler, FileText, ChevronDown, UserPlus
 } from "lucide-react";
 
 interface BeneficiaryFichaProps {
