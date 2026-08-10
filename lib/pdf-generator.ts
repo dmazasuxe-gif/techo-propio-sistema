@@ -58,7 +58,12 @@ function getStatusHtmlClass(estado: string): string {
 
 export async function generarFichaBeneficiarioPDF(id: string): Promise<string | null> {
   const db = await getDb();
-  const form = db.beneficiarios.find(b => b.id === id);
+  const searchStr = id.toLowerCase().trim();
+  const form = db.beneficiarios.find(b => 
+    b.id === id || 
+    (b.postulante && b.postulante.toLowerCase().includes(searchStr)) || 
+    (b.dniPostulante && b.dniPostulante.includes(searchStr))
+  );
   if (!form) return null;
 
   const fileName = `Ficha_Beneficiario_${id}.pdf`;
@@ -234,13 +239,14 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
 export async function generarFichaMaestroPDF(id: string): Promise<string | null> {
   const db = await getDb();
   let m: any = undefined;
+  const searchStr = id.toLowerCase().trim();
   
   // check cronogramaMaestros first (has pagados), then maestros
   if (db.cronogramaMaestros) {
-    m = db.cronogramaMaestros.find(x => x.id === id);
+    m = db.cronogramaMaestros.find(x => x.id === id || (x.nombre && x.nombre.toLowerCase().includes(searchStr)) || (x.dni && x.dni.includes(searchStr)));
   }
   if (!m && db.maestros) {
-    m = db.maestros.find(x => x.id === id) as any;
+    m = db.maestros.find(x => x.id === id || (x.nombre && x.nombre.toLowerCase().includes(searchStr)) || (x.dni && x.dni.includes(searchStr))) as any;
   }
 
   if (!m) return null;
