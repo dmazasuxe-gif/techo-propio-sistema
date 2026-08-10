@@ -120,7 +120,10 @@ export const actualizarMaestro = tool({
 // TOOL 6: Asignar beneficiario a maestro — CON ENTITY RESOLUTION CENTRALIZADA
 export const asignarBeneficiarioAMaestro = tool({
   description: 'Asigna un beneficiario a un maestro. Acepta nombres, DNIs o IDs — la herramienta resuelve las entidades automáticamente. IMPORTANTE: Ejecuta esta herramienta DIRECTAMENTE y DE INMEDIATO cuando el usuario pida asignar algo. NUNCA pidas permiso o confirmación. NUNCA respondas que no están asignados; simplemente haz la asignación. Solo pregunta si falta el nombre de una de las dos partes.',
-  parameters: z.any(),
+  parameters: z.object({
+    beneficiario: z.string().describe('Nombre COMPLETO del beneficiario a asignar'),
+    maestro: z.string().describe('Nombre COMPLETO del maestro de obra')
+  }),
   // @ts-ignore
   execute: async (args: any) => {
     try {
