@@ -241,6 +241,20 @@ export async function assignMaestroToBeneficiarios(maestroId: string, maestroNom
   return count;
 }
 
+export async function logAIAction(action: string, tableName: string, recordId: string | null, details: any, status: string = 'success'): Promise<void> {
+  try {
+    await supabase.from('ai_logs').insert({
+      action,
+      table_name: tableName,
+      record_id: recordId,
+      details,
+      status
+    });
+  } catch (err) {
+    console.error("Failed to log AI action:", err);
+  }
+}
+
 export async function executeDbOperation(collection: string, action: string, id?: string, data?: any): Promise<{ success: boolean, message: string }> {
   let table = collection;
   if (collection === 'cronogramaMaestros') table = 'cronograma_maestros';
