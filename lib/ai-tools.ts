@@ -2,10 +2,15 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { supabase } from './supabase';
 import { executeDbOperation, logAIAction } from './db';
+import { resolverBeneficiario, resolverMaestro, getNombreBeneficiario, getNombreMaestro } from './entity-resolution';
 
-// Herramientas de Base de Datos dinámicas
+// ============================================================
+// TOOLS DE LA IA — Todas usan entity-resolution.ts centralizado
+// ============================================================
+
+// TOOL 1: Buscar beneficiarios
 export const buscarBeneficiarios = tool({
-  description: 'Busca beneficiarios en la base de datos por nombre, DNI, departamento o estado.',
+  description: 'Busca beneficiarios en la base de datos por nombre, DNI, departamento o estado. SIEMPRE usa esta herramienta antes de cualquier operación sobre un beneficiario.',
   parameters: z.object({
     terminoBusqueda: z.string().optional().describe('Nombre, DNI o texto a buscar'),
     estado: z.string().optional().describe('Filtrar por estado (ej. Expediente Aprobado)'),
@@ -13,56 +18,75 @@ export const buscarBeneficiarios = tool({
   }),
   // @ts-ignore
   execute: async ({ terminoBusqueda, estado, departamento }: any) => {
-    let query = supabase.from('beneficiarios').select('id, postulante, dni_postulante, celular, departamento, estado, etapa_vivienda, avance_vivienda_pct');
+    console.log(`[TOOL:buscar_beneficiarios] INPUT: terminoBusqueda="${terminoBusqueda}", estado="${estado}", departamento="${departamento}"`);
+
+    let query = supabase.from('beneficiarios').select('id, postulante, dni_postulante, celular, departamento, estado, etapa_vivienda, avance_vivienda_pct, maestro_asignado_nombre');
     
     if (estado) query = query.eq('estado', estado);
     if (departamento) query = query.ilike('departamento', `%${departamento}%`);
     if (terminoBusqueda) {
-      query = query.or(`postulante.ilike.%${terminoBusqueda}%,dni_postulante.ilike.%${terminoBusqueda}%`);
+      query = query.or(`postulante.ilike.%${terminoBusqueda}%,dni_postulante.ilike.%${terminoBusqueda}%,nombres.ilike.%${terminoBusqueda}%,apellido_paterno.ilike.%${terminoBusqueda}%`);
     }
 
     const { data, error } = await query.limit(10);
-    if (error) return { error: error.message };
+    if (error) {
+      console.log(`[TOOL:buscar_beneficiarios] ERROR: ${error.message}`);
+      return { error: error.message };
+    }
     
-    if (!data || data.length === 0) return { mensaje: "No se encontraron beneficiarios con esos criterios." };
-    return { beneficiarios: data };
+    console.log(`[TOOL:buscar_beneficiarios] RESULTADO: ${data?.length || 0} beneficiario(s)`);
+    if (!data || data.length === 0) return { mensaje: "No se encontraron beneficiarios con esos criterios.", resultados: 0 };
+    return { beneficiarios: data, resultados: data.length };
   },
 });
 
+// TOOL 2: Obtener detalle completo de un beneficiario (con entity resolution)
 export const obtenerDetalleBeneficiario = tool({
-  description: 'Obtiene el expediente completo y detallado de un beneficiario específico usando su ID.',
+  description: 'Obtiene el expediente completo de un beneficiario. Acepta nombre, DNI o ID.',
   parameters: z.object({
-    id: z.string().describe('El ID único del beneficiario')
+    identificador: z.string().describe('Nombre, DNI o ID del beneficiario')
   }),
   // @ts-ignore
-  execute: async ({ id }: any) => {
-    const { data, error } = await supabase.from('beneficiarios').select('*').eq('id', id).single();
-    if (error) return { error: error.message };
-    return { beneficiario: data };
+  execute: async ({ identificador }: any) => {
+    console.log(`[TOOL:obtener_detalle] INPUT: identificador="${identificador}"`);
+    const res = await resolverBeneficiario(identificador);
+
+    if (res.code === 'ENTITY_NOT_FOUND') return { error: res.message };
+    if (res.code === 'ENTITY_AMBIGUOUS') return { mensaje: res.message, opciones: res.matches };
+    if (res.code === 'DATABASE_ERROR') return { error: res.message };
+    if (res.code === 'INVALID_QUERY') return { error: res.message };
+
+    console.log(`[TOOL:obtener_detalle] RESUELTO: id=${res.entity.id}`);
+    return { beneficiario: res.entity };
   },
 });
 
+// TOOL 3: Actualizar beneficiario
 export const actualizarBeneficiario = tool({
-  description: 'Actualiza campos específicos de un beneficiario (estado, celular, etapa_vivienda, etc).',
+  description: 'Actualiza campos de un beneficiario. Requiere el ID real (obténlo primero con buscar_beneficiarios).',
   parameters: z.object({
-    id: z.string().describe('El ID del beneficiario a actualizar'),
-    campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case. Ej: {"celular": "999999999", "estado": "Expediente Aprobado"}')
+    id: z.string().describe('El ID real del beneficiario (ej: beneficiario_1)'),
+    campos: z.record(z.string(), z.any()).describe('Campos a actualizar en formato snake_case')
   }),
   // @ts-ignore
   execute: async ({ id, campos }: any) => {
+    console.log(`[TOOL:actualizar_beneficiario] INPUT: id="${id}", campos=${JSON.stringify(campos)}`);
     const result = await executeDbOperation('beneficiarios', 'actualizar', id, campos);
     await logAIAction('actualizar_beneficiario', 'beneficiarios', id, campos, result.success ? 'success' : 'error');
+    console.log(`[TOOL:actualizar_beneficiario] RESULTADO: ${result.success ? 'SUCCESS' : 'ERROR'}`);
     return result;
   },
 });
 
+// TOOL 4: Buscar maestros
 export const buscarMaestros = tool({
-  description: 'Busca maestros de obra por nombre, especialidad o DNI. Si no se provee un término de búsqueda, devuelve una lista general de maestros registrados.',
+  description: 'Busca maestros de obra por nombre, especialidad o DNI.',
   parameters: z.object({
-    terminoBusqueda: z.string().optional().describe('Nombre o DNI del maestro a buscar')
+    terminoBusqueda: z.string().optional().describe('Nombre o DNI del maestro')
   }),
   // @ts-ignore
   execute: async ({ terminoBusqueda }: any) => {
+    console.log(`[TOOL:buscar_maestros] INPUT: terminoBusqueda="${terminoBusqueda}"`);
     let query = supabase.from('maestros').select('*');
     
     if (terminoBusqueda && terminoBusqueda.trim() !== '') {
@@ -70,39 +94,72 @@ export const buscarMaestros = tool({
     }
     
     const { data, error } = await query.limit(5);
-    
     if (error) return { error: error.message };
-    if (!data || data.length === 0) return { mensaje: "No se encontraron maestros." };
-    return { maestros: data };
+    console.log(`[TOOL:buscar_maestros] RESULTADO: ${data?.length || 0} maestro(s)`);
+    if (!data || data.length === 0) return { mensaje: "No se encontraron maestros.", resultados: 0 };
+    return { maestros: data, resultados: data.length };
   },
 });
 
+// TOOL 5: Actualizar maestro
 export const actualizarMaestro = tool({
-  description: 'Actualiza campos específicos de un maestro de obra.',
+  description: 'Actualiza campos de un maestro. Requiere el ID real.',
   parameters: z.object({
-    id: z.string().describe('El ID del maestro a actualizar'),
-    campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case.')
+    id: z.string().describe('El ID real del maestro'),
+    campos: z.record(z.string(), z.any()).describe('Campos a actualizar en formato snake_case')
   }),
   // @ts-ignore
   execute: async ({ id, campos }: any) => {
+    console.log(`[TOOL:actualizar_maestro] INPUT: id="${id}"`);
     const result = await executeDbOperation('maestros', 'actualizar', id, campos);
     await logAIAction('actualizar_maestro', 'maestros', id, campos, result.success ? 'success' : 'error');
     return result;
   },
 });
 
+// TOOL 6: Asignar beneficiario a maestro — CON ENTITY RESOLUTION CENTRALIZADA
 export const asignarBeneficiarioAMaestro = tool({
-  description: 'Asigna un beneficiario a un maestro de obra. Actualiza ambas tablas automáticamente.',
+  description: 'Asigna un beneficiario a un maestro. Acepta nombres, DNIs o IDs — la herramienta resuelve las entidades automáticamente. IMPORTANTE: Si el usuario NO especificó cuál beneficiario o cuál maestro, NO llames esta herramienta. Pregunta al usuario qué falta.',
   parameters: z.object({
-    beneficiarioId: z.string().describe('El ID del beneficiario'),
-    beneficiarioNombre: z.string().describe('El nombre del beneficiario'),
-    maestroId: z.string().describe('El ID del maestro'),
-    maestroNombre: z.string().describe('El nombre del maestro')
+    beneficiarioQuery: z.string().describe('Nombre, DNI o ID del beneficiario a asignar'),
+    maestroQuery: z.string().describe('Nombre, DNI o ID del maestro')
   }),
   // @ts-ignore
-  execute: async ({ beneficiarioId, beneficiarioNombre, maestroId, maestroNombre }: any) => {
+  execute: async ({ beneficiarioQuery, maestroQuery }: any) => {
+    console.log(`[TOOL:asignar] INPUT: beneficiario="${beneficiarioQuery}", maestro="${maestroQuery}"`);
+
+    // PASO 1: Resolver beneficiario usando capa centralizada
+    const resBen = await resolverBeneficiario(beneficiarioQuery);
+    if (resBen.code === 'ENTITY_NOT_FOUND') return { status: "error", error: resBen.message };
+    if (resBen.code === 'ENTITY_AMBIGUOUS') return { status: "ambiguous", mensaje: resBen.message, opciones: resBen.matches };
+    if (!resBen.success) return { status: "error", error: resBen.message };
+
+    // PASO 2: Resolver maestro usando capa centralizada
+    const resMae = await resolverMaestro(maestroQuery);
+    if (resMae.code === 'ENTITY_NOT_FOUND') return { status: "error", error: resMae.message };
+    if (resMae.code === 'ENTITY_AMBIGUOUS') return { status: "ambiguous", mensaje: resMae.message, opciones: resMae.matches };
+    if (!resMae.success) return { status: "error", error: resMae.message };
+
+    const ben = resBen.entity;
+    const mae = resMae.entity;
+    const beneficiarioId = ben.id;
+    const beneficiarioNombre = getNombreBeneficiario(ben);
+    const maestroId = mae.id;
+    const maestroNombre = getNombreMaestro(mae);
+
+    console.log(`[TOOL:asignar] RESUELTO: beneficiario=${beneficiarioId} (${beneficiarioNombre}), maestro=${maestroId} (${maestroNombre})`);
+
+    // PASO 3: Verificar si ya está asignado
+    if (ben.maestro_asignado_id === maestroId) {
+      return { status: "info", mensaje: `${beneficiarioNombre} ya está asignado al maestro ${maestroNombre}. No se realizó ningún cambio.` };
+    }
+    if (ben.maestro_asignado_id && ben.maestro_asignado_id !== maestroId) {
+      const maestroAnterior = ben.maestro_asignado_nombre || ben.maestro_asignado_id;
+      console.log(`[TOOL:asignar] ADVERTENCIA: Beneficiario ya asignado a otro maestro (${maestroAnterior}). Reasignando.`);
+    }
+
     try {
-      // 1. Actualizar beneficiario
+      // PASO 4: Actualizar beneficiario
       const updateBen = await supabase.from('beneficiarios').update({
         maestro_asignado_id: maestroId,
         maestro_asignado_nombre: maestroNombre
@@ -110,30 +167,32 @@ export const asignarBeneficiarioAMaestro = tool({
 
       if (updateBen.error) throw new Error("Error actualizando beneficiario: " + updateBen.error.message);
 
-      // 2. Actualizar maestro
+      // PASO 5: Actualizar maestro
       const updateMae = await supabase.from('maestros').update({
         beneficiario_asignado_id: beneficiarioId,
         beneficiario_asignado_nombre: beneficiarioNombre
       }).eq('id', maestroId);
 
       if (updateMae.error) {
-        // Rollback manual simple si falla el segundo paso
         await supabase.from('beneficiarios').update({ maestro_asignado_id: null, maestro_asignado_nombre: null }).eq('id', beneficiarioId);
         throw new Error("Error actualizando maestro: " + updateMae.error.message);
       }
 
-      const logData = { beneficiarioId, beneficiarioNombre, maestroId, maestroNombre };
-      await logAIAction('asignar_beneficiario_a_maestro', 'beneficiarios_y_maestros', beneficiarioId, logData, 'success');
+      await logAIAction('asignar_beneficiario_a_maestro', 'beneficiarios_y_maestros', beneficiarioId,
+        { beneficiarioId, beneficiarioNombre, maestroId, maestroNombre }, 'success');
 
-      return { status: "success", mensaje: `Beneficiario ${beneficiarioNombre} asignado exitosamente al maestro ${maestroNombre}.` };
+      console.log(`[TOOL:asignar] ✅ SUCCESS`);
+      return { status: "success", mensaje: `✅ Beneficiario "${beneficiarioNombre}" asignado exitosamente al maestro "${maestroNombre}".` };
     } catch (e: any) {
-      const logData = { beneficiarioId, maestroId, error: e.message };
-      await logAIAction('asignar_beneficiario_a_maestro', 'beneficiarios_y_maestros', beneficiarioId, logData, 'error');
+      await logAIAction('asignar_beneficiario_a_maestro', 'beneficiarios_y_maestros', beneficiarioId,
+        { beneficiarioId, maestroId, error: e.message }, 'error');
+      console.log(`[TOOL:asignar] ❌ ERROR: ${e.message}`);
       return { status: "error", error: e.message };
     }
   },
 });
 
+// TOOL 7: Consultar desembolsos
 export const consultarDesembolsos = tool({
   description: 'Lista los desembolsos de las entidades financieras.',
   parameters: z.object({
@@ -143,7 +202,6 @@ export const consultarDesembolsos = tool({
   execute: async ({ financieraId }: any) => {
     let query = supabase.from('financieras').select('*');
     if (financieraId) query = query.eq('id', financieraId);
-    
     const { data, error } = await query;
     if (error) return { error: error.message };
     return { financieras: data };
