@@ -143,20 +143,38 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
         <div class="field"><label>Apellido Materno</label><value>${form.apellidoMaterno || "—"}</value></div>
         <div class="field mono"><label>Fecha de Nacimiento</label><value>${form.fechaNacimiento || "—"}</value></div>
       </div>
-      <div class="grid-3">
+      <div class="grid-2">
         <div class="field"><label>Teléfono / Celular</label><value>${form.celular || "—"}</value></div>
         <div class="field"><label>Estado Civil</label><value>${form.estadoCivil || "—"}</value></div>
-        <div class="field"><label>Cónyuge / Conviviente</label><value>${form.conyuge || "—"}</value></div>
       </div>
-      ${form.dniConyuge ? `
-      <div class="grid-4">
-        <div class="field"><label>Nombres Cónyuge</label><value>${form.nombresConyuge || "—"}</value></div>
-        <div class="field"><label>Ap. Paterno Cónyuge</label><value>${form.apellidoPaternoConyuge || "—"}</value></div>
-        <div class="field"><label>Ap. Materno Cónyuge</label><value>${form.apellidoMaternoConyuge || "—"}</value></div>
-        <div class="field mono"><label>DNI del Cónyuge</label><value>${form.dniConyuge}</value></div>
-      </div>` : ""}
     </div>
   </div>
+  ${form.cargaFamiliar && form.cargaFamiliar.length > 0 ? `
+  <div class="section">
+    <div class="section-title">👥 Carga Familiar / Integrantes</div>
+    <div class="section-body" style="padding: 0;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+        <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569;">
+          <tr>
+            <th style="padding: 8px 14px;">Parentesco</th>
+            <th style="padding: 8px 14px;">Nombres y Apellidos</th>
+            <th style="padding: 8px 14px;">DNI</th>
+            <th style="padding: 8px 14px;">F. Nacimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${form.cargaFamiliar.map((c: any) => `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 14px;">${c.parentesco || "—"}</td>
+            <td style="padding: 8px 14px; font-weight: 600;">${c.nombres || ""} ${c.apellidos || ""}</td>
+            <td style="padding: 8px 14px; font-family: monospace;">${c.dni || "—"}</td>
+            <td style="padding: 8px 14px; font-family: monospace;">${c.fechaNacimiento || "—"}</td>
+          </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>` : ""}
   <div class="section">
     <div class="section-title">📍 Ubicación del Predio — UBIGEO Perú</div>
     <div class="section-body">
@@ -171,10 +189,9 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
         <div class="field"><label>Jr. / Av. / Calle</label><value>${(form as any).calle || "—"}</value></div>
         <div class="field"><label>Partida Registral SUNARP</label><value>${(form as any).partidaElectronica || "—"}</value></div>
       </div>
-      <div class="grid-3">
+      <div class="grid-2">
         <div class="field mono"><label>N° Licencia de Construcción</label><value>${(form as any).licenciaConstruccion || "—"}</value></div>
         <div class="field mono"><label>N° Conformidad de Obra</label><value>${(form as any).conformidadObra || "—"}</value></div>
-        <div class="field mono"><label>Coordenadas (X / Y)</label><value>${form.coordenadaX || "—"} / ${form.coordenadaY || "—"}</value></div>
       </div>
       <div class="grid-4">
         <div class="field"><label>Manzana (Mz.)</label><value>${(form as any).manzana || "—"}</value></div>

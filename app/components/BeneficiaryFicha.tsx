@@ -526,11 +526,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
             <label className="text-xs font-semibold text-slate-400">Estado Civil</label>
             <select
               value={form.estadoCivil || "Soltero/a"}
-              onChange={(e) => {
-                const st = e.target.value;
-                const hasConyuge = st === "Casado/a" || st === "Conviviente";
-                setForm({ ...form, estadoCivil: st, tieneConyuge: hasConyuge });
-              }}
+              onChange={(e) => setForm({ ...form, estadoCivil: e.target.value })}
               className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none transition font-semibold"
             >
               <option value="Soltero/a">Soltero/a</option>
@@ -541,80 +537,134 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
             </select>
           </div>
         </div>
+      </div>
 
-        {/* Cónyuge sub-section */}
-        {form.tieneConyuge && (
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 mt-3 animate-in fade-in">
-            <h3 className="text-xs font-bold text-sky-400 uppercase">DATOS DEL CÓNYUGE / CONVIVIENTE</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-              <div>
-                <label className="text-[10px] font-semibold text-slate-400 block mb-1">Nombres Cónyuge</label>
-                <input
-                  type="text"
-                  value={form.nombresConyuge || ""}
-                  onChange={(e) => {
-                    const nom = e.target.value;
-                    setForm({ ...form, nombresConyuge: nom });
-                    updateConyugeFullName(nom, form.apellidoPaternoConyuge || "", form.apellidoMaternoConyuge || "");
-                  }}
-                  className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none"
-                />
+      {/* Section 3: Carga Familiar / Cónyuge */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-sky-400" />
+            <h2 className="text-xs font-black uppercase text-white tracking-wider">3. CARGA FAMILIAR / CÓNYUGE</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const nuevaCarga = form.cargaFamiliar ? [...form.cargaFamiliar] : [];
+              nuevaCarga.push({
+                id: Math.random().toString(36).substring(7),
+                parentesco: "Cónyuge / Conviviente",
+                nombres: "",
+                apellidos: "",
+                dni: "",
+                fechaNacimiento: ""
+              });
+              setForm({ ...form, cargaFamiliar: nuevaCarga });
+            }}
+            className="bg-sky-500 hover:bg-sky-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-lg shadow-sky-500/20"
+          >
+            + Agregar integrante
+          </button>
+        </div>
+
+        <p className="text-[10px] text-slate-500 font-medium">
+          Incluye cónyuge o conviviente, hijos, hermanos, padres o abuelos que dependan del postulante.
+        </p>
+
+        {(form.cargaFamiliar || []).length > 0 && (
+          <div className="space-y-3">
+            {(form.cargaFamiliar || []).map((integrante, index) => (
+              <div key={integrante.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800 relative group animate-in fade-in">
+                
+                <div className="sm:col-span-3">
+                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">Parentesco</label>
+                  <select
+                    value={integrante.parentesco}
+                    onChange={(e) => {
+                      const newCarga = [...(form.cargaFamiliar || [])];
+                      newCarga[index].parentesco = e.target.value;
+                      setForm({ ...form, cargaFamiliar: newCarga });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white focus:outline-none"
+                  >
+                    <option value="Cónyuge / Conviviente">Cónyuge / Conviviente</option>
+                    <option value="Esposo o Esposa">Esposo o Esposa</option>
+                    <option value="Mamá">Mamá</option>
+                    <option value="Papá">Papá</option>
+                    <option value="Hijo o Hija">Hijo o Hija</option>
+                    <option value="Hermano o Hermana">Hermano o Hermana</option>
+                    <option value="Nieto o Nieta">Nieto o Nieta</option>
+                    <option value="Abuelo o Abuela">Abuelo o Abuela</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">Nombres</label>
+                  <input
+                    type="text"
+                    value={integrante.nombres}
+                    onChange={(e) => {
+                      const newCarga = [...(form.cargaFamiliar || [])];
+                      newCarga[index].nombres = e.target.value;
+                      setForm({ ...form, cargaFamiliar: newCarga });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white uppercase focus:outline-none"
+                  />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">Apellidos</label>
+                  <input
+                    type="text"
+                    value={integrante.apellidos}
+                    onChange={(e) => {
+                      const newCarga = [...(form.cargaFamiliar || [])];
+                      newCarga[index].apellidos = e.target.value;
+                      setForm({ ...form, cargaFamiliar: newCarga });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white uppercase focus:outline-none"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">DNI</label>
+                  <input
+                    type="text"
+                    maxLength={8}
+                    value={integrante.dni}
+                    onChange={(e) => {
+                      const newCarga = [...(form.cargaFamiliar || [])];
+                      newCarga[index].dni = e.target.value.replace(/\D/g, '');
+                      setForm({ ...form, cargaFamiliar: newCarga });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
+                  />
+                </div>
+
+                <div className="sm:col-span-1 relative flex flex-col justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newCarga = [...(form.cargaFamiliar || [])];
+                      newCarga.splice(index, 1);
+                      setForm({ ...form, cargaFamiliar: newCarga });
+                    }}
+                    className="w-full bg-red-950/50 hover:bg-red-900/80 text-red-400 border border-red-900/50 hover:border-red-500/50 rounded-lg py-2 text-[10px] font-bold transition flex items-center justify-center gap-1"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+
               </div>
-              <div>
-                <label className="text-[10px] font-semibold text-slate-400 block mb-1">Ap. Paterno Cónyuge</label>
-                <input
-                  type="text"
-                  value={form.apellidoPaternoConyuge || ""}
-                  onChange={(e) => {
-                    const pat = e.target.value;
-                    setForm({ ...form, apellidoPaternoConyuge: pat });
-                    updateConyugeFullName(form.nombresConyuge || "", pat, form.apellidoMaternoConyuge || "");
-                  }}
-                  className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-semibold text-slate-400 block mb-1">Ap. Materno Cónyuge</label>
-                <input
-                  type="text"
-                  value={form.apellidoMaternoConyuge || ""}
-                  onChange={(e) => {
-                    const mat = e.target.value;
-                    setForm({ ...form, apellidoMaternoConyuge: mat });
-                    updateConyugeFullName(form.nombresConyuge || "", form.apellidoPaternoConyuge || "", mat);
-                  }}
-                  className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-white uppercase focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-semibold text-slate-400 block mb-1">DNI Cónyuge</label>
-                <input
-                  type="text"
-                  maxLength={8}
-                  value={form.dniConyuge || ""}
-                  onChange={(e) => setForm({ ...form, dniConyuge: e.target.value.replace(/\D/g, '') })}
-                  className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-semibold text-slate-400 block mb-1">F. Nacimiento (DD/MM/AAAA)</label>
-                <input
-                  type="text"
-                  value={form.fechaNacimientoConyuge || ""}
-                  onChange={(e) => setForm({ ...form, fechaNacimientoConyuge: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none"
-                />
-              </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Section 3: Ubicación UBIGEO */}
+      {/* Section 4: Ubicación UBIGEO */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
           <MapPin className="w-4 h-4 text-sky-400" />
-          <h2 className="text-xs font-black uppercase text-white tracking-wider">3. UBICACIÓN GEOGRÁFICA DEL PREDIO (UBIGEO NACIONAL)</h2>
+          <h2 className="text-xs font-black uppercase text-white tracking-wider">4. UBICACIÓN GEOGRÁFICA DEL PREDIO (UBIGEO NACIONAL)</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -767,11 +817,11 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
         </div>
       </div>
 
-      {/* Section 4: Dimensiones del Predio */}
+      {/* Section 6: Área y Linderos */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
           <Ruler className="w-4 h-4 text-sky-400" />
-          <h2 className="text-xs font-black uppercase text-white tracking-wider">4. DIMENSIONES DEL PREDIO Y LINDEROS (M2 Y METROS LINEALES)</h2>
+          <h2 className="text-xs font-black uppercase text-white tracking-wider">6. ÁREA Y LINDEROS (M2 Y METROS LINEALES)</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>

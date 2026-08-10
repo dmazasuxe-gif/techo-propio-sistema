@@ -6,6 +6,15 @@ export interface DocumentoAdjunto {
   fecha: string;
 }
 
+export interface IntegranteCargaFamiliar {
+  id: string;
+  parentesco: string;
+  nombres: string;
+  apellidos: string;
+  dni: string;
+  fechaNacimiento: string;
+}
+
 export interface MaestroObra {
   id: string;
   nombre: string;
@@ -51,13 +60,16 @@ export interface Beneficiario {
   estadoCivil?: string;
   tieneConyuge?: boolean;
 
-  // Cónyuge
+  // Cónyuge (Legacy - para retrocompatibilidad)
   conyuge?: string;
   dniConyuge?: string;
   apellidoPaternoConyuge?: string;
   apellidoMaternoConyuge?: string;
   nombresConyuge?: string;
   fechaNacimientoConyuge?: string;
+
+  // Carga Familiar / Cónyuge (Nueva estructura dinámica)
+  cargaFamiliar?: IntegranteCargaFamiliar[];
 
   // Ubicación
   departamento: string;
