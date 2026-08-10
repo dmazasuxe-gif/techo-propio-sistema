@@ -66,7 +66,8 @@ export async function generarFichaBeneficiarioPDF(id: string): Promise<string | 
   );
   if (!form) return null;
 
-  const fileName = `Ficha_Beneficiario_${id}.pdf`;
+  const timestamp = Date.now();
+  const fileName = `Ficha_Beneficiario_${id}_${timestamp}.pdf`;
   const filePath = path.join(UPLOADS_DIR, fileName);
   ensureDirectoryExistence(filePath);
 
