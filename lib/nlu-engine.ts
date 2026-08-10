@@ -66,7 +66,7 @@ REGLAS ABSOLUTAS (NO NEGOCIABLES):
 
 2. NUNCA respondas "no encontré" sin haber EJECUTADO primero una herramienta de búsqueda. Si el usuario menciona un nombre, SIEMPRE llama a buscar_beneficiarios o buscar_maestros ANTES de cualquier otra acción.
 
-3. Para generar fichas PDF: Usa la herramienta generar_y_enviar_ficha. REQUIERE que le pases 'nombreDeLaPersona' (el nombre, DNI o ID que el usuario mencionó) y 'tipoDeFicha' ('beneficiario' o 'maestro'). NUNCA llames a esta herramienta con campos vacíos.
+3. Para generar fichas PDF: Usa la herramienta generar_y_enviar_ficha. Solo necesitas pasarle un nombre, DNI o ID de la persona. El sistema resolverá automáticamente quién es y generará el PDF. NUNCA la llames vacía.
 
 4. Para asignar beneficiarios a maestros: La herramienta asignar_beneficiario_a_maestro acepta nombres, DNIs o IDs. Pasa lo que el usuario proporcionó. La herramienta resolverá las entidades automáticamente. Si FALTA información (por ejemplo, el usuario mencionó al maestro pero no al beneficiario), PREGUNTA al usuario qué falta. NO intentes ejecutar la herramienta con datos incompletos.
 
@@ -135,41 +135,49 @@ Usa emojis y mantén un tono profesional pero amigable.`;
         }),
 
         generar_y_enviar_ficha: tool({
-          description: "Genera el PDF y lo envía a Telegram. DEBES ESCRIBIR LOS PARÁMETROS EXPLÍCITAMENTE en esta llamada (nombreDeLaPersona y tipoDeFicha) aunque el usuario los acabe de mencionar.",
+          description: "Genera una ficha PDF de un beneficiario o maestro y la envía por Telegram. SOLO REQUIERE EL NOMBRE O ID DE LA PERSONA.",
           parameters: z.object({
-            nombreDeLaPersona: z.string().describe("Escribe aquí el nombre, DNI o ID del beneficiario. ES OBLIGATORIO escribirlo aquí."),
-            tipoDeFicha: z.enum(['beneficiario', 'maestro']).describe("Escribe 'beneficiario' o 'maestro'. ES OBLIGATORIO.")
+            nombre_o_id: z.string().describe("Ej: 'Yoar', 'Daniel', 'beneficiario_1'. ES OBLIGATORIO ESCRIBIRLO AQUÍ.")
           }),
           // @ts-ignore
           execute: async (args: any) => {
-            let { nombreDeLaPersona, tipoDeFicha } = args || {};
+            let { nombre_o_id } = args || {};
             console.log(`[TOOL:generar_y_enviar_ficha] ARGS:`, args);
             
-            // FALLBACK: Si la IA falla en extraer los parámetros (bug conocido de gpt-4o-mini), 
-            // los extraemos directamente del texto del usuario usando regex y NLP básico.
-            if (!nombreDeLaPersona || !tipoDeFicha) {
+            // FALLBACK 1: Si la IA falla en extraer el nombre, intentamos sacarlo del mensaje actual
+            if (!nombre_o_id) {
               const idMatch = text.match(/(beneficiario_[0-9]+|maestro_[0-9]+)/i);
               if (idMatch) {
-                nombreDeLaPersona = idMatch[1];
-                tipoDeFicha = idMatch[1].toLowerCase().startsWith('maestro') ? 'maestro' : 'beneficiario';
-                console.log(`[TOOL:generar_y_enviar_ficha] FALLBACK EXTRACTION SUCCESS:`, nombreDeLaPersona, tipoDeFicha);
+                nombre_o_id = idMatch[1];
               } else {
-                // Extraer el nombre si menciona "Yoar", "Daniel", etc.
-                const words = text.split(' ').filter(w => !['este','es','el','id','del','que','quiero','su','ficha','pdf','envíame','enviame','de','la','para'].includes(w.toLowerCase()) && w.length > 2);
-                if (words.length > 0) {
-                  nombreDeLaPersona = words[0]; // primer nombre potencial
-                  tipoDeFicha = text.toLowerCase().includes('maestro') ? 'maestro' : 'beneficiario';
-                  console.log(`[TOOL:generar_y_enviar_ficha] FALLBACK NLP SUCCESS:`, nombreDeLaPersona, tipoDeFicha);
-                } else {
-                  return { error: "Parámetros inválidos. Debes enviar nombreDeLaPersona y tipoDeFicha." };
-                }
+                const words = text.split(' ').filter(w => !['este','es','el','id','del','que','quiero','su','ficha','pdf','envíame','enviame','de','la','para','si','por','favor'].includes(w.toLowerCase()) && w.length > 2);
+                if (words.length > 0) nombre_o_id = words[0];
               }
             }
 
+            // FALLBACK 2: Si el mensaje era solo "si", sacamos el ID del historial
+            if (!nombre_o_id && text.toLowerCase().trim() === 'si') {
+              // Buscar en los ultimos mensajes del historial alguna referencia
+              const lastMsgs = history.slice(-3).map(m => typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).join(' ');
+              const pastMatch = lastMsgs.match(/(beneficiario_[0-9]+|maestro_[0-9]+)/i);
+              if (pastMatch) nombre_o_id = pastMatch[1];
+              else return { error: "No pude identificar de quién quieres la ficha. Por favor, dime el nombre exacto." };
+            }
+
+            if (!nombre_o_id) return { error: "Parámetros inválidos. Debes especificar un nombre o ID." };
+
             try {
-              const resolucion = tipoDeFicha === 'beneficiario'
-                ? await resolverBeneficiario(nombreDeLaPersona)
-                : await resolverMaestro(nombreDeLaPersona);
+              // DUAL ENTITY RESOLUTION: Buscamos en ambas tablas porque no sabemos si es maestro o beneficiario
+              let tipoDeFicha = 'beneficiario';
+              let resolucion = await resolverBeneficiario(nombre_o_id);
+
+              if (!resolucion.success || resolucion.code === 'ENTITY_NOT_FOUND') {
+                const resMaestro = await resolverMaestro(nombre_o_id);
+                if (resMaestro.success) {
+                  resolucion = resMaestro;
+                  tipoDeFicha = 'maestro';
+                }
+              }
 
               if (!resolucion.success) return { error: resolucion.message };
               if (resolucion.code === 'ENTITY_AMBIGUOUS') return { error: resolucion.message, opciones: resolucion.matches };
@@ -190,7 +198,7 @@ Usa emojis y mantén un tono profesional pero amigable.`;
 
               const { sendDocumentToTelegram } = await import('./telegram-sender');
               const sent = await sendDocumentToTelegram(chatId, pdfPath, `📋 Ficha de ${tipoDeFicha}: ${nombreEntidad}`);
-              return sent ? { mensaje: `PDF enviado.` } : { error: `Telegram rechazó el envío de ${pdfPath}` };
+              return sent ? { mensaje: `PDF de ${nombreEntidad} generado y enviado correctamente.` } : { error: `Telegram rechazó el envío de ${pdfPath}` };
             } catch (e: any) {
               return { error: e.message };
             }
