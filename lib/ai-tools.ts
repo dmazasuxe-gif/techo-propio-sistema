@@ -48,6 +48,7 @@ export const actualizarBeneficiario = tool({
     id: z.string().describe('El ID del beneficiario a actualizar'),
     campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case. Ej: {"celular": "999999999", "estado": "Expediente Aprobado"}')
   }),
+  // @ts-ignore
   execute: async ({ id, campos }: any) => {
     const result = await executeDbOperation('beneficiarios', 'actualizar', id, campos);
     await logAIAction('actualizar_beneficiario', 'beneficiarios', id, campos, result.success ? 'success' : 'error');
@@ -82,6 +83,7 @@ export const actualizarMaestro = tool({
     id: z.string().describe('El ID del maestro a actualizar'),
     campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case.')
   }),
+  // @ts-ignore
   execute: async ({ id, campos }: any) => {
     const result = await executeDbOperation('maestros', 'actualizar', id, campos);
     await logAIAction('actualizar_maestro', 'maestros', id, campos, result.success ? 'success' : 'error');
