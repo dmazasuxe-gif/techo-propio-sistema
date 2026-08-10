@@ -153,8 +153,11 @@ export const asignarBeneficiarioAMaestro = tool({
     if (ben.maestro_asignado_id === maestroId) {
       return { status: "info", mensaje: `${beneficiarioNombre} ya está asignado al maestro ${maestroNombre}. No se realizó ningún cambio.` };
     }
+    
+    let oldMaestroId: string | null = null;
     if (ben.maestro_asignado_id && ben.maestro_asignado_id !== maestroId) {
       const maestroAnterior = ben.maestro_asignado_nombre || ben.maestro_asignado_id;
+      oldMaestroId = ben.maestro_asignado_id;
       console.log(`[TOOL:asignar] ADVERTENCIA: Beneficiario ya asignado a otro maestro (${maestroAnterior}). Reasignando.`);
     }
 
@@ -176,6 +179,26 @@ export const asignarBeneficiarioAMaestro = tool({
       if (updateMae.error) {
         await supabase.from('beneficiarios').update({ maestro_asignado_id: null, maestro_asignado_nombre: null }).eq('id', beneficiarioId);
         throw new Error("Error actualizando maestro: " + updateMae.error.message);
+      }
+
+      // PASO 6: Actualizar Interfaz Web (cronograma_maestros)
+      // Primero, desmarcamos del maestro anterior (si existía)
+      if (oldMaestroId) {
+        const { data: oldCm } = await supabase.from('cronograma_maestros').select('beneficiarios_asignados').eq('id', oldMaestroId).single();
+        if (oldCm && oldCm.beneficiarios_asignados) {
+          const updatedOld = (oldCm.beneficiarios_asignados as string[]).filter((id: string) => id !== beneficiarioId);
+          await supabase.from('cronograma_maestros').update({ beneficiarios_asignados: updatedOld }).eq('id', oldMaestroId);
+        }
+      }
+      
+      // Luego, marcamos la casilla para el nuevo maestro
+      const { data: newCm } = await supabase.from('cronograma_maestros').select('beneficiarios_asignados').eq('id', maestroId).single();
+      if (newCm) {
+        let asignados = Array.isArray(newCm.beneficiarios_asignados) ? newCm.beneficiarios_asignados : [];
+        if (!asignados.includes(beneficiarioId)) {
+          asignados.push(beneficiarioId);
+          await supabase.from('cronograma_maestros').update({ beneficiarios_asignados: asignados }).eq('id', maestroId);
+        }
       }
 
       await logAIAction('asignar_beneficiario_a_maestro', 'beneficiarios_y_maestros', beneficiarioId,
