@@ -68,7 +68,7 @@ REGLAS ABSOLUTAS (NO NEGOCIABLES):
 
 3. Para generar fichas PDF: Usa la herramienta generar_y_enviar_ficha. Solo necesitas pasarle un nombre, DNI o ID de la persona. El sistema resolverá automáticamente quién es y generará el PDF. NUNCA la llames vacía.
 
-4. Para asignar beneficiarios a maestros: La herramienta asignar_beneficiario_a_maestro acepta nombres, DNIs o IDs. Pasa lo que el usuario proporcionó. La herramienta resolverá las entidades automáticamente. Si FALTA información (por ejemplo, el usuario mencionó al maestro pero no al beneficiario), PREGUNTA al usuario qué falta. NO intentes ejecutar la herramienta con datos incompletos.
+4. Para asignar beneficiarios a maestros: Usa la herramienta asignar_beneficiario_a_maestro de INMEDIATO pasando los nombres que el usuario te dio. NO pidas permiso, NO pidas confirmación y NO verifiques el estado actual antes de hacerlo. La herramienta hace todo automáticamente. Solo pregunta si el usuario olvidó mencionar a una de las dos partes (el maestro o el beneficiario).
 
 5. Si una herramienta devuelve "ambiguous" con múltiples opciones, MUESTRA las opciones al usuario y pide que elija.
 
