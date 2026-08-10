@@ -210,3 +210,86 @@ export const consultarDesembolsos = {
     return { financieras: data };
   },
 };
+
+export const registrarMaestro = {
+  name: "registrar_maestro",
+  description: 'Registra a un nuevo maestro de obra en el sistema.',
+  parametersSchema: {
+    type: "object",
+    properties: {
+      nombre: { type: "string", description: "Nombre completo del maestro" },
+      dni: { type: "string", description: "DNI del maestro" },
+      celular: { type: "string", description: "Número de celular/teléfono" },
+      especialidad: { type: "string", description: "Especialidad del maestro (ej. Albañilería)" },
+      tarifa_vivienda: { type: "string", description: "Costo por vivienda (ej. 15000)" }
+    },
+    required: ["nombre", "dni"]
+  },
+  execute: async ({ nombre, dni, celular, especialidad, tarifa_vivienda }: any) => {
+    console.log(`[TOOL:registrar_maestro] INPUT: nombre="${nombre}", dni="${dni}"`);
+    const id = `maestro_${Date.now()}`;
+    const maestro = {
+      id, nombre, dni,
+      celular: celular || "",
+      especialidad: especialidad || "General",
+      tarifa_vivienda: tarifa_vivienda || "0"
+    };
+    const { addMaestro } = require('./db');
+    const result = await addMaestro({
+      id: maestro.id,
+      nombre: maestro.nombre,
+      dni: maestro.dni,
+      celular: maestro.celular,
+      especialidad: maestro.especialidad,
+      tarifaVivienda: maestro.tarifa_vivienda,
+    });
+    if (!result) return { error: "Error al registrar en la base de datos." };
+    await logAIAction('registrar_maestro', 'maestros', id, maestro, 'success');
+    return { mensaje: `✅ Maestro "${nombre}" registrado correctamente con ID ${id}.`, maestro: result };
+  }
+};
+
+export const registrarBeneficiario = {
+  name: "registrar_beneficiario",
+  description: 'Registra a un nuevo beneficiario en el sistema.',
+  parametersSchema: {
+    type: "object",
+    properties: {
+      postulante: { type: "string", description: "Nombre completo del postulante" },
+      dni_postulante: { type: "string", description: "DNI del postulante" },
+      celular: { type: "string", description: "Número de celular/teléfono" },
+      departamento: { type: "string", description: "Departamento" },
+      provincia: { type: "string", description: "Provincia" },
+      distrito: { type: "string", description: "Distrito" },
+      estado: { type: "string", description: "Estado inicial (ej. Expediente en Revisión)" }
+    },
+    required: ["postulante", "dni_postulante"]
+  },
+  execute: async ({ postulante, dni_postulante, celular, departamento, provincia, distrito, estado }: any) => {
+    console.log(`[TOOL:registrar_beneficiario] INPUT: postulante="${postulante}", dni="${dni_postulante}"`);
+    const id = `EXP-${Date.now().toString().slice(-6)}`;
+    const beneficiario = {
+      id, postulante, dni_postulante,
+      celular: celular || "",
+      departamento: departamento || "",
+      provincia: provincia || "",
+      distrito: distrito || "",
+      estado: estado || "Expediente en Revisión",
+      documentos: []
+    };
+    const { addBeneficiario } = require('./db');
+    const result = await addBeneficiario({
+      id: beneficiario.id,
+      postulante: beneficiario.postulante,
+      dniPostulante: beneficiario.dni_postulante,
+      celular: beneficiario.celular,
+      departamento: beneficiario.departamento,
+      provincia: beneficiario.provincia,
+      distrito: beneficiario.distrito,
+      estado: beneficiario.estado,
+    });
+    if (!result) return { error: "Error al registrar en la base de datos." };
+    await logAIAction('registrar_beneficiario', 'beneficiarios', id, beneficiario, 'success');
+    return { mensaje: `✅ Beneficiario "${postulante}" registrado correctamente con expediente ${id}.`, beneficiario: result };
+  }
+};

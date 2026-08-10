@@ -7,7 +7,9 @@ import {
   buscarMaestros,
   actualizarMaestro,
   asignarBeneficiarioAMaestro,
-  consultarDesembolsos 
+  consultarDesembolsos,
+  registrarMaestro,
+  registrarBeneficiario
 } from "./ai-tools";
 import { executeDbOperation } from "./db";
 import { supabase } from "./supabase";
@@ -84,6 +86,8 @@ Usa emojis y mantén un tono profesional pero amigable.`;
       actualizarMaestro,
       asignarBeneficiarioAMaestro,
       consultarDesembolsos,
+      registrarMaestro,
+      registrarBeneficiario,
       {
         name: "agregar_documento_beneficiario",
         description: 'Agrega un documento o imagen a un beneficiario. Requiere el ID real del beneficiario.',
