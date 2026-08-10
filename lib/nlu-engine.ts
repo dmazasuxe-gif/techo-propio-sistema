@@ -135,7 +135,7 @@ Usa emojis y mantén un tono profesional pero amigable.`;
           }
           if (!nombre_o_id) return { error: "No se proporcionó un nombre o ID para generar la ficha." };
           try {
-            const { generarFichaPDFFromData } = await import('./pdf-generator');
+            const { generarFichaBeneficiarioPDF, generarFichaMaestroPDF } = await import('./pdf-generator');
             const { resolverBeneficiario, resolverMaestro } = require('./entity-resolution');
             let entidad = null;
             let esMaestro = false;
@@ -146,7 +146,11 @@ Usa emojis y mantén un tono profesional pero amigable.`;
               if (resMae.success) { entidad = resMae.entity; esMaestro = true; }
             }
             if (!entidad) return { error: "No se encontró ningún beneficiario o maestro con ese nombre." };
-            const pdfPath = await generarFichaPDFFromData(entidad, esMaestro);
+            
+            const pdfPath = esMaestro 
+              ? await generarFichaMaestroPDF(entidad.id) 
+              : await generarFichaBeneficiarioPDF(entidad.id);
+
             if (!pdfPath) return { error: "Falló la generación del PDF." };
             const { sendDocumentToTelegram } = require('./telegram-sender');
             const nombreEntidad = esMaestro ? entidad.nombre : entidad.postulante;
