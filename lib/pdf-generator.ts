@@ -269,15 +269,55 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
 
   if (!m) return null;
 
+  const beneficiariosDelMaestro = (db.beneficiarios || []).filter((b: any) => 
+    b.maestroAsignadoId === m.id || 
+    (m.beneficiariosAsignados && Array.isArray(m.beneficiariosAsignados) && m.beneficiariosAsignados.includes(b.id))
+  );
+
   const fileName = `Ficha_Maestro_${id}.pdf`;
   const filePath = path.join(UPLOADS_DIR, fileName);
   ensureDirectoryExistence(filePath);
 
-  const nViviendas = m.beneficiariosAsignados?.length || 0;
+  const nViviendas = beneficiariosDelMaestro.length > 0 ? beneficiariosDelMaestro.length : (m.beneficiariosAsignados?.length || 0);
   const contratoTotal = m.montoPorVivienda ? (m.montoPorVivienda * nViviendas) : 0;
   const pagado = (m.pagos || [])
     .filter((p:any) => p.estado === "Pagado" || p.estado === "Pagado parcial")
     .reduce((acc:any, curr:any) => acc + curr.monto, 0);
+
+  const beneficiariosHtml = beneficiariosDelMaestro.length > 0 ? `
+  <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 5px;">Beneficiarios Asignados y Avance de Obra</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 50px;">N°</th>
+        <th>Nombre del Beneficiario</th>
+        <th style="width: 100px;">DNI</th>
+        <th style="width: 150px;">Etapa Actual</th>
+        <th style="width: 120px; text-align: center;">Avance Físico</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${beneficiariosDelMaestro.map((b: any, i: number) => {
+        const avance = b.avanceViviendaPct || 0;
+        const color = avance === 100 ? '#16a34a' : (avance > 0 ? '#0284c7' : '#94a3b8');
+        return `
+          <tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td style="font-weight: 600;">${b.postulante || '—'}</td>
+            <td style="text-align:center; font-family: monospace;">${b.dniPostulante || "—"}</td>
+            <td style="text-align:center">${b.etapaVivienda || "Pendiente"}</td>
+            <td style="text-align:center">
+              <div style="font-weight: 700; margin-bottom: 2px; color: ${color};">${avance}%</div>
+              <div style="width: 100%; background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden;">
+                <div style="width: ${avance}%; background: ${color}; height: 100%; border-radius: 3px;"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  </table>
+  ` : '';
 
   const pagosHtml = (m.pagos || []).map((p:any, i:number) => `
     <tr>
@@ -341,7 +381,9 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
     <div class="info-box"><span>Contrato Total Estimado</span><strong>S/ ${contratoTotal.toLocaleString("es-PE", { minimumFractionDigits: 2 })}</strong></div>
   </div>
 
-  <h3 style="margin-bottom: 10px; font-size: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 5px;">Detalle de Avances y Pagos</h3>
+  ${beneficiariosHtml}
+
+  <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 5px;">Detalle de Avances y Pagos</h3>
   
   ${(m.pagos && m.pagos.length > 0) ? `
   <table>
