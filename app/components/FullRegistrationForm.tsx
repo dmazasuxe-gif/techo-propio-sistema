@@ -401,7 +401,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
               {(form.cargaFamiliar || []).map((integrante, index) => (
                 <div key={integrante.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800 relative group animate-in fade-in">
                   
-                  <div className="sm:col-span-3">
+                  <div className="sm:col-span-2">
                     <label className="text-[10px] font-semibold text-slate-400 block mb-1">Parentesco</label>
                     <select
                       value={integrante.parentesco}
@@ -437,7 +437,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                     />
                   </div>
 
-                  <div className="sm:col-span-3">
+                  <div className="sm:col-span-2">
                     <label className="text-[10px] font-semibold text-slate-400 block mb-1">Apellidos</label>
                     <input
                       type="text"
@@ -460,6 +460,20 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                       onChange={(e) => {
                         const newCarga = [...(form.cargaFamiliar || [])];
                         newCarga[index].dni = e.target.value.replace(/\D/g, '');
+                        setForm({ ...form, cargaFamiliar: newCarga });
+                      }}
+                      className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="text-[10px] font-semibold text-slate-400 block mb-1">F. Nacimiento (DD/MM/AAAA)</label>
+                    <input
+                      type="text"
+                      value={integrante.fechaNacimiento || ""}
+                      onChange={(e) => {
+                        const newCarga = [...(form.cargaFamiliar || [])];
+                        newCarga[index].fechaNacimiento = e.target.value;
                         setForm({ ...form, cargaFamiliar: newCarga });
                       }}
                       className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"

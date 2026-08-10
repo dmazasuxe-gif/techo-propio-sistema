@@ -160,7 +160,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           <value>${form.fechaNacimiento || "—"}</value>
         </div>
       </div>
-      <div class="grid-3">
+      <div class="grid-2">
         <div class="field">
           <label>Teléfono / Celular</label>
           <value>${form.celular || "—"}</value>
@@ -169,30 +169,35 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           <label>Estado Civil</label>
           <value>${form.estadoCivil || "—"}</value>
         </div>
-        <div class="field">
-          <label>Cónyuge / Conviviente</label>
-          <value>${form.conyuge || "—"}</value>
-        </div>
       </div>
-      ${form.dniConyuge ? `
-      <div class="grid-4">
-        <div class="field">
-          <label>Nombres Cónyuge</label>
-          <value>${form.nombresConyuge || "—"}</value>
-        </div>
-        <div class="field">
-          <label>Ap. Paterno Cónyuge</label>
-          <value>${form.apellidoPaternoConyuge || "—"}</value>
-        </div>
-        <div class="field">
-          <label>Ap. Materno Cónyuge</label>
-          <value>${form.apellidoMaternoConyuge || "—"}</value>
-        </div>
-        <div class="field mono">
-          <label>DNI del Cónyuge</label>
-          <value>${form.dniConyuge}</value>
-        </div>
-      </div>` : ""}
+    </div>
+  </div>
+  ${form.cargaFamiliar && form.cargaFamiliar.length > 0 ? `
+  <div class="section">
+    <div class="section-title">👥 Carga Familiar / Integrantes</div>
+    <div class="section-body" style="padding: 0;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+        <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569;">
+          <tr>
+            <th style="padding: 8px 14px;">Parentesco</th>
+            <th style="padding: 8px 14px;">Nombres y Apellidos</th>
+            <th style="padding: 8px 14px;">DNI</th>
+            <th style="padding: 8px 14px;">F. Nacimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${form.cargaFamiliar.map((c: any) => `
+          <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 14px;">${c.parentesco || "—"}</td>
+            <td style="padding: 8px 14px; font-weight: 600;">${c.nombres || ""} ${c.apellidos || ""}</td>
+            <td style="padding: 8px 14px; font-family: monospace;">${c.dni || "—"}</td>
+            <td style="padding: 8px 14px; font-family: monospace;">${c.fechaNacimiento || "—"}</td>
+          </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>` : ""}
     </div>
   </div>
 
@@ -231,7 +236,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           <value>${(form as any).partidaElectronica || "—"}</value>
         </div>
       </div>
-      <div class="grid-3">
+      <div class="grid-2">
         <div class="field mono">
           <label>N° Licencia de Construcción</label>
           <value>${(form as any).licenciaConstruccion || "—"}</value>
@@ -239,10 +244,6 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
         <div class="field mono">
           <label>N° Conformidad de Obra</label>
           <value>${(form as any).conformidadObra || "—"}</value>
-        </div>
-        <div class="field mono">
-          <label>Coordenadas (X / Y)</label>
-          <value>${form.coordenadaX || "—"} / ${form.coordenadaY || "—"}</value>
         </div>
       </div>
       <div class="grid-4">
@@ -575,7 +576,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
             {(form.cargaFamiliar || []).map((integrante, index) => (
               <div key={integrante.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800 relative group animate-in fade-in">
                 
-                <div className="sm:col-span-3">
+                <div className="sm:col-span-2">
                   <label className="text-[10px] font-semibold text-slate-400 block mb-1">Parentesco</label>
                   <select
                     value={integrante.parentesco}
@@ -611,7 +612,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
                   />
                 </div>
 
-                <div className="sm:col-span-3">
+                <div className="sm:col-span-2">
                   <label className="text-[10px] font-semibold text-slate-400 block mb-1">Apellidos</label>
                   <input
                     type="text"
@@ -634,6 +635,20 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
                     onChange={(e) => {
                       const newCarga = [...(form.cargaFamiliar || [])];
                       newCarga[index].dni = e.target.value.replace(/\D/g, '');
+                      setForm({ ...form, cargaFamiliar: newCarga });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">F. Nacimiento (DD/MM/AAAA)</label>
+                  <input
+                    type="text"
+                    value={integrante.fechaNacimiento || ""}
+                    onChange={(e) => {
+                      const newCarga = [...(form.cargaFamiliar || [])];
+                      newCarga[index].fechaNacimiento = e.target.value;
                       setForm({ ...form, cargaFamiliar: newCarga });
                     }}
                     className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
