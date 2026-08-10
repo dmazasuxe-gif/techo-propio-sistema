@@ -33,8 +33,24 @@ export async function processUserMessage(chatId: number | string, text: string, 
 
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    // Preparar el historial de Vercel AI SDK
-    const messages: CoreMessage[] = history;
+    // Limpiar el historial para evitar errores de OpenAI 400 (huérfanos de tool_calls)
+    // Conservamos solo los mensajes de usuario y las respuestas de texto del asistente
+    const cleanHistory = history.map(msg => {
+      if (msg.role === 'user') return msg;
+      if (msg.role === 'assistant') {
+         let textContent = "";
+         if (typeof msg.content === 'string') {
+           textContent = msg.content;
+         } else if (Array.isArray(msg.content)) {
+           const textParts = msg.content.filter((part: any) => part.type === 'text');
+           textContent = textParts.map((p: any) => p.text).join('\n');
+         }
+         return textContent ? { role: 'assistant', content: textContent } : null;
+      }
+      return null;
+    }).filter(Boolean) as CoreMessage[];
+
+    const messages: CoreMessage[] = [...cleanHistory];
 
     // Agregar el mensaje actual
     messages.push({
