@@ -234,11 +234,25 @@ REGLAS CRÍTICAS:
     // Extraemos todos los pasos del agente para guardarlos en la historia y mantener contexto de qué herramientas usó
     const updatedHistory = [...messages, ...result.response.messages];
 
+    let finalResponse = result.text;
+    if (!finalResponse && result.toolResults && result.toolResults.length > 0) {
+      // Si la IA usó una herramienta pero no generó texto de respuesta final, forzamos un resumen
+      const summaryResult = await (generateText as any)({
+        model: openai("gpt-4o-mini"),
+        messages: [
+          ...updatedHistory,
+          { role: "user", content: "Por favor, dile al usuario en lenguaje natural y breve qué acción acabas de realizar basándote en la herramienta que ejecutaste." }
+        ]
+      });
+      finalResponse = summaryResult.text;
+      updatedHistory.push(...summaryResult.response.messages);
+    }
+
     // Limitar a los últimos 20 mensajes para no saturar memoria
     const trimmedHistory = updatedHistory.slice(-20);
     await saveChatHistory(strChatId, trimmedHistory as CoreMessage[]);
 
-    return result.text || "✅ Ejecutado.";
+    return finalResponse || "✅ Ejecutado correctamente.";
     
   } catch (error) {
     console.error("OpenAI/AI SDK Error:", error);
