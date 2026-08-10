@@ -77,15 +77,53 @@ export const buscarMaestros = tool({
 });
 
 export const actualizarMaestro = tool({
-  description: 'Actualiza campos específicos de un maestro de obra, como asignarle un beneficiario.',
+  description: 'Actualiza campos específicos de un maestro de obra.',
   parameters: z.object({
     id: z.string().describe('El ID del maestro a actualizar'),
-    campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case. Ej: {"beneficiario_asignado_id": "123", "beneficiario_asignado_nombre": "Juan"}')
+    campos: z.record(z.string(), z.any()).describe('Un objeto con los campos a actualizar en formato snake_case.')
   }),
   // @ts-ignore
   execute: async ({ id, campos }: any) => {
     const result = await executeDbOperation('maestros', 'actualizar', id, campos);
     return result;
+  },
+});
+
+export const asignarBeneficiarioAMaestro = tool({
+  description: 'Asigna un beneficiario a un maestro de obra. Actualiza ambas tablas automáticamente.',
+  parameters: z.object({
+    beneficiarioId: z.string().describe('El ID del beneficiario'),
+    beneficiarioNombre: z.string().describe('El nombre del beneficiario'),
+    maestroId: z.string().describe('El ID del maestro'),
+    maestroNombre: z.string().describe('El nombre del maestro')
+  }),
+  // @ts-ignore
+  execute: async ({ beneficiarioId, beneficiarioNombre, maestroId, maestroNombre }: any) => {
+    try {
+      // 1. Actualizar beneficiario
+      const updateBen = await supabase.from('beneficiarios').update({
+        maestro_asignado_id: maestroId,
+        maestro_asignado_nombre: maestroNombre
+      }).eq('id', beneficiarioId);
+
+      if (updateBen.error) throw new Error("Error actualizando beneficiario: " + updateBen.error.message);
+
+      // 2. Actualizar maestro
+      const updateMae = await supabase.from('maestros').update({
+        beneficiario_asignado_id: beneficiarioId,
+        beneficiario_asignado_nombre: beneficiarioNombre
+      }).eq('id', maestroId);
+
+      if (updateMae.error) {
+        // Rollback manual simple si falla el segundo paso
+        await supabase.from('beneficiarios').update({ maestro_asignado_id: null, maestro_asignado_nombre: null }).eq('id', beneficiarioId);
+        throw new Error("Error actualizando maestro: " + updateMae.error.message);
+      }
+
+      return { status: "success", mensaje: `Beneficiario ${beneficiarioNombre} asignado exitosamente al maestro ${maestroNombre}.` };
+    } catch (e: any) {
+      return { status: "error", error: e.message };
+    }
   },
 });
 
