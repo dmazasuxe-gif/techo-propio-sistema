@@ -176,7 +176,7 @@ export async function addMaestro(m: MaestroObra): Promise<MaestroObra | null> {
   if (error) return null;
 
   await supabase.from('cronograma_maestros').insert({
-    id: m.id,
+    id: data.id,
     nombre: m.nombre,
     dni: m.dni,
     celular: m.celular,
@@ -188,7 +188,7 @@ export async function addMaestro(m: MaestroObra): Promise<MaestroObra | null> {
 
   if (m.beneficiarioAsignadoId) {
     await supabase.from('beneficiarios').update({
-      maestro_asignado_id: m.id,
+      maestro_asignado_id: data.id,
       maestro_asignado_nombre: m.nombre
     }).eq('id', m.beneficiarioAsignadoId);
   }

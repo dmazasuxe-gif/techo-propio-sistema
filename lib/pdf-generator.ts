@@ -274,7 +274,8 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
     (m.beneficiariosAsignados && Array.isArray(m.beneficiariosAsignados) && m.beneficiariosAsignados.includes(b.id))
   );
 
-  const fileName = `Ficha_Maestro_${id}.pdf`;
+  const timestamp = Date.now();
+  const fileName = `Ficha_Maestro_${id}_${timestamp}.pdf`;
   const filePath = path.join(UPLOADS_DIR, fileName);
   ensureDirectoryExistence(filePath);
 
