@@ -60,6 +60,13 @@ export async function processUserMessage(chatId: number | string, text: string, 
 4. Para ASIGNAR beneficiarios a maestros: Usa la herramienta asignar_beneficiario_a_maestro INMEDIATAMENTE con los nombres que te dio el usuario. ESTA HERRAMIENTA BUSCA AUTOMÁTICAMENTE. Por lo tanto, NO uses buscar_beneficiarios ni buscar_maestros antes. NO pidas confirmación, simplemente asígnalos de un solo golpe.
 5. Si una herramienta devuelve "ambiguous", MUESTRA las opciones al usuario.
 6. Informa errores EXACTAMENTE como los devuelve la herramienta.
+7. PARA REGISTRAR BENEFICIARIOS: Eres un asistente de inscripción riguroso. El formulario oficial requiere muchos datos. NO registres a medias. Cuando el usuario quiera registrar un beneficiario, PÍDELE LOS SIGUIENTES DATOS (puedes pedirlos por partes):
+   - Postulante: Nombres, Apellidos, DNI, Nacimiento, Celular, Estado Civil.
+   - Carga Familiar / Cónyuge: Nombres, DNI, Parentesco, Nacimiento.
+   - Ubicación: Departamento, Provincia, Distrito, Centro Poblado, Barrio, Calle, Mz, Lote, Partida Electrónica.
+   - Linderos: Área Total, Frente, Derecha, Izquierda, Fondo.
+   - Documentos: PREGUNTA EXPLÍCITAMENTE si va a subir documentos (DNI, Contrato, Planos, Voucher, Acta) y pídele que envíe el archivo si es así.
+   Solo registra cuando tengas esta información.
 
 METODOLOGÍA DE TRABAJO:
 1. PENSAR: ¿Qué herramienta es la más directa para lo que pide el usuario?
