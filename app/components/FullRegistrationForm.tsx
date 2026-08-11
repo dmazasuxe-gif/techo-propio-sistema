@@ -323,7 +323,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
               <div className="flex gap-2">
                 <input
                   required
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
                   maxLength={8}
                   className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono font-bold focus:outline-none transition"
                   value={form.dniPostulante}
@@ -346,7 +347,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-semibold text-slate-400">Fecha de Nacimiento (DD/MM/AAAA)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 placeholder="DD/MM/AAAA"
                 value={form.fechaNacimiento || ""}
                 onChange={(e) => setForm({ ...form, fechaNacimiento: e.target.value })}
@@ -357,9 +359,10 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-semibold text-slate-400">Celular / Teléfono</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
                 value={form.celular}
-                onChange={(e) => setForm({ ...form, celular: e.target.value })}
+                onChange={(e) => setForm({ ...form, celular: e.target.value.replace(/[^0-9]/g, '') })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"
               />
             </div>
@@ -471,23 +474,52 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
 
                   <div className="sm:col-span-2">
                     <label className="text-[10px] font-semibold text-slate-400 block mb-1">DNI</label>
-                    <input
-                      type="text"
-                      maxLength={8}
-                      value={integrante.dni}
-                      onChange={(e) => {
-                        const newCarga = [...(form.cargaFamiliar || [])];
-                        newCarga[index].dni = e.target.value.replace(/\D/g, '');
-                        setForm({ ...form, cargaFamiliar: newCarga });
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
-                    />
+                    <div className="flex gap-1">
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={8}
+                        value={integrante.dni}
+                        onChange={(e) => {
+                          const newCarga = [...(form.cargaFamiliar || [])];
+                          newCarga[index].dni = e.target.value.replace(/\D/g, '');
+                          setForm({ ...form, cargaFamiliar: newCarga });
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (integrante.dni.length === 8) {
+                            try {
+                              const res = await fetch(`/api/consulta-dni?dni=${integrante.dni}`);
+                              const data = await res.json();
+                              if (data.success && data.data) {
+                                const newCarga = [...(form.cargaFamiliar || [])];
+                                newCarga[index].nombres = data.data.nombres || "";
+                                newCarga[index].apellidos = `${data.data.apellidoPaterno || ""} ${data.data.apellidoMaterno || ""}`.trim();
+                                setForm({ ...form, cargaFamiliar: newCarga });
+                              } else {
+                                alert("DNI no encontrado");
+                              }
+                            } catch (e) {
+                              alert("Error consultando DNI");
+                            }
+                          }
+                        }}
+                        className="bg-sky-600 hover:bg-sky-500 text-white px-2 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
+                        title="Consultar DNI"
+                      >
+                        🔍
+                      </button>
+                    </div>
                   </div>
 
                   <div className="sm:col-span-2">
                     <label className="text-[10px] font-semibold text-slate-400 block mb-1">F. Nacimiento (DD/MM/AAAA)</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       value={integrante.fechaNacimiento || ""}
                       onChange={(e) => {
                         const newCarga = [...(form.cargaFamiliar || [])];
@@ -619,6 +651,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
               <label className="text-xs font-semibold text-slate-400">Partida Registral SUNARP</label>
               <input
                 type="text"
+                inputMode="decimal"
                 value={form.partidaElectronica || ""}
                 onChange={(e) => setForm({ ...form, partidaElectronica: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"
@@ -676,7 +709,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-bold text-sky-400">Coordenada X (Este UTM)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 value={form.coordenadaX || ""}
                 onChange={(e) => setForm({ ...form, coordenadaX: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-sky-500/40 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono font-bold focus:outline-none transition shadow-sm"
@@ -686,7 +720,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-bold text-sky-400">Coordenada Y (Norte UTM)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 value={form.coordenadaY || ""}
                 onChange={(e) => setForm({ ...form, coordenadaY: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-sky-500/40 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono font-bold focus:outline-none transition shadow-sm"
@@ -708,7 +743,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-semibold text-slate-400">Área Total (m²)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 value={form.areaTotal || ""}
                 onChange={(e) => setForm({ ...form, areaTotal: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono font-bold focus:outline-none transition"
@@ -718,7 +754,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-semibold text-slate-400">Por el Frente (m)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 value={form.porFrente || ""}
                 onChange={(e) => setForm({ ...form, porFrente: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"
@@ -728,7 +765,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-semibold text-slate-400">Por la Derecha (m)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 value={form.porDerecha || ""}
                 onChange={(e) => setForm({ ...form, porDerecha: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"
@@ -738,7 +776,8 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             <div>
               <label className="text-xs font-semibold text-slate-400">Por el Fondo (m)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="decimal"
                 value={form.porFondo || ""}
                 onChange={(e) => setForm({ ...form, porFondo: e.target.value })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"

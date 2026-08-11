@@ -327,10 +327,14 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">DNI</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="numeric"
                       name="dniPostulante"
                       value={form.dniPostulante}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setForm({ ...form, dniPostulante: val });
+                      }}
                       maxLength={8}
                       className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none transition font-mono"
                     />
@@ -341,10 +345,14 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Teléfono</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="numeric"
                       name="celular"
                       value={form.celular}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setForm({ ...form, celular: val });
+                      }}
                       className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none transition"
                     />
                   </div>
@@ -421,10 +429,14 @@ export default function BeneficiaryModal({
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-400">DNI cónyuge</label>
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
                           name="dniConyuge"
                           value={form.dniConyuge || ""}
-                          onChange={handleChange}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '');
+                            setForm({ ...form, dniConyuge: val });
+                          }}
                           maxLength={8}
                           className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-4 py-2 text-sm text-white focus:outline-none transition font-mono"
                         />
@@ -577,7 +589,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Partida electrónica</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="partidaElectronica"
                       value={form.partidaElectronica || ""}
                       onChange={handleChange}
@@ -588,7 +601,8 @@ export default function BeneficiaryModal({
                     <label className="text-xs font-semibold text-slate-400">Coordenadas (X / Y)</label>
                     <div className="flex gap-2">
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="decimal"
                         name="coordenadaX"
                         value={form.coordenadaX || ""}
                         onChange={handleChange}
@@ -596,7 +610,8 @@ export default function BeneficiaryModal({
                         className="w-1/2 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none transition"
                       />
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="decimal"
                         name="coordenadaY"
                         value={form.coordenadaY || ""}
                         onChange={handleChange}
@@ -628,7 +643,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Área total</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="areaTotal"
                       value={form.areaTotal || ""}
                       onChange={handleChange}
@@ -639,7 +655,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Por el frente</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="porFrente"
                       value={form.porFrente || ""}
                       onChange={handleChange}
@@ -653,7 +670,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Por la derecha</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="porDerecha"
                       value={form.porDerecha || ""}
                       onChange={handleChange}
@@ -664,7 +682,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Por la izquierda</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="porIzquierda"
                       value={form.porIzquierda || ""}
                       onChange={handleChange}
@@ -678,7 +697,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Por el fondo</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="porFondo"
                       value={form.porFondo || ""}
                       onChange={handleChange}
@@ -689,7 +709,8 @@ export default function BeneficiaryModal({
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-400">Área techada</label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="decimal"
                       name="areaTechada"
                       value={form.areaTechada || ""}
                       onChange={handleChange}
@@ -702,7 +723,8 @@ export default function BeneficiaryModal({
                 <div className="space-y-1.5 md:w-1/2 pr-2">
                   <label className="text-xs font-semibold text-slate-400">Área construida</label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="decimal"
                     name="areaConstruida"
                     value={form.areaConstruida || ""}
                     onChange={handleChange}
