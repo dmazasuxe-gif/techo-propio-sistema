@@ -490,7 +490,7 @@ export default function LandingPage() {
                                           badge.hexColor === '#ef4444' ? '239,68,68' :
                                           badge.hexColor === '#22c55e' ? '34,197,94' :
                                           badge.hexColor === '#22d3ee' ? '34,211,238' :
-                                          badge.hexColor === '#f97316' ? '249,115,22' : '14,165,233';
+                                          badge.hexColor === '#39ff14' ? '57,255,20' : '14,165,233';
                               return (
                                 <tr key={i} className="hover:bg-white/[0.02] transition-colors text-sm text-slate-300">
                                   <td className="p-4 font-medium text-white">{res.postulante}</td>

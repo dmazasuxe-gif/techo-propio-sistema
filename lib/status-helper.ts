@@ -48,8 +48,8 @@ export function getExpedienteStatusBadge(estado: string) {
   if (norm.includes("aproba")) {
     return {
       label: "Expediente Aprobado",
-      colorClass: "bg-orange-500/20 text-orange-300 border-orange-500/50",
-      hexColor: "#f97316" // Mezcla amarillo/naranja (Orange)
+      colorClass: "bg-[#39ff14]/10 text-[#39ff14] border-[#39ff14]/60",
+      hexColor: "#39ff14" // Verde Neón Brillante
     };
   }
 
