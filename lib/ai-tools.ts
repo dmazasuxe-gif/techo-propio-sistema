@@ -55,15 +55,21 @@ export const actualizarBeneficiario = {
   parametersSchema: {
     type: "object",
     properties: {
-      id: { type: "string", description: "El ID real del beneficiario" },
+      query: { type: "string", description: "El nombre completo, DNI o ID del beneficiario" },
       campos: { type: "object", description: "Campos a actualizar en formato snake_case" }
     },
-    required: ["id", "campos"]
+    required: ["query", "campos"]
   },
-  execute: async ({ id, campos }: any) => {
-    console.log(`[TOOL:actualizar_beneficiario] INPUT: id="${id}"`);
-    const result = await executeDbOperation('beneficiarios', 'actualizar', id, campos);
-    await logAIAction('actualizar_beneficiario', 'beneficiarios', id, campos, result.success ? 'success' : 'error');
+  execute: async ({ query, campos }: any) => {
+    console.log(`[TOOL:actualizar_beneficiario] INPUT: query="${query}"`);
+    const resBen = await resolverBeneficiario(query);
+    if (resBen.code === 'ENTITY_NOT_FOUND') return { error: resBen.message };
+    if (resBen.code === 'ENTITY_AMBIGUOUS') return { status: "ambiguous", mensaje: resBen.message, opciones: resBen.matches };
+    if (!resBen.success) return { error: resBen.message };
+
+    const beneficiarioId = resBen.entity.id;
+    const result = await executeDbOperation('beneficiarios', 'actualizar', beneficiarioId, campos);
+    await logAIAction('actualizar_beneficiario', 'beneficiarios', beneficiarioId, campos, result.success ? 'success' : 'error');
     return result;
   },
 };
@@ -91,19 +97,25 @@ export const buscarMaestros = {
 
 export const actualizarMaestro = {
   name: "actualizar_maestro",
-  description: 'Actualiza campos de un maestro. Requiere el ID real.',
+  description: 'Actualiza campos de un maestro.',
   parametersSchema: {
     type: "object",
     properties: {
-      id: { type: "string", description: "El ID real del maestro" },
+      query: { type: "string", description: "El nombre completo, DNI o ID del maestro" },
       campos: { type: "object", description: "Campos a actualizar en formato snake_case" }
     },
-    required: ["id", "campos"]
+    required: ["query", "campos"]
   },
-  execute: async ({ id, campos }: any) => {
-    console.log(`[TOOL:actualizar_maestro] INPUT: id="${id}"`);
-    const result = await executeDbOperation('maestros', 'actualizar', id, campos);
-    await logAIAction('actualizar_maestro', 'maestros', id, campos, result.success ? 'success' : 'error');
+  execute: async ({ query, campos }: any) => {
+    console.log(`[TOOL:actualizar_maestro] INPUT: query="${query}"`);
+    const resMae = await resolverMaestro(query);
+    if (resMae.code === 'ENTITY_NOT_FOUND') return { error: resMae.message };
+    if (resMae.code === 'ENTITY_AMBIGUOUS') return { status: "ambiguous", mensaje: resMae.message, opciones: resMae.matches };
+    if (!resMae.success) return { error: resMae.message };
+
+    const maestroId = resMae.entity.id;
+    const result = await executeDbOperation('maestros', 'actualizar', maestroId, campos);
+    await logAIAction('actualizar_maestro', 'maestros', maestroId, campos, result.success ? 'success' : 'error');
     return result;
   },
 };

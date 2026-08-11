@@ -83,6 +83,7 @@ HABILIDADES:
 - Gestión de documentos (agregar, enviar).
 - Consulta de desembolsos financieros.
 - Generación y envío de PDF por Entidad Financiera (Cajas, Bancos).
+- Consulta de DNI (Reniec) para obtener datos reales de personas por su número de DNI.
 
 Usa emojis y mantén un tono profesional pero amigable.`;
 
@@ -122,6 +123,49 @@ Usa emojis y mantén un tono profesional pero amigable.`;
           docs.push(doc);
           const res = await executeDbOperation('beneficiarios', 'actualizar', beneficiarioId, { documentos: docs });
           return res.success ? { mensaje: "Documento agregado exitosamente", documento: doc } : { error: res.message };
+        }
+      },
+      {
+        name: "consultar_dni_reniec",
+        description: 'Consulta los datos oficiales (nombres y apellidos) de una persona a través de su número de DNI.',
+        parametersSchema: {
+          type: "object",
+          properties: {
+            dni: { type: "string", description: "El número de DNI exacto de 8 dígitos." }
+          },
+          required: ["dni"]
+        },
+        execute: async ({ dni }: any) => {
+          console.log(`[TOOL:consultar_dni_reniec] INPUT: dni="${dni}"`);
+          if (!/^\d{8}$/.test(dni)) return { error: "El DNI debe contener exactamente 8 dígitos numéricos." };
+          try {
+            const token = process.env.DNI_API_TOKEN || "22777|XS67OpKKVWMkyhG6Ssv80ikuHCUSKTpcd5rZFxQS38614e56";
+            const apiUrl = process.env.DNI_API_URL || "https://apiperu.dev/api/dni/";
+            
+            const response = await fetch(`${apiUrl}${dni}`, {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+            });
+            
+            if (!response.ok) return { error: "No se pudo consultar el DNI. Posiblemente no exista o el servicio esté caído." };
+            
+            const apiResponse = await response.json();
+            if (!apiResponse.success || !apiResponse.data) return { error: "DNI no encontrado." };
+            
+            const apiData = apiResponse.data;
+            return {
+              mensaje: "Consulta exitosa.",
+              datos: {
+                dni: apiData.numero || dni,
+                nombres: apiData.nombres,
+                apellidoPaterno: apiData.apellido_paterno,
+                apellidoMaterno: apiData.apellido_materno,
+                nombreCompleto: `${apiData.nombres} ${apiData.apellido_paterno} ${apiData.apellido_materno}`
+              }
+            };
+          } catch (e: any) {
+            return { error: `Error en la consulta: ${e.message}` };
+          }
         }
       },
       {

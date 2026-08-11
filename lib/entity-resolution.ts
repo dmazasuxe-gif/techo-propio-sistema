@@ -80,7 +80,21 @@ export async function resolverBeneficiario(query: string): Promise<EntityResolut
       return buildResult('beneficiario', byName);
     }
 
-    // PASO 4: No encontrado
+    // PASO 4: Fallback de búsqueda difusa por palabras clave
+    const words = q.split(' ').filter(w => w.length > 2);
+    if (words.length > 1) {
+      let qBuilder = supabase.from('beneficiarios').select('*');
+      words.forEach(w => {
+        qBuilder = qBuilder.ilike('postulante', `%${w}%`);
+      });
+      const { data: byWords } = await qBuilder;
+      if (byWords && byWords.length > 0) {
+        console.log(`[ENTITY_RESOLUTION] ✅ Encontrado por búsqueda de palabras: ${byWords.length} resultado(s)`);
+        return buildResult('beneficiario', byWords);
+      }
+    }
+
+    // PASO 5: No encontrado
     console.log(`[ENTITY_RESOLUTION] ❌ Beneficiario no encontrado para "${q}"`);
     return {
       success: false,
@@ -156,7 +170,21 @@ export async function resolverMaestro(query: string): Promise<EntityResolutionRe
       return buildResult('maestro', byName);
     }
 
-    // PASO 4: No encontrado
+    // PASO 4: Fallback de búsqueda difusa por palabras clave
+    const words = q.split(' ').filter(w => w.length > 2);
+    if (words.length > 1) {
+      let qBuilder = supabase.from('maestros').select('*');
+      words.forEach(w => {
+        qBuilder = qBuilder.ilike('nombre', `%${w}%`);
+      });
+      const { data: byWords } = await qBuilder;
+      if (byWords && byWords.length > 0) {
+        console.log(`[ENTITY_RESOLUTION] ✅ Maestro encontrado por palabras: ${byWords.length} resultado(s)`);
+        return buildResult('maestro', byWords);
+      }
+    }
+
+    // PASO 5: No encontrado
     console.log(`[ENTITY_RESOLUTION] ❌ Maestro no encontrado para "${q}"`);
     return {
       success: false,
