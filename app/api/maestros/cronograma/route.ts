@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const toSnake = (obj: any) => {
       const newObj: any = {};
       Object.keys(obj).forEach(k => {
+        if (k === 'expandido') return; // Ignore UI-only property
         newObj[k.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`)] = obj[k];
       });
       return newObj;
