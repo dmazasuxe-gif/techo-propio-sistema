@@ -13,28 +13,41 @@ export async function GET(request: Request) {
   }
 
   try {
-    // TODO: Connect to real API when credentials are provided
-    // const response = await fetch(`https://api.example.com/dni/${dni}`, { headers: { 'Authorization': `Bearer ${process.env.DNI_API_KEY}` } });
+    const token = process.env.DNI_API_TOKEN || "22777|XS67OpKKVWMkyhG6Ssv80ikuHCUSKTpcd5rZFxQS38614e56";
+    const apiUrl = process.env.DNI_API_URL || "https://api.apis.net.pe/v2/reniec/dni?numero=";
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const response = await fetch(`${apiUrl}${dni}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    });
 
-    // DUMMY DATA FOR TESTING
-    if (dni === '00000000') {
-      return NextResponse.json({ error: "DNI no encontrado" }, { status: 404 });
+    if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json({ error: "DNI no encontrado" }, { status: 404 });
+      }
+      if (response.status === 401 || response.status === 403) {
+        return NextResponse.json({ error: "El servicio de consulta DNI presenta un problema de configuración (No autorizado)." }, { status: response.status });
+      }
+      if (response.status === 422) {
+        return NextResponse.json({ error: "Parámetros de consulta inválidos." }, { status: 422 });
+      }
+      return NextResponse.json({ error: "Error de conexión con el servicio de DNI." }, { status: response.status });
     }
 
-    if (dni === '99999999') {
-      return NextResponse.json({ error: "Servicio no disponible" }, { status: 503 });
-    }
+    const apiData = await response.json();
 
-    // Default successful response
+    // Map the response to our standardized format
+    // apis.net.pe v2 returns: nombres, apellidoPaterno, apellidoMaterno, numeroDocumento
     const data = {
-      dni: dni,
-      nombres: "JUAN CARLOS",
-      apellidoPaterno: "PÉREZ",
-      apellidoMaterno: "GÓMEZ",
-      fechaNacimiento: "15/03/1985"
+      dni: apiData.numeroDocumento || dni,
+      nombres: apiData.nombres,
+      apellidoPaterno: apiData.apellidoPaterno,
+      apellidoMaterno: apiData.apellidoMaterno,
+      // The API might not return fechaNacimiento, but we map it if it exists
+      fechaNacimiento: apiData.fechaNacimiento || ""
     };
 
     return NextResponse.json(data);
