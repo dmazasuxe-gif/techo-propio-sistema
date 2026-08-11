@@ -49,7 +49,8 @@ export function LandingCMS() {
             announcement: { 
               ...DEFAULT_LANDING_CONTENT.announcement, 
               ...data.content.announcement,
-              images: data.content.announcement?.images || []
+              images: data.content.announcement?.images || [],
+              backdropOpacity: data.content.announcement?.backdropOpacity ?? 80
             }
           });
         } else {
@@ -162,8 +163,22 @@ export function LandingCMS() {
             POPUP BANNER (Preview inside CMS)
             ========================================= */}
         {config.announcement.enabled && (
-          <div className="relative z-[90] p-4 flex justify-center mt-4">
-            <div className="w-full max-w-3xl bg-slate-800/90 backdrop-blur-xl border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden relative">
+          <div className="relative z-[90] p-4 flex flex-col items-center mt-4 border border-sky-500/20 rounded-2xl bg-slate-900/50">
+            <div className="w-full mb-6">
+              <label className="text-sm text-slate-300 font-bold flex justify-between">
+                <span>Opacidad del Fondo Oscuro</span>
+                <span className="text-sky-400">{config.announcement.backdropOpacity}%</span>
+              </label>
+              <input 
+                type="range" min="0" max="100" 
+                value={config.announcement.backdropOpacity}
+                onChange={(e) => updateNestedConfig(['announcement', 'backdropOpacity'], Number(e.target.value))}
+                className="w-full mt-2 accent-sky-500"
+              />
+              <p className="text-xs text-slate-500 mt-1">Ajusta qué tan oscuro se verá el fondo de la página detrás del anuncio.</p>
+            </div>
+
+            <div className="w-full max-w-3xl relative flex flex-col items-center">
               <div className="absolute top-4 right-4 z-20">
                 <div className="p-2 bg-black/40 rounded-full text-slate-400 cursor-not-allowed">
                   <X className="w-6 h-6 text-white" />

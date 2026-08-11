@@ -53,7 +53,8 @@ export default function LandingPage() {
             announcement: { 
               ...DEFAULT_LANDING_CONTENT.announcement, 
               ...data.content.announcement,
-              images: data.content.announcement?.images || []
+              images: data.content.announcement?.images || [],
+              backdropOpacity: data.content.announcement?.backdropOpacity ?? 80
             }
           });
         }
@@ -124,41 +125,43 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[250] flex items-center justify-center p-4 backdrop-blur-sm"
+            style={{ backgroundColor: `rgba(0, 0, 0, ${(config.announcement.backdropOpacity || 80) / 100})` }}
           >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', bounce: 0.4, duration: 0.8 }}
-              className="relative max-w-4xl w-full max-h-[85vh] bg-slate-900 border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden flex items-center justify-center"
+            <button 
+              onClick={() => setShowAnnouncement(false)}
+              className="absolute top-6 right-6 z-[260] p-3 bg-black/60 hover:bg-black/90 rounded-full text-white transition-colors border border-white/20 shadow-2xl"
             >
-              <button 
-                onClick={() => setShowAnnouncement(false)}
-                className="absolute top-4 right-4 z-50 p-2 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <X className="w-8 h-8" />
+            </button>
+
+            <motion.div 
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', bounce: 0.5, duration: 0.8 }}
+              className="relative max-w-5xl w-full max-h-[90vh] flex items-center justify-center"
+            >
               
-              <div className="w-full h-full max-h-[85vh] flex items-center justify-center bg-black">
+              <div className="w-full h-full max-h-[90vh] flex items-center justify-center relative">
                 <AnimatePresence mode="wait">
                   <motion.img 
                     key={announcementImageIndex}
                     src={config.announcement.images[announcementImageIndex]}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
                     alt="Announcement" 
-                    className="w-full h-full object-contain max-h-[85vh]"
+                    className="w-full h-full object-contain max-h-[90vh] drop-shadow-2xl rounded-xl"
                   />
                 </AnimatePresence>
                 
                 {/* Dots indicator if multiple images */}
                 {config.announcement.images.length > 1 && (
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+                  <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-2 z-10">
                     {config.announcement.images.map((_, idx) => (
-                      <div key={idx} className={`w-2 h-2 rounded-full ${idx === announcementImageIndex ? 'bg-sky-500' : 'bg-white/30'}`} />
+                      <div key={idx} className={`w-3 h-3 rounded-full shadow-lg ${idx === announcementImageIndex ? 'bg-sky-500' : 'bg-white/40'}`} />
                     ))}
                   </div>
                 )}

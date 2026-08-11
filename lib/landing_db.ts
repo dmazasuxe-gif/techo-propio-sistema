@@ -35,6 +35,7 @@ export interface LandingContent {
   announcement: {
     enabled: boolean;
     images: string[];
+    backdropOpacity: number;
   };
 }
 
@@ -92,7 +93,8 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   },
   announcement: {
     enabled: false,
-    images: []
+    images: [],
+    backdropOpacity: 80
   }
 };
 
