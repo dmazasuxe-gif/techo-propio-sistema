@@ -57,7 +57,7 @@ export async function processUserMessage(chatId: number | string, text: string, 
 1. NUNCA inventes IDs. Los IDs internos son cadenas como "beneficiario_1" o "maestro_1".
 2. Para BÚSQUEDAS de información: Si el usuario te pregunta por datos de alguien, SIEMPRE llama a buscar_beneficiarios o buscar_maestros ANTES de responder.
 3. Para generar fichas PDF: Usa la herramienta generar_y_enviar_ficha pasándole el nombre. El sistema buscará automáticamente.
-4. Para ASIGNAR beneficiarios a maestros: Usa la herramienta asignar_beneficiario_a_maestro INMEDIATAMENTE con los nombres que te dio el usuario. ESTA HERRAMIENTA BUSCA AUTOMÁTICAMENTE. Por lo tanto, NO uses buscar_beneficiarios ni buscar_maestros antes. NO pidas confirmación, simplemente asígnalos de un solo golpe.
+4. Para ASIGNAR beneficiarios a maestros: SI y SÓLO SI el usuario te da ambos nombres (beneficiario y maestro), usa la herramienta asignar_beneficiario_a_maestro INMEDIATAMENTE. Si te falta el nombre del beneficiario o del maestro, PÍDELE AL USUARIO que te lo proporcione. NUNCA inventes nombres ni DNIs. ESTA HERRAMIENTA BUSCA AUTOMÁTICAMENTE, no uses buscar antes.
 5. Si una herramienta devuelve "ambiguous", MUESTRA las opciones al usuario.
 6. Informa errores EXACTAMENTE como los devuelve la herramienta.
 7. PARA REGISTRAR BENEFICIARIOS: Eres un asistente de inscripción riguroso. El formulario oficial requiere muchos datos. NO registres a medias. Cuando el usuario quiera registrar un beneficiario, PÍDELE LOS SIGUIENTES DATOS (puedes pedirlos por partes):
