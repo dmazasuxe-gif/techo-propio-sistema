@@ -506,9 +506,9 @@ export function LandingCMS() {
             STATUS SEARCH PREVIEW
             ========================================= */}
         {config.statusSearch?.enabled && (
-          <section className="py-20 px-6 border-t border-white/5 bg-[#0a0c10]">
-            <div className="max-w-4xl mx-auto bg-slate-900/50 rounded-2xl p-8 border border-white/10 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-2 text-center">
+          <section className="py-16 px-6 border-t border-white/5 bg-[#0a0c10]">
+            <div className="max-w-3xl mx-auto bg-slate-900/50 rounded-2xl p-6 md:p-10 border border-white/10 shadow-2xl">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 text-center">
                 <EditableText 
                   value={config.statusSearch.title} 
                   onChange={(v) => updateNestedConfig(['statusSearch', 'title'], v)} 

@@ -422,14 +422,14 @@ export default function LandingPage() {
             STATUS SEARCH SECTION
             ========================================= */}
         {config.statusSearch?.enabled && (
-          <section id="consulta-estado" className="py-24 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-md relative z-10">
-            <div className="max-w-5xl mx-auto">
-              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+          <section id="consulta-estado" className="py-16 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-md relative z-10">
+            <div className="max-w-3xl mx-auto">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-[80px]"></div>
                 
                 <div className="relative z-10">
-                  <div className="text-center mb-10">
-                    <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-montserrat)] text-white mb-4">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl md:text-3xl font-bold font-[family-name:var(--font-montserrat)] text-white mb-3">
                       {config.statusSearch.title}
                     </h2>
                     <p className="text-slate-400 max-w-2xl mx-auto whitespace-pre-wrap text-lg">
@@ -487,9 +487,13 @@ export default function LandingPage() {
                                 <td className="p-4 font-medium text-white">{res.postulante}</td>
                                 <td className="p-4 font-mono">{res.dni_postulante}</td>
                                 <td className="p-4">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                                  <motion.span 
+                                    animate={{ scale: [1, 1.05, 1], boxShadow: ["0px 0px 0px rgba(14,165,233,0)", "0px 0px 15px rgba(14,165,233,0.6)", "0px 0px 0px rgba(14,165,233,0)"] }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/50"
+                                  >
                                     {res.estado}
-                                  </span>
+                                  </motion.span>
                                 </td>
                                 <td className="p-4 text-slate-400">{res.created_at ? new Date(res.created_at).toLocaleDateString() : '-'}</td>
                                 <td className="p-4">{[res.departamento, res.provincia, res.distrito].filter(Boolean).join(' / ') || '-'}</td>
