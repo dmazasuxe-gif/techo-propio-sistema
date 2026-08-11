@@ -74,7 +74,7 @@ export function EditableText({ value, onChange, className = "", multiline = fals
 
   return (
     <div 
-      className={`group relative cursor-pointer hover:outline-dashed hover:outline-2 hover:outline-sky-500/50 hover:bg-sky-500/5 transition-all rounded px-1 -mx-1 ${className}`}
+      className={`group relative cursor-pointer hover:outline-dashed hover:outline-2 hover:outline-sky-500/50 hover:bg-sky-500/5 transition-all rounded px-1 -mx-1 ${!value ? 'min-w-[40px] min-h-[1.5em] bg-white/5 border border-dashed border-white/20' : ''} ${className}`}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -82,9 +82,9 @@ export function EditableText({ value, onChange, className = "", multiline = fals
       }}
     >
       {html ? (
-        <span dangerouslySetInnerHTML={{ __html: value }} />
+        <span dangerouslySetInnerHTML={{ __html: value || '&nbsp;' }} />
       ) : (
-        <span>{value}</span>
+        <span>{value || '\u00A0'}</span>
       )}
       <div className="absolute -top-3 -right-3 p-1 bg-sky-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-white shadow-lg z-50">
         <Edit2 className="w-3 h-3" />
