@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
   Download,
 } from "lucide-react";
+import DniLookupModal from "./DniLookupModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -95,25 +96,12 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadTarget, setUploadTarget] = useState<{ maestroId: string; pagoId: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDniModalOpen, setIsDniModalOpen] = useState(false);
 
   // ─── Handlers Maestros ────────────────────────────────────────────────────
 
   const handleAddMaestro = () => {
-    const id = `m${Date.now()}`;
-    setMaestros(prev => [
-      ...prev,
-      {
-        id,
-        nombre: "Nuevo Maestro",
-        dni: "",
-        celular: "",
-        especialidad: "Construcción Civil",
-        montoPorVivienda: 0,
-        beneficiariosAsignados: [],
-        expandido: true,
-        pagos: [],
-      },
-    ]);
+    setIsDniModalOpen(true);
   };
 
   const handleDeleteMaestro = (id: string) =>
@@ -410,7 +398,8 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
             <FileSpreadsheet className="w-4 h-4" /> Exportar
           </button>
           <button onClick={handleAddMaestro} className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20">
-            <Plus className="w-4 h-4" /> Nuevo Maestro
+            <Plus className="w-4 h-4" />
+            Consultar y Agregar Maestro
           </button>
         </div>
       </div>
@@ -667,6 +656,39 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
           </div>
         );
       })}
+
+      <DniLookupModal
+        isOpen={isDniModalOpen}
+        onClose={() => setIsDniModalOpen(false)}
+        title="Consultar DNI - Maestro de Obra"
+        confirmText="SÍ, REGISTRAR MAESTRO DE OBRA"
+        hidePersonalData={false}
+        onConfirm={(data) => {
+          const duplicate = maestros.find(m => m.dni === data.dni);
+          if (duplicate) {
+            alert("Este DNI ya se encuentra registrado como maestro de obra.");
+            return;
+          }
+          
+          const id = `maestro_${Date.now()}`;
+          setMaestros(prev => [
+            {
+              id,
+              // STRICT REQUIREMENT: Only save Nombres and DNI, discard surnames and birthdate
+              nombre: data.nombres,
+              dni: data.dni,
+              celular: "",
+              especialidad: "Construcción Civil",
+              montoPorVivienda: 0,
+              beneficiariosAsignados: [],
+              pagos: [],
+              expandido: true,
+            },
+            ...prev
+          ]);
+          setIsDniModalOpen(false);
+        }}
+      />
     </div>
   );
 }

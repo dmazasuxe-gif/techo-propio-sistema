@@ -22,9 +22,13 @@ interface FullRegistrationFormProps {
   nextId: string;
   editingData?: Beneficiario | null;
   onCancelEdit?: () => void;
+  beneficiarios?: Beneficiario[];
 }
 
-export default function FullRegistrationForm({ onSave, nextId, editingData, onCancelEdit }: FullRegistrationFormProps) {
+import DniLookupModal from "./DniLookupModal";
+
+export default function FullRegistrationForm({ onSave, nextId, editingData, onCancelEdit, beneficiarios = [] }: FullRegistrationFormProps) {
+  const [isDniModalOpen, setIsDniModalOpen] = useState(false);
   const departamentosList = Object.keys(UBIGEO_PERU);
 
   const getInitialState = (): Beneficiario => {
@@ -122,13 +126,16 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
     setForm(prev => ({ ...prev, postulante: full }));
   };
 
-  const updateConyugeFullName = (nom: string, pat: string, mat: string) => {
-    const full = `${nom} ${pat} ${mat}`.trim();
-    setForm(prev => ({ ...prev, conyuge: full }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!editingData && form.dniPostulante) {
+      const duplicate = beneficiarios.find(b => b.dniPostulante === form.dniPostulante);
+      if (duplicate) {
+        alert(`Este DNI ya se encuentra registrado como beneficiario (Expediente: ${duplicate.id}). No se puede crear un registro duplicado.`);
+        return;
+      }
+    }
 
     const fullDir = `${form.calle || ""} Mz ${form.manzana || ""} Lt ${form.lote || ""}`.trim();
     const finalDir = fullDir || `Distrito de ${form.distrito}`;
@@ -312,15 +319,26 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-400">DNI del Postulante *</label>
-              <input
-                type="text"
-                required
-                maxLength={8}
-                value={form.dniPostulante}
-                onChange={(e) => setForm({ ...form, dniPostulante: e.target.value.replace(/\D/g, '') })}
-                className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono font-bold focus:outline-none transition"
-              />
+              <label className="block text-[11px] uppercase tracking-wider text-slate-500 font-bold mb-1.5">DNI del Postulante *</label>
+              <div className="flex gap-2">
+                <input
+                  required
+                  type="text"
+                  maxLength={8}
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono font-bold focus:outline-none transition"
+                  value={form.dniPostulante}
+                  onChange={(e) => setForm({ ...form, dniPostulante: e.target.value.replace(/\D/g, '') })}
+                />
+                {!editingData && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDniModalOpen(true)}
+                    className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap"
+                  >
+                    🔍 Consultar DNI
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -824,6 +842,29 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
 
       </form>
 
+      <DniLookupModal
+        isOpen={isDniModalOpen}
+        onClose={() => setIsDniModalOpen(false)}
+        title="Consultar DNI - Beneficiario"
+        confirmText="SÍ, REGISTRAR BENEFICIARIO"
+        onConfirm={(data) => {
+          // Check for duplicates before filling form
+          const duplicate = beneficiarios.find(b => b.dniPostulante === data.dni);
+          if (duplicate) {
+            alert("Este DNI ya se encuentra registrado como beneficiario.");
+            return;
+          }
+          setForm(prev => ({
+            ...prev,
+            dniPostulante: data.dni,
+            nombres: data.nombres,
+            apellidoPaterno: data.apellidoPaterno || "",
+            apellidoMaterno: data.apellidoMaterno || "",
+            fechaNacimiento: data.fechaNacimiento || prev.fechaNacimiento
+          }));
+          setIsDniModalOpen(false);
+        }}
+      />
     </div>
   );
 }

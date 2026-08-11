@@ -18,7 +18,7 @@ import {
   LogOut
 } from "lucide-react";
 
-export type NavView = "resumen" | "ficha_registro" | "registros" | "expedientes" | "documentos" | "pagos" | "maestros";
+export type NavView = "resumen" | "ficha_registro" | "registros" | "expedientes" | "documentos" | "pagos" | "maestros" | "consulta_dni";
 
 interface SidebarProps {
   activeView: NavView;
@@ -43,6 +43,7 @@ export default function Sidebar({
     { id: "documentos" as NavView, label: "DOCUMENTOS", subtitle: "Archivos PDF e imágenes", icon: FileText },
     { id: "pagos" as NavView, label: "Pagos", subtitle: "Cronograma de Pagos", icon: CreditCard },
     { id: "maestros" as NavView, label: "Maestros", subtitle: "Planificación de Maestros", icon: Hammer },
+    { id: "consulta_dni" as NavView, label: "Consulta DNI", subtitle: "Búsqueda informativa", icon: Sparkles },
   ];
 
   return (

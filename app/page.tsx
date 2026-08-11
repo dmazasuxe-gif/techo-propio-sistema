@@ -22,6 +22,7 @@ import CronogramaObra from "./components/CronogramaObra";
 import PlanosIngenieria from "./components/PlanosIngenieria";
 import CronogramaPagos from "./components/CronogramaPagos";
 import CronogramaMaestros from "./components/CronogramaMaestros";
+import ConsultaDniView from "./components/ConsultaDniView";
 import LoginScreen from "./components/LoginScreen";
 
 export default function Home() {
@@ -356,6 +357,11 @@ export default function Home() {
           {/* Module 7: Maestros de Obra */}
           {activeNavView === "maestros" && (
             <CronogramaMaestros beneficiarios={beneficiarios} />
+          )}
+
+          {/* Module 8: Consulta DNI */}
+          {activeNavView === "consulta_dni" && (
+            <ConsultaDniView />
           )}
 
         </main>
