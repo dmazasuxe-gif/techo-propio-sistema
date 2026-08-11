@@ -1,502 +1,233 @@
-/* eslint-disable @typescript-eslint/no-unused-vars , react-hooks/set-state-in-effect */
-"use client";
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
-import React, { useState, useEffect, useCallback } from "react";
-import confetti from "canvas-confetti";
-import { Beneficiario, Dimensiones, Insumo, PartidaAPU } from "./types";
-import { BENEFICIARIOS_INICIALES, INSUMOS_INICIALES, PARTIDAS_APU_INICIALES } from "./constants/initialData";
-import { ArrowLeft, User, Ruler, Wrench, Hourglass, FileText, CheckCircle2, Menu, X } from "lucide-react";
-
-import Sidebar, { NavView } from "./components/Sidebar";
-import PeruMap from "./components/PeruMap";
-import Dashboard from "./components/Dashboard";
-import BeneficiaryFicha from "./components/BeneficiaryFicha";
-import DocumentManager from "./components/DocumentManager";
-import ExpedientesView from "./components/ExpedientesView";
-import FullRegistrationForm from "./components/FullRegistrationForm";
-import InteractivePlano from "./components/InteractivePlano";
-import MetradosSheet from "./components/MetradosSheet";
-import ApuLibrary from "./components/ApuLibrary";
-import PresupuestoSheet from "./components/PresupuestoSheet";
-import CronogramaObra from "./components/CronogramaObra";
-import PlanosIngenieria from "./components/PlanosIngenieria";
-import CronogramaPagos from "./components/CronogramaPagos";
-import CronogramaMaestros from "./components/CronogramaMaestros";
-import ConsultaDniView from "./components/ConsultaDniView";
-import LoginScreen from "./components/LoginScreen";
-
-export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [beneficiarios, setBeneficiarios] = useState<Beneficiario[]>(BENEFICIARIOS_INICIALES);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editingBeneficiaryForForm, setEditingBeneficiaryForForm] = useState<Beneficiario | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("ficha");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  
-  // Navigation View State
-  const [activeNavView, setActiveNavView] = useState<NavView>("resumen");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-
-  // Dynamic engineering simulation states
-  const [dimensiones, setDimensiones] = useState<Dimensiones>({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
-  const [insumos, setInsumos] = useState<Insumo[]>(INSUMOS_INICIALES);
-  const [partidasApu, setPartidasApu] = useState<PartidaAPU[]>(PARTIDAS_APU_INICIALES);
-
-  const selectedBeneficiary = beneficiarios.find(b => b.id === selectedId);
-
-  const handleSelectExpediente = (id: string) => {
-    setSelectedId(id);
-    setActiveTab("ficha");
-    setActiveNavView("expedientes");
-  };
-
-  const handleOpenNewModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleNavSelect = (view: NavView) => {
-    setActiveNavView(view);
-    setMobileMenuOpen(false);
-    if (view === "expedientes" && !selectedId && beneficiarios.length > 0) {
-      setSelectedId(beneficiarios[0].id);
-    }
-  };
-
-  // Sync Dimensiones with selected beneficiary
-  useEffect(() => {
-    if (selectedBeneficiary?.notas) {
-      try {
-        const parsed = JSON.parse(selectedBeneficiary.notas);
-        if (parsed.dimensiones) {
-          setDimensiones(parsed.dimensiones);
-          return;
-        }
-      } catch(e) {}
-    }
-    setDimensiones({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
-  }, [selectedId, beneficiarios]);
-
-  const handleSaveExpedienteData = (key: string, data: any) => {
-    if (!selectedBeneficiary) return;
-    let notasObj: any = {};
-    if (selectedBeneficiary.notas) {
-      try { notasObj = JSON.parse(selectedBeneficiary.notas); } catch (e) {}
-    }
-    notasObj[key] = data;
-    const updatedBeneficiario = { ...selectedBeneficiary, notas: JSON.stringify(notasObj) };
-    handleEditBeneficiary(updatedBeneficiario);
-  };
-
-  const loadBeneficiarios = useCallback(async () => {
-    try {
-      const res = await fetch("/api/beneficiarios");
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setBeneficiarios(data);
-        }
-      }
-    } catch (err) {
-      console.error("Error cargando beneficiarios desde API:", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadBeneficiarios();
-    const storedLogin = localStorage.getItem("techo-propio-logged-in");
-    if (storedLogin === "true") {
-      setIsLoggedIn(true);
-    }
-  }, [loadBeneficiarios]);
-
-  const handleLoginStatus = (status: boolean) => {
-    setIsLoggedIn(status);
-    if (status) {
-      localStorage.setItem("techo-propio-logged-in", "true");
-    } else {
-      localStorage.removeItem("techo-propio-logged-in");
-    }
-  };
-
-  const handleSaveBeneficiary = async (updated: Beneficiario) => {
-    const exists = beneficiarios.some(b => b.id === updated.id);
-    if (exists) {
-      setBeneficiarios(prev => prev.map(b => b.id === updated.id ? updated : b));
-      fetch("/api/beneficiarios", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      }).catch(console.error);
-    } else {
-      setBeneficiarios(prev => [updated, ...prev]);
-      setSelectedId(updated.id);
-      setActiveTab("ficha");
-      setActiveNavView("expedientes");
-      fetch("/api/beneficiarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      }).catch(console.error);
-    }
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-  };
-
-  const handleDeleteBeneficiary = async (id: string) => {
-    setBeneficiarios(prev => prev.filter(b => b.id !== id));
-    if (selectedId === id) setSelectedId(null);
-    fetch(`/api/beneficiarios?id=${id}`, { method: "DELETE" }).catch(console.error);
-  };
-
-  const handleEditBeneficiary = async (updated: Beneficiario) => {
-    setBeneficiarios(prev => prev.map(b => b.id === updated.id ? updated : b));
-    fetch("/api/beneficiarios", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    }).catch(console.error);
-  };
-
-  const handleUpdateInsumoPrice = (id: string, newPrice: number) => {
-    setInsumos(prev => prev.map(ins => ins.id === id ? { ...ins, precioUnitario: newPrice } : ins));
-  };
-
-  const calculateTotalBudget = (): number => {
-    const area = dimensiones.largo * dimensiones.ancho;
-    const longMuros = (2 * (dimensiones.largo + dimensiones.ancho)) + (dimensiones.habitaciones >= 1 ? dimensiones.ancho : 0) + (dimensiones.habitaciones >= 2 ? (dimensiones.largo * 0.5) : 0);
-    const getQty = (item: string) => {
-      if (["01.01", "01.02", "06.01"].includes(item)) return area;
-      if (item === "02.01") return longMuros * 0.4 * 1;
-      if (item === "03.01") return longMuros * 0.4 * 0.8;
-      if (item === "04.01") return Math.max(0, (longMuros * dimensiones.altura) - 6.5);
-      if (item === "05.01") return 12 * 0.15 * 0.25 * dimensiones.altura;
-      if (item === "07.01" || item === "07.02") return Math.max(0, (longMuros * dimensiones.altura) - 6.5) * 2;
-      return 1;
-    };
-    let totalDirecto = 0;
-    partidasApu.forEach(p => {
-      let unitCost = 0;
-      [...p.manoDeObra, ...p.materiales, ...p.equipos].forEach(d => {
-        const ins = insumos.find(i => i.id === d.insumoId);
-        if (ins) unitCost += d.coeficiente * ins.precioUnitario;
-      });
-      totalDirecto += getQty(p.item) * unitCost;
-    });
-    return (totalDirecto * 1.15) * 1.18;
-  };
-
-  const nextAutoId = `REG-${String(beneficiarios.length + 1).padStart(4, "0")}`;
-
-  if (!isLoggedIn) {
-    return <LoginScreen onLogin={() => handleLoginStatus(true)} />;
-  }
-
+export default function LandingPage() {
   return (
-    <div className="flex h-[100svh] w-full bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
-      
-      {/* ── DESKTOP Sidebar (hidden on mobile) ── */}
-      <div className="hidden md:flex md:flex-shrink-0">
-        <Sidebar
-          activeView={activeNavView}
-          onSelectView={handleNavSelect}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          onLogout={() => handleLoginStatus(false)}
-        />
-      </div>
+    <div className="bg-surface text-on-surface antialiased pt-20">
+      {/* TopNavBar Component */}
+      <nav className="bg-surface dark:bg-surface text-primary dark:text-primary-fixed-dim font-label-md text-label-md uppercase tracking-wider fixed top-0 left-0 w-full z-50 border-b border-outline-variant dark:border-on-surface-variant">
+        <div className="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center h-20">
+          {/* Brand Logo */}
+          <Link href="/" className="flex items-center">
+            <img 
+              alt="CONSTRUCTORA MAZA QUIROZ" 
+              className="h-12 w-auto object-contain" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBW4_asTQxvdL1s7s5Mu1Xow1hLVxR9hko8evbeZrw6eMKXPHAi1R4-PPFFOrY8uFJ2ZAR4kuFiRFZYFm51Dt1s8ouObY45FLymztKWQ80JjtTUuFLTtYZwwG_pH-IrS9E22o5WEwDYF25EirX5kU1ZthWIjdj14uVLkrS5VE-p8FjyQfkU_w3RT0WYNqqASjj5zvVMxF9r75LvCLCJfB9AdNT811SGUyIoNhltBTptr-sadjP8vg_2VQTgOoUCnIDv3A" 
+            />
+          </Link>
 
-      {/* ── MOBILE Drawer overlay ── */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* ── MOBILE Drawer panel ── */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col md:hidden transition-transform duration-300 ${
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <Sidebar
-          activeView={activeNavView}
-          onSelectView={handleNavSelect}
-          isCollapsed={false}
-          onToggleCollapse={() => setMobileMenuOpen(false)}
-          onLogout={() => { handleLoginStatus(false); setMobileMenuOpen(false); }}
-        />
-      </div>
-
-      {/* ── Main App Content Area ── */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        
-        {/* Top App Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow-md flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
-              aria-label="Abrir menú"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <h1 className="text-sm md:text-base font-extrabold tracking-tight text-white flex items-center gap-2">
-              Techo Propio
-              <span className="hidden sm:inline text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 font-bold border border-sky-500/20">Maza Quiroz</span>
-            </h1>
+          {/* Navigation Links (Web) */}
+          <div className="hidden md:flex space-x-gutter items-center h-full">
+            <Link href="#services" className="text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-95 transition-transform duration-150 h-full flex items-center px-4">
+              Servicios
+            </Link>
+            <Link href="#projects" className="text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-95 transition-transform duration-150 h-full flex items-center px-4">
+              Proyectos
+            </Link>
+            <Link href="#contact" className="text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors duration-200 active:scale-95 transition-transform duration-150 h-full flex items-center px-4">
+              Contacto
+            </Link>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-xs text-slate-400 font-semibold border border-slate-800 bg-slate-900 px-3 py-1.5 rounded-xl">
-              Sistema de Gestión
-            </span>
+          {/* Trailing Action & Acceso Sistema */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/sistema" className="text-primary hover:text-secondary transition-colors font-bold">
+              Acceso al Sistema
+            </Link>
+            <Link href="#contact" className="bg-primary text-on-primary px-6 py-3 font-label-md text-label-md hover:bg-surface-tint transition-colors duration-200 active:scale-95">
+              Solicitar Cotización
+            </Link>
           </div>
-        </header>
 
-        {/* View Router */}
-        <main className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6">
-          
-          {/* Module 1: Resumen (Mapa Interactivo del Perú) */}
-          {activeNavView === "resumen" && (
-            <PeruMap
-              beneficiarios={beneficiarios}
-              onSelectDepartmentFilter={() => {
-                setActiveNavView("registros");
-              }}
-              onRefresh={() => {
-                loadBeneficiarios();
-                confetti({ particleCount: 50, spread: 60 });
-              }}
-            />
-          )}
+          {/* Mobile Menu Toggle */}
+          <button className="md:hidden text-primary">
+            {/* simple hamburger icon using tailwind/svg if material symbols not loaded, but material is used in original */}
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+        </div>
+      </nav>
 
-          {/* Module 2: Registros (Lista de Beneficiarios + Filtros UBIGEO + Excel) */}
-          {activeNavView === "registros" && (
-            <ExpedientesView
-              beneficiarios={beneficiarios}
-              onSelectBeneficiary={(id) => {
-                setSelectedId(id);
-                setActiveNavView("expedientes");
-              }}
-              onDeleteBeneficiary={handleDeleteBeneficiary}
-              onEditBeneficiary={handleEditBeneficiary}
-              onOpenEditForm={(b) => {
-                setEditingBeneficiaryForForm(b);
-                setActiveNavView("ficha_registro");
-              }}
-              onRefresh={() => {
-                loadBeneficiarios();
-                confetti({ particleCount: 50, spread: 60 });
-              }}
-            />
-          )}
+      {/* Hero Section */}
+      <header className="relative w-full min-h-[819px] flex items-center bg-surface-container-lowest overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div 
+            className="bg-cover bg-center w-full h-full opacity-30" 
+            style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDVMSiPGYO6-FWYnFWekhq8591dx4Kq0s-gXmZ5BdKPvWgzinPRMbMbSBq6JDTCOwIUaKN3sdj9mVTeRjAdASEjhP49OFSvxRTxwsKlTn11YGu0mqvKgYKxIv3JK10KdS_RNa7v8X5x7tIMfB_k_39aUHMp-s8hYVyRXR-Q9rCF7B2rHISbDalac_FXytMHWCCaJadi_bCEaCMbulDVsm3sq4Zw8cbMFqcB4hhyc8ntMo89DkdsT8r3')" }}
+          ></div>
+        </div>
+        <div className="relative z-10 max-w-container-max mx-auto px-margin-desktop md:px-margin-desktop w-full py-rhythm-y-8">
+          <div className="max-w-2xl bg-surface/90 backdrop-blur-md p-8 md:p-12 arch-border">
+            <h1 className="font-headline-xl text-headline-xl md:font-headline-xl text-primary mb-6">Construyendo el Futuro con Precisión.</h1>
+            <p className="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-lg">
+                CONSTRUCTORA MAZA QUIROZ ofrece calidad inquebrantable e integridad estructural para proyectos residenciales, comerciales y de infraestructura a gran escala. Diseñamos la permanencia.
+            </p>
+            <Link href="#contact" className="inline-flex bg-primary text-on-primary px-8 py-4 font-label-md text-label-md hover:bg-surface-tint transition-colors duration-200 active:scale-95 uppercase tracking-wider">
+                Inicia tu Proyecto
+            </Link>
+          </div>
+        </div>
+      </header>
 
-          {/* Module 3: Ficha de Registro (Formulario Oficial Completo) */}
-          {activeNavView === "ficha_registro" && (
-            <FullRegistrationForm
-              onSave={(updated) => {
-                handleSaveBeneficiary(updated);
-                setEditingBeneficiaryForForm(null);
-                setActiveNavView("registros");
-              }}
-              nextId={nextAutoId}
-              editingData={editingBeneficiaryForForm}
-              onCancelEdit={() => {
-                setEditingBeneficiaryForForm(null);
-                setActiveNavView("registros");
-              }}
-            />
-          )}
-
-          {/* Module 4: Expediente Técnico e Ingeniería (Imagen 1: Ficha, Plano, Metrados, APU, Presupuesto, Cronograma, DWG) */}
-          {activeNavView === "expedientes" && (
-            !selectedId ? (
-              <div className="w-full max-w-7xl mx-auto p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 shadow-2xl">
-                <Wrench className="w-12 h-12 mx-auto text-sky-400" />
-                <h2 className="text-xl font-black text-white">Selecciona un Beneficiario para el Expediente Técnico</h2>
-                <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Por favor selecciona un expediente de la lista en el menú Registros para visualizar la Ficha Familiar, Planos, Metrados, APU y Presupuesto de obra.
-                </p>
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      if (beneficiarios.length > 0) setSelectedId(beneficiarios[0].id);
-                      else setActiveNavView("registros");
-                    }}
-                    className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 active:scale-95 transition-transform duration-150"
-                  >
-                    Ver Expediente de {beneficiarios[0]?.postulante || "Ejemplo"}
-                  </button>
-                </div>
+      {/* Services Section */}
+      <section id="services" className="py-24 bg-surface">
+        <div className="max-w-container-max mx-auto px-margin-desktop">
+          <div className="mb-16 max-w-3xl">
+            <h2 className="font-headline-lg text-headline-lg text-primary mb-4">Nuestra Experiencia</h2>
+            <div className="w-16 h-1 bg-secondary mb-6"></div>
+            <p className="font-body-md text-body-md text-on-surface-variant">Ingeniería de precisión aplicada en diversos sectores de la construcción.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+            {/* Service 1 */}
+            <div className="bg-surface-container-lowest p-8 arch-border hover:shadow-lg transition-shadow duration-300">
+              <div className="w-12 h-12 bg-surface-container-low flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-primary text-3xl">architecture</span>
               </div>
-            ) : (
-              <div className="w-full max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200">
-                
-                {/* Header for Selected Beneficiary */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900/80 border border-slate-800 border-l-4 border-l-sky-500 shadow-xl">
-                  <div className="space-y-1">
-                    <button 
-                      onClick={() => {
-                        setActiveNavView("registros");
-                      }} 
-                      className="inline-flex items-center gap-1.5 text-xs text-sky-400 font-bold hover:text-sky-300 transition-colors"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" /> Volver a Lista de Beneficiarios
-                    </button>
-                    <h2 className="text-2xl font-black text-white">{selectedBeneficiary?.postulante}</h2>
-                    <p className="text-xs text-slate-400">
-                      Expediente: <span className="font-bold font-mono text-sky-400">{selectedBeneficiary?.id}</span> — {selectedBeneficiary?.distrito}, {selectedBeneficiary?.departamento}
-                    </p>
+              <h3 className="font-headline-md text-headline-md text-primary mb-4">Construcción Residencial</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant">Proyectos residenciales a medida de alta gama diseñados para la longevidad y una solidez estructural incomparable.</p>
+            </div>
+            {/* Service 2 */}
+            <div className="bg-surface-container-lowest p-8 arch-border hover:shadow-lg transition-shadow duration-300">
+              <div className="w-12 h-12 bg-surface-container-low flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-primary text-3xl">domain</span>
+              </div>
+              <h3 className="font-headline-md text-headline-md text-primary mb-4">Infraestructura Comercial</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant">Construcciones comerciales escalables y robustas entregadas con planificación meticulosa y estricto cumplimiento de especificaciones técnicas.</p>
+            </div>
+            {/* Service 3 */}
+            <div className="bg-surface-container-lowest p-8 arch-border hover:shadow-lg transition-shadow duration-300">
+              <div className="w-12 h-12 bg-surface-container-low flex items-center justify-center mb-6">
+                <span className="material-symbols-outlined text-primary text-3xl">construction</span>
+              </div>
+              <h3 className="font-headline-md text-headline-md text-primary mb-4">Renovación y Remodelación</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant">Mejoras estructurales y transformaciones modernizadas de espacios existentes, priorizando la seguridad y la elevación estética.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <section id="projects" className="py-24 bg-surface">
+        <div className="max-w-container-max mx-auto px-margin-desktop">
+          <div className="mb-16 max-w-3xl">
+            <h2 className="font-headline-lg text-headline-lg text-primary mb-4">Proyectos Recientes</h2>
+            <div className="w-16 h-1 bg-secondary mb-6"></div>
+            <p className="font-body-md text-body-md text-on-surface-variant">Una muestra de nuestra excelencia en ingeniería y diseño arquitectónico.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+            {/* Project 1 */}
+            <div className="group overflow-hidden arch-border bg-surface-container-lowest">
+              <div className="relative h-64 overflow-hidden">
+                <img alt="Residencia Horizonte" className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida/AP1WRLvCbzTC4pQ-Zw1BvOO72BX6HAej-8XC3PERX6bjPtq6VWfGutqC9zXAEieYWNQ94peTf3lXltJ7aYj6KNY8H9PLsHnxv0aToYeJnrOf-HPcQw_gIES2kcSkDwdTk6zFULqX9-jJOoUP04mS21uoA2Mqqhsv07NPhVhVYtRkRX1W6qhE1mkQ3XSw30w2AhD868rgoMSjThNROHRlQdWJG46ouDGGGH5cA1qbse-oe9luNX5fIQ08yVMEDQs" />
+              </div>
+              <div className="p-8">
+                <h3 className="font-headline-md text-headline-md text-primary mb-2">Residencia Horizonte</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant">Vivienda unifamiliar de lujo con diseño minimalista.</p>
+              </div>
+            </div>
+            {/* Project 2 */}
+            <div className="group overflow-hidden arch-border bg-surface-container-lowest">
+              <div className="relative h-64 overflow-hidden">
+                <img alt="Centro Corporativo Sky" className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida/AP1WRLv5J5xMkU93MXbvbpcIjfm9TvS-pZAiHEmFir6g5UEC0rqXHMSecILlToo2Ly8L317v_gQp_Ey2We18IgmszA3iNpEifaHww48NmJpYBI8pvYbbRN4Ez6EQiXKELqQdem9pOJbmuS38CwY5MbALoO3StLvROMDoqmNfxhUWfOCXqHe0A6gn4XWwfWD5vq6w6OF0cW5VkNI0nWR49AfRQqx5TZxuYpsYe7c9M65tL4k5s6H8c93vx8eypA" />
+              </div>
+              <div className="p-8">
+                <h3 className="font-headline-md text-headline-md text-primary mb-2">Centro Corporativo Sky</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant">Edificio de oficinas de alta eficiencia energética.</p>
+              </div>
+            </div>
+            {/* Project 3 */}
+            <div className="group overflow-hidden arch-border bg-surface-container-lowest">
+              <div className="relative h-64 overflow-hidden">
+                <img alt="Renovación Loft Urbano" className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida/AP1WRLvd5VkHpdiXAq4bwpL8bMIl3nNKkvDO6Vgd-p6yGBYmFdeFWfVIB9VRBrzvFr6rmUtE5a0yLDsYZlzBRe7FpYVcsYQ93_v6hcf4_TjpaRT-sZCtz49gdkUl0DtGQNWUQW_nbNHOjAU3Nw-LwftrUTMzYHD2g77OA0aF9xadlG1b00gTIQXBdTEGjvwLA2COeqU-90Ap29xHEmDKkOA-f8hkg1Ca74ez-e6XQIHiP9LIo-IXW9_P3aqo3_Y" />
+              </div>
+              <div className="p-8">
+                <h3 className="font-headline-md text-headline-md text-primary mb-2">Renovación Loft Urbano</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant">Transformación integral de interiores con acabados premium.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The Standard Section */}
+      <section className="py-24 bg-surface-container-low border-y border-outline-variant">
+        <div className="max-w-container-max mx-auto px-margin-desktop">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="font-headline-lg text-headline-lg text-primary mb-4">El Estándar Maza Quiroz</h2>
+              <div className="w-16 h-1 bg-secondary mb-8"></div>
+              <p className="font-body-md text-body-md text-on-surface-variant mb-12">No solo construimos; diseñamos estabilidad. Nuestro compromiso con protocolos rígidos asegura que cada proyecto resista la prueba del tiempo.</p>
+              <ul className="space-y-6">
+                <li className="flex items-start">
+                  <span className="material-symbols-outlined text-secondary mr-4 mt-1">verified</span>
+                  <div>
+                    <h4 className="font-label-md text-label-md text-primary uppercase tracking-wider mb-1">Experiencia Inigualable</h4>
+                    <p className="font-body-md text-body-md text-on-surface-variant">Décadas de experiencia colectiva en ingeniería aplicada a cada plano.</p>
                   </div>
-                  
-                </div>
+                </li>
+                <li className="flex items-start">
+                  <span className="material-symbols-outlined text-secondary mr-4 mt-1">diamond</span>
+                  <div>
+                    <h4 className="font-label-md text-label-md text-primary uppercase tracking-wider mb-1">Materiales de Calidad</h4>
+                    <p className="font-body-md text-body-md text-on-surface-variant">Obteniendo solo materiales de primera calidad, estructuralmente verificados para una integridad absoluta.</p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <span className="material-symbols-outlined text-secondary mr-4 mt-1">schedule</span>
+                  <div>
+                    <h4 className="font-label-md text-label-md text-primary uppercase tracking-wider mb-1">Entrega Puntual</h4>
+                    <p className="font-body-md text-body-md text-on-surface-variant">Líneas de tiempo rígidas de gestión de proyectos que garantizan la finalización a tiempo sin compromisos.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div className="relative h-[600px] arch-border">
+              <img className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700" alt="Architectural blueprints" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7hbgxJs7cmzk4DNztVWwB95QHZz4gSUo8W8pdnbK0Y8d-Qmm1G6TPUybh2lmrHq-oKGM4BL2xG2E3dYE6UxLKPBjA22uKzTEjqPSiAfQacwRoCgMNFI5vdo4LHPtYJmG_C9FTY_U8Z05Vr-A5iS11BcjhdfuEWZZA2OHdStHDSSGUaL_Pgr9Dsx6LPl6OsAThghy2uHRY12p58zwARdIADtw8DSWTWLiIIeEbhfFvX7TEPM2FElbx" />
+            </div>
+          </div>
+        </div>
+      </section>
 
+      {/* Footer Component */}
+      <footer id="contact" className="bg-primary dark:bg-surface-container-lowest text-on-primary dark:text-on-surface font-body-md text-body-md w-full py-16 border-t border-outline dark:border-outline-variant">
+        <div className="max-w-container-max mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter">
+          {/* Brand & Copyright */}
+          <div className="col-span-1 md:col-span-1 flex flex-col justify-between">
+            <div>
+              <img alt="CONSTRUCTORA MAZA QUIROZ" className="h-16 w-auto object-contain mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJdcSVEJdyomoe9L8JcdiIsJIgzcYbd3a4jv_Tz5-Q57g3qLQU8r2mdjKqY7ONkrvOG_y2xt4STPfCoP2n15LYD8_97wRdsN5Bp0ZmIq0Aky8aqAZKDCt4UhvFIrEmuM60GPaemPQbrlRmjbQCkwnhGmiFJHMWiRZebMdKo5k9p8Kc-oOEI5cMkFERYtV4UhNBmm33FAyCRayZHJi98gJBL4hmTt9E9vnj0o1maQYVhsNlRmYoinHjVPehb0VqLNzTJw" />
+            </div>
+            <div className="mt-8 md:mt-0 opacity-70 text-sm">
+                © {new Date().getFullYear()} Constructora Maza Quiroz. Todos los derechos reservados. Ingeniería de Precisión & Arquitectura Moderna.
+            </div>
+          </div>
 
-                {/* Navigation Tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800/80 no-print">
-                  {[
-                    { id: "ficha", label: "Ficha Familiar", icon: User },
-                    { id: "plano", label: "Plano Interactivo", icon: Ruler },
-                    { id: "presupuesto", label: "Presupuesto", icon: FileText },
-                    { id: "gantt", label: "Cronograma de Obra", icon: Hourglass },
-                    { id: "planos", label: "DWG e Ingeniería", icon: CheckCircle2 }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition duration-150 ${activeTab === tab.id ? "bg-sky-600 text-white shadow-lg shadow-sky-600/20" : "text-slate-400 hover:text-white hover:bg-slate-800/50"}`}
-                    >
-                      <tab.icon className="w-4 h-4" /> {tab.label}
-                    </button>
-                  ))}
-                </div>
+          {/* Links Column 1 */}
+          <div className="flex flex-col space-y-4">
+            <Link href="#services" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit">Servicios</Link>
+            <Link href="#projects" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit">Proyectos</Link>
+            <Link href="#contact" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit">Contacto</Link>
+          </div>
 
-                {/* Tab Views */}
-                <div className="py-2">
-                  {activeTab === "ficha" && selectedBeneficiary && (
-                    <BeneficiaryFicha
-                      beneficiario={selectedBeneficiary}
-                      onSave={handleSaveBeneficiary}
-                      onBack={() => setActiveNavView("registros")}
-                    />
-                  )}
-                  {activeTab === "plano" && (
-                    <div>
-                      <InteractivePlano
-                        dimensiones={dimensiones}
-                        onChange={(newDim) => {
-                          setDimensiones(newDim);
-                        }}
-                      />
-                      <div className="mt-4 flex justify-end">
-                        <button
-                          onClick={() => {
-                            handleSaveExpedienteData("dimensiones", dimensiones);
-                            confetti({ particleCount: 50, spread: 60 });
-                          }}
-                          className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2 rounded-xl transition active:scale-95 transition-transform duration-150"
-                        >
-                          Guardar Dimensiones
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === "presupuesto" && (
-                    <PresupuestoSheet
-                      dimensiones={dimensiones}
-                      insumos={insumos}
-                      partidasApu={partidasApu}
-                    />
-                  )}
-                  {activeTab === "gantt" && (
-                    <CronogramaObra 
-                      tareas={
-                        (() => {
-                          if (selectedBeneficiary?.notas) {
-                            try {
-                              const parsed = JSON.parse(selectedBeneficiary.notas);
-                              if (parsed.cronogramaObra) return parsed.cronogramaObra;
-                            } catch(e) {}
-                          }
-                          return [];
-                        })()
-                      }
-                      onSave={(tareas) => handleSaveExpedienteData("cronogramaObra", tareas)}
-                    />
-                  )}
-                  {activeTab === "planos" && (
-                    <PlanosIngenieria 
-                      planos={
-                        (() => {
-                          if (selectedBeneficiary?.notas) {
-                            try {
-                              const parsed = JSON.parse(selectedBeneficiary.notas);
-                              if (parsed.planosIngenieria) return parsed.planosIngenieria;
-                            } catch(e) {}
-                          }
-                          return [];
-                        })()
-                      }
-                      onSave={(planos) => handleSaveExpedienteData("planosIngenieria", planos)}
-                    />
-                  )}
-                </div>
-              </div>
-            )
-          )}
+          {/* Links Column 2 */}
+          <div className="flex flex-col space-y-4">
+            <Link href="#" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit">Aviso de Privacidad</Link>
+            <Link href="#" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit">Términos de Servicio</Link>
+          </div>
 
-          {/* Module 5: Documentos (Gestor de Documentos) */}
-          {activeNavView === "documentos" && (
-            <DocumentManager beneficiarios={beneficiarios} onRefresh={loadBeneficiarios} />
-          )}
-
-          {/* Module 6: Cronograma de Pagos (Financieras + Desembolsos) */}
-          {activeNavView === "pagos" && (
-            <CronogramaPagos beneficiarios={beneficiarios} />
-          )}
-
-          {/* Module 7: Maestros de Obra */}
-          {activeNavView === "maestros" && (
-            <CronogramaMaestros beneficiarios={beneficiarios} />
-          )}
-
-          {/* Module 8: Consulta DNI */}
-          {activeNavView === "consulta_dni" && (
-            <ConsultaDniView />
-          )}
-
-        </main>
-
-        {/* ── MOBILE Bottom Navigation Bar ── */}
-        <nav className="md:hidden flex-shrink-0 flex items-stretch border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl safe-bottom">
-          {([
-            { id: "resumen",       label: "Inicio",    emoji: "🗺️" },
-            { id: "registros",     label: "Lista",     emoji: "👥" },
-            { id: "expedientes",   label: "Expediente",emoji: "📁" },
-            { id: "documentos",    label: "Docs",      emoji: "📄" },
-            { id: "pagos",         label: "Pagos",     emoji: "💳" },
-            { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
-          ] as { id: import("./components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
-            <button
-              key={item.id}
-              onClick={() => handleNavSelect(item.id)}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
-                activeNavView === item.id
-                  ? "text-sky-400"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              <span className="text-base leading-none">{item.emoji}</span>
-              <span className="text-[9px] font-bold tracking-wide">{item.label}</span>
-              {activeNavView === item.id && (
-                <span className="absolute bottom-0 w-8 h-0.5 bg-sky-500 rounded-full" />
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
+          {/* Social Links */}
+          <div className="flex flex-col space-y-4">
+            <a href="#" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit flex items-center gap-2">
+                Instagram
+            </a>
+            <a href="#" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit flex items-center gap-2">
+                LinkedIn
+            </a>
+            <a href="#" className="text-on-primary-container dark:text-on-surface-variant hover:text-on-primary dark:hover:text-on-surface hover:underline transition-all duration-200 opacity-90 hover:opacity-100 w-fit flex items-center gap-2">
+                Facebook
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

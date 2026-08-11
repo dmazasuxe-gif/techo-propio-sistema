@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Maza Quiroz Constructora - Versión Móvil</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#ffdcc5",
+                        "surface-container-low": "#f6f3f0",
+                        "on-surface": "#1c1c1a",
+                        "on-secondary-fixed": "#301400",
+                        "on-primary-container": "#96a9be",
+                        "on-primary-fixed": "#091d2e",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e5e2df",
+                        "inverse-primary": "#b5c8df",
+                        "on-background": "#1c1c1a",
+                        "secondary-fixed-dim": "#ffb783",
+                        "on-tertiary-container": "#9aaaab",
+                        "outline-variant": "#c4c6cd",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#fc8f34",
+                        "surface": "#fcf9f6",
+                        "on-surface-variant": "#43474c",
+                        "inverse-on-surface": "#f3f0ed",
+                        "tertiary-fixed-dim": "#b9cacb",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#b5c8df",
+                        "primary": "#162839",
+                        "on-error-container": "#93000a",
+                        "background": "#fcf9f6",
+                        "surface-container": "#f0edea",
+                        "primary-container": "#2c3e50",
+                        "on-primary-fixed-variant": "#36485b",
+                        "surface-variant": "#e5e2df",
+                        "surface-tint": "#4e6073",
+                        "on-secondary-container": "#663100",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fcf9f6",
+                        "tertiary": "#1b292a",
+                        "tertiary-container": "#303f40",
+                        "on-secondary-fixed-variant": "#713700",
+                        "secondary": "#944a00",
+                        "inverse-surface": "#31302f",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae8e5",
+                        "on-tertiary-fixed-variant": "#3a494a",
+                        "on-tertiary-fixed": "#0f1e1f",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d5e6e7",
+                        "surface-dim": "#dcdad7",
+                        "outline": "#74777d",
+                        "primary-fixed": "#d1e4fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "container-max": "1280px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Montserrat"],
+                        "body-md": ["Work Sans"],
+                        "label-sm": ["Work Sans"],
+                        "label-md": ["Work Sans"],
+                        "headline-lg": ["Montserrat"],
+                        "body-lg": ["Work Sans"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "headline-md": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-x-hidden">
+<!-- Header / Navigation (Mobile Focused) -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface border-b border-outline-variant px-margin-mobile flex justify-between items-center h-16 md:hidden">
+<div class="flex items-center">
+<img alt="Maza Quiroz Logo" class="h-8 object-contain" data-alt="Logotipo de Maza Quiroz Constructora con diseño geométrico y colores dorado y negro sobre fondo claro." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAel5LauUTUISzmg1c3a3PHBWunmN2mBzi1AePkL7XY7MhvcZfa1ILhig6g25JkuxRNtCj_xfFa9JQEfl3_4TsviowLpuSoBRDumcit4zVZDyOzTjpCygcmBNRBSW4IlasY6MrzQnlF7fI2DqRpoePk6xew_gwIZBtTin9w2-kJffLOPkTw9T5JhXexMVbggy2h7mlmQ_jmzKPmN1wz4BlKrBTcY2q3KbqHLbb96V-gA0qZ7xfubOdKRhlUff0uvMm1dA"/>
+</div>
+<button class="text-primary p-2 focus:outline-none" id="mobile-menu-btn">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+</header>
+<!-- Mobile Menu Overlay -->
+<div class="fixed inset-0 bg-surface z-40 transform translate-x-full transition-transform duration-300 md:hidden pt-20 px-margin-mobile flex flex-col hidden" id="mobile-menu">
+<div class="flex flex-col gap-6 font-headline-md text-headline-md text-primary">
+<a class="border-b border-outline-variant pb-2" href="#">Inicio</a>
+<a class="border-b border-outline-variant pb-2" href="#experiencia">Servicios</a>
+<a class="border-b border-outline-variant pb-2" href="#proyectos">Proyectos</a>
+<a class="border-b border-outline-variant pb-2" href="#estandar">Nosotros</a>
+<a class="border-b border-outline-variant pb-2" href="#">Contacto</a>
+<button class="mt-4 bg-primary text-on-primary py-3 px-6 rounded font-label-md text-label-md uppercase tracking-wider text-center">
+                Solicitar Cotización
+            </button>
+</div>
+</div>
+<main class="pt-16 md:pt-0">
+<!-- Hero Section -->
+<section class="relative min-h-[80vh] flex flex-col justify-end pb-12 px-margin-mobile bg-surface-container-high overflow-hidden">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0">
+<img alt="Fondo de construcción" class="w-full h-full object-cover opacity-80" data-alt="Estructura de acero en construcción contra un cielo despejado, representando el inicio de un gran proyecto arquitectónico." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH0co1e4ln7rQIurTBZ2wdGX5vYKJ8N0LfzrO8KiOi9s91NxyJsRopqemUFI269lOdbBauZ7gI1-jXbwJLnPgOt3E0Wuoj0mlWUh3IcNQ0Dq-Nvo8XPtYnhCxsLoD9eWHBlPK4sBpXrWf5kmBYOdjAjOIOs570tXL63SwMhrZFrVq__6sxMGU-k5IsnNjzhTJgp4b0j2nTk0BUSsiX5AafrrVKAtcilES10a_CPhPtZT-VktCSW6T0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/80 to-transparent"></div>
+</div>
+<div class="relative z-10 space-y-6">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">
+                    Construyendo el Futuro con Precisión
+                </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">
+                    Lideramos el desarrollo arquitectónico con estándares internacionales, fusionando ingeniería robusta y diseño innovador.
+                </p>
+<button class="w-full bg-primary text-on-primary py-4 px-8 rounded font-label-md text-label-md uppercase tracking-wider active:scale-95 transition-transform duration-150">
+                    INICIA TU PROYECTO
+                </button>
+</div>
+</section>
+<!-- Nuestra Experiencia -->
+<section class="py-16 px-margin-mobile bg-surface" id="experiencia">
+<div class="mb-10 border-l-4 border-secondary pl-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Nuestra Experiencia</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Soluciones integrales para cada escala.</p>
+</div>
+<div class="flex flex-col gap-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 flex flex-col gap-4">
+<span class="material-symbols-outlined text-4xl text-primary">architecture</span>
+<h3 class="font-headline-md text-headline-md text-primary">Construcción Residencial</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Desarrollo de viviendas de alto estándar, enfocadas en confort, durabilidad y diseño contemporáneo.</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 flex flex-col gap-4">
+<span class="material-symbols-outlined text-4xl text-primary">domain</span>
+<h3 class="font-headline-md text-headline-md text-primary">Infraestructura Comercial</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Edificios corporativos y centros comerciales construidos para optimizar el rendimiento y la estética corporativa.</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 flex flex-col gap-4">
+<span class="material-symbols-outlined text-4xl text-primary">construction</span>
+<h3 class="font-headline-md text-headline-md text-primary">Renovación y Remodelación</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Transformación de espacios existentes con intervenciones estructurales precisas y acabados premium.</p>
+</div>
+</div>
+</section>
+<!-- Proyectos Recientes -->
+<section class="py-16 px-margin-mobile bg-surface-container-low" id="proyectos">
+<div class="mb-10">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Proyectos Destacados</h2>
+<div class="w-12 h-1 bg-secondary"></div>
+</div>
+<div class="flex flex-col gap-8">
+<!-- Project 1 -->
+<div class="group relative overflow-hidden bg-surface-container-lowest border border-outline-variant">
+<div class="aspect-[4/3] w-full overflow-hidden">
+<img alt="Residencia Horizonte" class="w-full h-full object-cover" data-alt="Fotografía de una residencia moderna con grandes ventanales, diseño minimalista y detalles en madera, ubicada en un entorno natural." src="https://lh3.googleusercontent.com/aida/AP1WRLvCbzTC4pQ-Zw1BvOO72BX6HAej-8XC3PERX6bjPtq6VWfGutqC9zXAEieYWNQ94peTf3lXltJ7aYj6KNY8H9PLsHnxv0aToYeJnrOf-HPcQw_gIES2kcSkDwdTk6zFULqX9-jJOoUP04mS21uoA2Mqqhsv07NPhVhVYtRkRX1W6qhE1mkQ3XSw30w2AhD868rgoMSjThNROHRlQdWJG46ouDGGGH5cA1qbse-oe9luNX5fIQ08yVMEDQs"/>
+</div>
+<div class="p-6">
+<span class="inline-block px-2 py-1 bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wide mb-3 rounded">Residencial</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Residencia Horizonte</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Integración perfecta entre arquitectura brutalista y entorno natural.</p>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="group relative overflow-hidden bg-surface-container-lowest border border-outline-variant">
+<div class="aspect-[4/3] w-full overflow-hidden">
+<img alt="Centro Corporativo Sky" class="w-full h-full object-cover" data-alt="Imponente rascacielos de cristal y acero al atardecer, reflejando los colores del cielo en su fachada moderna." src="https://lh3.googleusercontent.com/aida/AP1WRLv5J5xMkU93MXbvbpcIjfm9TvS-pZAiHEmFir6g5UEC0rqXHMSecILlToo2Ly8L317v_gQp_Ey2We18IgmszA3iNpEifaHww48NmJpYBI8pvYbbRN4Ez6EQiXKELqQdem9pOJbmuS38CwY5MbALoO3StLvROMDoqmNfxhUWfOCXqHe0A6gn4XWwfWD5vq6w6OF0cW5VkNI0nWR49AfRQqx5TZxuYpsYe7c9M65tL4k5s6H8c93vx8eypA"/>
+</div>
+<div class="p-6">
+<span class="inline-block px-2 py-1 bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm uppercase tracking-wide mb-3 rounded">Comercial</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Centro Corporativo Sky</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Torre de oficinas clase A con certificación LEED y diseño estructural avanzado.</p>
+</div>
+</div>
+<!-- Project 3 -->
+<div class="group relative overflow-hidden bg-surface-container-lowest border border-outline-variant">
+<div class="aspect-[4/3] w-full overflow-hidden">
+<img alt="Renovación Loft Urbano" class="w-full h-full object-cover" data-alt="Interior de un loft moderno con acabados de lujo, isla de cocina en mármol, detalles en madera oscura y gran iluminación natural." src="https://lh3.googleusercontent.com/aida/AP1WRLvd5VkHpdiXAq4bwpL8bMIl3nNKkvDO6Vgd-p6yGBYmFdeFWfVIB9VRBrzvFr6rmUtE5a0yLDsYZlzBRe7FpYVcsYQ93_v6hcf4_TjpaRT-sZCtz49gdkUl0DtGQNWUQW_nbNHOjAU3Nw-LwftrUTMzYHD2g77OA0aF9xadlG1b00gTIQXBdTEGjvwLA2COeqU-90Ap29xHEmDKkOA-f8hkg1Ca74ez-e6XQIHiP9LIo-IXW9_P3aqo3_Y"/>
+</div>
+<div class="p-6">
+<span class="inline-block px-2 py-1 bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm uppercase tracking-wide mb-3 rounded">Renovación</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Renovación Loft Urbano</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Rehabilitación de espacio industrial a residencial de lujo con acabados de primera.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- El Estándar Maza Quiroz -->
+<section class="py-16 px-margin-mobile bg-surface" id="estandar">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-8 text-center">El Estándar Maza Quiroz</h2>
+<div class="mb-8 border border-outline-variant">
+<img alt="Plano técnico" class="w-full h-64 object-cover" data-alt="Primer plano de un plano arquitectónico técnico con instrumentos de medición encima, iluminado con luz de estudio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANg9pctjmQBrA7kOGDeCkInP_B69yGa30OfY0eK27Lt2RltsttNL2GU-5vuE7rx6WQgri9E1HHgHnBDkAZ_PNK4HE0yscnJC8Ap8npDrjnx4PSbQGMioyDNNE6cwLbHJI4RZ1ga_KiFCApaiXFYyf6dr0kvQKZkGf0-coaXDTcuS8p2J8jAfNphgGCGuD7r-hbsP6lA-0UoVRf_WcGgi7hK2l5BZN2dX7dA38_cjacyomg5vCRqSMM"/>
+</div>
+<ul class="space-y-6">
+<li class="flex items-start gap-4 border-b border-outline-variant pb-6">
+<div class="p-2 bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-secondary">verified</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-1">Experiencia Inigualable</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Décadas de conocimiento técnico aplicado a cada detalle estructural.</p>
+</div>
+</li>
+<li class="flex items-start gap-4 border-b border-outline-variant pb-6">
+<div class="p-2 bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-secondary">category</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-1">Materiales de Calidad</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Selección rigurosa de insumos para garantizar durabilidad y estética premium.</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="p-2 bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-secondary">schedule</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-1">Entrega Puntual</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Gestión de proyectos eficiente para cumplir con los plazos establecidos sin comprometer la calidad.</p>
+</div>
+</li>
+</ul>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary py-12 px-margin-mobile flex flex-col gap-8">
+<div>
+<div class="font-headline-md text-headline-md font-bold mb-4">Maza Quiroz</div>
+<p class="font-body-md text-body-md text-on-primary-container mb-6">Precisión, fuerza y diseño arquitectónico de primer nivel.</p>
+<div class="flex gap-4">
+<a class="text-on-primary-container hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">link</span></a>
+<a class="text-on-primary-container hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+<a class="text-on-primary-container hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">mail</span></a>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-2">
+<a class="font-label-md text-label-md text-on-primary-container hover:text-on-primary" href="#">Servicios</a>
+<a class="font-label-md text-label-md text-on-primary-container hover:text-on-primary" href="#">Proyectos</a>
+<a class="font-label-md text-label-md text-on-primary-container hover:text-on-primary" href="#">Contacto</a>
+</div>
+<div class="flex flex-col gap-2">
+<a class="font-label-md text-label-md text-on-primary-container hover:text-on-primary" href="#">Privacidad</a>
+<a class="font-label-md text-label-md text-on-primary-container hover:text-on-primary" href="#">Términos</a>
+</div>
+</div>
+<div class="border-t border-outline pt-6 text-center">
+<p class="font-body-md text-body-md text-on-primary-container text-sm">© 2024 Constructora Maza Quiroz. Todos los derechos reservados.</p>
+</div>
+</footer>
+<script>
+        // Simple mobile menu toggle
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = menuBtn.querySelector('span');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            setTimeout(() => {
+                mobileMenu.classList.toggle('translate-x-full');
+            }, 10);
+            
+            if (menuIcon.textContent === 'menu') {
+                menuIcon.textContent = 'close';
+            } else {
+                menuIcon.textContent = 'menu';
+            }
+        });
+    </script>
+</body></html>
