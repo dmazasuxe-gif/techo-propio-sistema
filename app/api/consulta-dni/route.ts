@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   try {
     const token = process.env.DNI_API_TOKEN || "22777|XS67OpKKVWMkyhG6Ssv80ikuHCUSKTpcd5rZFxQS38614e56";
-    const apiUrl = process.env.DNI_API_URL || "https://api.apis.net.pe/v2/reniec/dni?numero=";
+    const apiUrl = process.env.DNI_API_URL || "https://apiperu.dev/api/dni/";
     
     const response = await fetch(`${apiUrl}${dni}`, {
       method: 'GET',
@@ -37,17 +37,23 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Error de conexión con el servicio de DNI." }, { status: response.status });
     }
 
-    const apiData = await response.json();
+    const apiResponse = await response.json();
+
+    if (!apiResponse.success || !apiResponse.data) {
+       return NextResponse.json({ error: "DNI no encontrado o error en el proveedor." }, { status: 404 });
+    }
+
+    const apiData = apiResponse.data;
 
     // Map the response to our standardized format
-    // apis.net.pe v2 returns: nombres, apellidoPaterno, apellidoMaterno, numeroDocumento
+    // apiperu.dev returns: nombres, apellido_paterno, apellido_materno, numero
     const data = {
-      dni: apiData.numeroDocumento || dni,
+      dni: apiData.numero || dni,
       nombres: apiData.nombres,
-      apellidoPaterno: apiData.apellidoPaterno,
-      apellidoMaterno: apiData.apellidoMaterno,
+      apellidoPaterno: apiData.apellido_paterno,
+      apellidoMaterno: apiData.apellido_materno,
       // The API might not return fechaNacimiento, but we map it if it exists
-      fechaNacimiento: apiData.fechaNacimiento || ""
+      fechaNacimiento: apiData.fecha_nacimiento || ""
     };
 
     return NextResponse.json(data);
