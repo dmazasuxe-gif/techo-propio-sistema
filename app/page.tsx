@@ -50,7 +50,11 @@ export default function LandingPage() {
               })) || DEFAULT_LANDING_CONTENT.services.items
             },
             footer: { ...DEFAULT_LANDING_CONTENT.footer, ...data.content.footer },
-            announcement: { ...DEFAULT_LANDING_CONTENT.announcement, ...data.content.announcement }
+            announcement: { 
+              ...DEFAULT_LANDING_CONTENT.announcement, 
+              ...data.content.announcement,
+              images: data.content.announcement?.images || []
+            }
           });
         }
       })
@@ -95,6 +99,17 @@ export default function LandingPage() {
     "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
   ];
 
+  // Announcement Carousel
+  const [announcementImageIndex, setAnnouncementImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!config.announcement?.images || config.announcement.images.length <= 1 || !showAnnouncement) return;
+    const interval = setInterval(() => {
+      setAnnouncementImageIndex((prev) => (prev + 1) % config.announcement.images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [config.announcement?.images, showAnnouncement]);
+
   if (!mounted) return <div className="min-h-screen bg-[#0a0c10]" />;
 
   return (
@@ -104,44 +119,51 @@ export default function LandingPage() {
           ANNOUNCEMENT POPUP
           ========================================= */}
       <AnimatePresence>
-        {config.announcement?.enabled && showAnnouncement && (
+        {config.announcement?.enabled && showAnnouncement && config.announcement.images && config.announcement.images.length > 0 && (
           <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            transition={{ type: 'spring', bounce: 0.4, duration: 0.8 }}
-            className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-md z-[100] bg-slate-900/95 backdrop-blur-2xl border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           >
-            <div className="absolute top-3 right-3 z-10">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', bounce: 0.4, duration: 0.8 }}
+              className="relative max-w-4xl w-full max-h-[85vh] bg-slate-900 border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden flex items-center justify-center"
+            >
               <button 
                 onClick={() => setShowAnnouncement(false)}
-                className="p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
+                className="absolute top-4 right-4 z-50 p-2 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6" />
               </button>
-            </div>
-            {config.announcement.image && (
-              <div className="w-full h-32 relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent z-10"></div>
-                <img src={config.announcement.image} alt="Announcement" className="w-full h-full object-cover" />
+              
+              <div className="w-full h-full max-h-[85vh] flex items-center justify-center bg-black">
+                <AnimatePresence mode="wait">
+                  <motion.img 
+                    key={announcementImageIndex}
+                    src={config.announcement.images[announcementImageIndex]}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    alt="Announcement" 
+                    className="w-full h-full object-contain max-h-[85vh]"
+                  />
+                </AnimatePresence>
+                
+                {/* Dots indicator if multiple images */}
+                {config.announcement.images.length > 1 && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+                    {config.announcement.images.map((_, idx) => (
+                      <div key={idx} className={`w-2 h-2 rounded-full ${idx === announcementImageIndex ? 'bg-sky-500' : 'bg-white/30'}`} />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-            <div className={`p-6 ${config.announcement.image ? 'pt-2' : ''}`}>
-              <h3 className="text-xl font-bold text-white mb-2 font-[family-name:var(--font-montserrat)]">
-                {config.announcement.title}
-              </h3>
-              <p className="text-slate-300 text-sm mb-4 leading-relaxed whitespace-pre-wrap">
-                {config.announcement.description}
-              </p>
-              {config.announcement.buttonText && (
-                <a 
-                  href={config.announcement.buttonLink || wppLink}
-                  className="inline-block px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-sky-500/20"
-                >
-                  {config.announcement.buttonText}
-                </a>
-              )}
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -412,8 +434,8 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-bold mb-2">Legal & Social</h4>
-              <a href="#" className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">Aviso de Privacidad</a>
-              <a href="#" className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">Términos de Servicio</a>
+              <a href="/privacidad" className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">Aviso de Privacidad</a>
+              <a href="/terminos" className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">Términos de Servicio</a>
             </div>
           </div>
         </footer>

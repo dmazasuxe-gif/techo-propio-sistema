@@ -34,11 +34,7 @@ export interface LandingContent {
   };
   announcement: {
     enabled: boolean;
-    image: string;
-    title: string;
-    description: string;
-    buttonText: string;
-    buttonLink: string;
+    images: string[];
   };
 }
 
@@ -96,11 +92,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   },
   announcement: {
     enabled: false,
-    image: "",
-    title: "Anuncio Importante",
-    description: "Bienvenido a nuestro nuevo portal. Descubre nuestras últimas obras.",
-    buttonText: "Ver más",
-    buttonLink: "#"
+    images: []
   }
 };
 

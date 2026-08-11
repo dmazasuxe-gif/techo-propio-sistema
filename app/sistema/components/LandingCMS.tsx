@@ -46,7 +46,11 @@ export function LandingCMS() {
               })) || DEFAULT_LANDING_CONTENT.services.items
             },
             footer: { ...DEFAULT_LANDING_CONTENT.footer, ...data.content.footer },
-            announcement: { ...DEFAULT_LANDING_CONTENT.announcement, ...data.content.announcement }
+            announcement: { 
+              ...DEFAULT_LANDING_CONTENT.announcement, 
+              ...data.content.announcement,
+              images: data.content.announcement?.images || []
+            }
           });
         } else {
           setConfig(DEFAULT_LANDING_CONTENT);
@@ -158,45 +162,43 @@ export function LandingCMS() {
             POPUP BANNER (Preview inside CMS)
             ========================================= */}
         {config.announcement.enabled && (
-          <div className="relative z-50 p-4">
-            <div className="max-w-2xl mx-auto bg-slate-800/90 backdrop-blur-xl border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden relative">
-              <div className="absolute top-2 right-2 p-2 bg-black/20 rounded-full text-slate-400">
-                <X className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col md:flex-row">
-                <div className="w-full md:w-1/3 bg-slate-900 min-h-[150px] relative">
-                  <EditableImage 
-                    src={config.announcement.image} 
-                    onUpload={(url) => updateNestedConfig(['announcement', 'image'], url)}
-                    className="w-full h-full"
-                  >
-                    <img 
-                      src={config.announcement.image || "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=600&auto=format&fit=crop"} 
-                      alt="Banner" 
-                      className="w-full h-full object-cover absolute inset-0"
-                    />
-                  </EditableImage>
+          <div className="relative z-[90] p-4 flex justify-center mt-4">
+            <div className="w-full max-w-3xl bg-slate-800/90 backdrop-blur-xl border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden relative">
+              <div className="absolute top-4 right-4 z-20">
+                <div className="p-2 bg-black/40 rounded-full text-slate-400 cursor-not-allowed">
+                  <X className="w-6 h-6 text-white" />
                 </div>
-                <div className="p-6 md:w-2/3 flex flex-col justify-center">
-                  <h3 className="text-xl font-bold text-white mb-2 font-[family-name:var(--font-montserrat)]">
-                    <EditableText 
-                      value={config.announcement.title} 
-                      onChange={(v) => updateNestedConfig(['announcement', 'title'], v)} 
-                    />
-                  </h3>
-                  <p className="text-slate-300 text-sm mb-4">
-                    <EditableText 
-                      value={config.announcement.description} 
-                      onChange={(v) => updateNestedConfig(['announcement', 'description'], v)} 
-                      multiline
-                    />
-                  </p>
-                  <div className="inline-block px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded-lg w-fit">
-                    <EditableText 
-                      value={config.announcement.buttonText} 
-                      onChange={(v) => updateNestedConfig(['announcement', 'buttonText'], v)} 
-                    />
-                  </div>
+              </div>
+              
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Imágenes del Anuncio (Máximo 5)</h3>
+                
+                <div className="flex flex-wrap gap-4 justify-center">
+                  {config.announcement.images.map((img, idx) => (
+                    <div key={idx} className="relative w-32 h-48 rounded-lg overflow-hidden border border-slate-600 group">
+                      <img src={img} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" 
+                            onClick={() => {
+                              updateNestedConfig(['announcement', 'images'], (old: string[]) => old.filter((_, i) => i !== idx));
+                            }}>
+                        <span className="text-white text-xs font-bold">X</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {config.announcement.images.length < 5 && (
+                    <EditableImage 
+                      src="" 
+                      onUpload={(url) => {
+                        updateNestedConfig(['announcement', 'images'], (old: string[]) => [...old, url]);
+                      }}
+                    >
+                      <div className="w-32 h-48 rounded-lg border-2 border-dashed border-sky-500/50 flex flex-col items-center justify-center text-sky-400 hover:bg-sky-500/10 cursor-pointer transition-colors">
+                        <span className="text-2xl">+</span>
+                        <span className="text-xs mt-2 text-center px-2">Añadir Imagen</span>
+                      </div>
+                    </EditableImage>
+                  )}
                 </div>
               </div>
             </div>
