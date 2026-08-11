@@ -29,6 +29,7 @@ import DniLookupModal from "./DniLookupModal";
 
 export default function FullRegistrationForm({ onSave, nextId, editingData, onCancelEdit, beneficiarios = [] }: FullRegistrationFormProps) {
   const [isDniModalOpen, setIsDniModalOpen] = useState(false);
+  const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
   const departamentosList = Object.keys(UBIGEO_PERU);
 
   const getInitialState = (): Beneficiario => {
@@ -865,24 +866,56 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                     <input
                       type="file"
                       className="hidden"
-                      onChange={(e) => {
+                      disabled={uploadingDocType === item.type}
+                      onChange={async (e) => {
                         if (e.target.files && e.target.files[0]) {
                           const file = e.target.files[0];
-                          const newDoc = {
-                            id: `DOC-${Date.now()}-${Math.floor(Math.random()*1000)}`,
-                            tipo: item.type,
-                            nombre: file.name,
-                            url: URL.createObjectURL(file),
-                            fecha: new Date().toLocaleDateString("es-PE")
-                          };
-                          setForm(prev => ({
-                            ...prev,
-                            documentos: [...(prev.documentos || []).filter(d => d.tipo !== item.type), newDoc]
-                          }));
+                          
+                          setUploadingDocType(item.type);
+                          
+                          try {
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            formData.append("subfolder", "documentos");
+
+                            const uploadRes = await fetch("/api/upload", {
+                              method: "POST",
+                              body: formData,
+                            });
+
+                            let finalUrl = URL.createObjectURL(file);
+                            let finalName = file.name;
+
+                            if (uploadRes.ok) {
+                              const uploadData = await uploadRes.json();
+                              finalUrl = uploadData.url;
+                              finalName = uploadData.fileName || file.name;
+                            } else {
+                              console.warn("Upload to storage failed, using temporary local URL");
+                            }
+
+                            const newDoc = {
+                              id: `DOC-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+                              tipo: item.type,
+                              nombre: finalName,
+                              url: finalUrl,
+                              fecha: new Date().toLocaleDateString("es-PE")
+                            };
+
+                            setForm(prev => ({
+                              ...prev,
+                              documentos: [...(prev.documentos || []).filter(d => d.tipo !== item.type), newDoc]
+                            }));
+                          } catch (error) {
+                            console.error("Error al subir archivo:", error);
+                            alert("Hubo un error al subir el archivo.");
+                          } finally {
+                            setUploadingDocType(null);
+                          }
                         }
                       }}
                     />
-                    {attached ? "Cambiar" : "+ Subir"}
+                    {uploadingDocType === item.type ? "Subiendo..." : attached ? "Cambiar" : "+ Subir"}
                   </label>
                 </div>
               );
