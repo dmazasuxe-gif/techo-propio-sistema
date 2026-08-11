@@ -285,6 +285,13 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
     .filter((p:any) => p.estado === "Pagado" || p.estado === "Pagado parcial")
     .reduce((acc:any, curr:any) => acc + curr.monto, 0);
 
+  let avanceGlobal = 0;
+  if (db.cronogramaObra && db.cronogramaObra.length > 0) {
+    avanceGlobal = Math.round(
+      db.cronogramaObra.reduce((acc: number, t: any) => acc + (t.avancePct || 0), 0) / db.cronogramaObra.length
+    );
+  }
+
   const beneficiariosHtml = beneficiariosDelMaestro.length > 0 ? `
   <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 5px;">Beneficiarios Asignados y Avance de Obra</h3>
   <table>
@@ -299,7 +306,7 @@ export async function generarFichaMaestroPDF(id: string): Promise<string | null>
     </thead>
     <tbody>
       ${beneficiariosDelMaestro.map((b: any, i: number) => {
-        const avance = b.avanceViviendaPct || 0;
+        const avance = (b.avanceViviendaPct && b.avanceViviendaPct > 0) ? b.avanceViviendaPct : avanceGlobal;
         const color = avance === 100 ? '#16a34a' : (avance > 0 ? '#0284c7' : '#94a3b8');
         return `
           <tr>
