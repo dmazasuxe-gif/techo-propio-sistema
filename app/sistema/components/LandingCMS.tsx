@@ -134,6 +134,17 @@ export function LandingCMS() {
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Status Search Toggle */}
+          <label className="flex items-center gap-2 cursor-pointer bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-sky-500 transition-colors">
+            <input 
+              type="checkbox" 
+              className="accent-sky-500 w-4 h-4"
+              checked={config.statusSearch?.enabled ?? true}
+              onChange={(e) => updateNestedConfig(['statusSearch', 'enabled'], e.target.checked)}
+            />
+            <span className="text-xs text-white font-bold">Activar Búsqueda DNI</span>
+          </label>
+
           {/* Banner Toggle */}
           <label className="flex items-center gap-2 cursor-pointer bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-sky-500 transition-colors">
             <input 
@@ -490,6 +501,41 @@ export function LandingCMS() {
             </div>
           </div>
         </section>
+
+        {/* =========================================
+            STATUS SEARCH PREVIEW
+            ========================================= */}
+        {config.statusSearch?.enabled && (
+          <section className="py-20 px-6 border-t border-white/5 bg-[#0a0c10]">
+            <div className="max-w-4xl mx-auto bg-slate-900/50 rounded-2xl p-8 border border-white/10 shadow-2xl">
+              <h2 className="text-2xl font-bold text-white mb-2 text-center">
+                <EditableText 
+                  value={config.statusSearch.title} 
+                  onChange={(v) => updateNestedConfig(['statusSearch', 'title'], v)} 
+                />
+              </h2>
+              <p className="text-slate-400 text-center mb-8">
+                <EditableText 
+                  value={config.statusSearch.subtitle} 
+                  onChange={(v) => updateNestedConfig(['statusSearch', 'subtitle'], v)} 
+                  multiline
+                />
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto pointer-events-none opacity-50 grayscale">
+                <input 
+                  type="text" 
+                  placeholder="Ingrese número de DNI" 
+                  className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                />
+                <button className="bg-sky-600 text-white font-bold px-8 py-3 rounded-lg">
+                  Buscar
+                </button>
+              </div>
+              <p className="text-xs text-center text-slate-500 mt-4">(Esta es una vista previa, la búsqueda real funcionará en la página pública)</p>
+            </div>
+          </section>
+        )}
 
         {/* 4. THE STANDARD SECTION */}
         <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-xl relative z-10">

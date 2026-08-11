@@ -37,6 +37,11 @@ export interface LandingContent {
     images: string[];
     backdropOpacity: number;
   };
+  statusSearch: {
+    enabled: boolean;
+    title: string;
+    subtitle: string;
+  };
 }
 
 export interface LandingConfig {
@@ -95,6 +100,11 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     enabled: false,
     images: [],
     backdropOpacity: 80
+  },
+  statusSearch: {
+    enabled: true,
+    title: "ESTADO DE POSTULACIÓN",
+    subtitle: "Para obtener una búsqueda más detallada indica las características de tu interés:"
   }
 };
 

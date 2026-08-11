@@ -24,6 +24,12 @@ export default function LandingPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
+  // Status Search State
+  const [searchDni, setSearchDni] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResult, setSearchResult] = useState<any[] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   // Modal States
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [viewingGalleryIndex, setViewingGalleryIndex] = useState<number | null>(null);
@@ -110,6 +116,38 @@ export default function LandingPage() {
     }, 4000);
     return () => clearInterval(interval);
   }, [config.announcement?.images, showAnnouncement]);
+
+  const handleStatusSearch = async () => {
+    setSearchError(null);
+    setSearchResult(null);
+    
+    if (!searchDni) {
+      setSearchError("Por favor ingrese un número de DNI.");
+      return;
+    }
+    if (!/^\d{8}$/.test(searchDni)) {
+      setSearchError("El DNI debe contener exactamente 8 dígitos.");
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const res = await fetch(`/api/consulta-estado?dni=${searchDni}`);
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setSearchError(data.error || "Error al realizar la consulta.");
+      } else if (!data.results || data.results.length === 0) {
+        setSearchError("No se encontró ninguna postulación con este número de DNI.");
+      } else {
+        setSearchResult(data.results);
+      }
+    } catch (err) {
+      setSearchError("El servicio no está disponible en este momento.");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
 
   if (!mounted) return <div className="min-h-screen bg-[#0a0c10]" />;
 
@@ -379,6 +417,94 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* =========================================
+            STATUS SEARCH SECTION
+            ========================================= */}
+        {config.statusSearch?.enabled && (
+          <section id="consulta-estado" className="py-24 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-md relative z-10">
+            <div className="max-w-5xl mx-auto">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-[80px]"></div>
+                
+                <div className="relative z-10">
+                  <div className="text-center mb-10">
+                    <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-montserrat)] text-white mb-4">
+                      {config.statusSearch.title}
+                    </h2>
+                    <p className="text-slate-400 max-w-2xl mx-auto whitespace-pre-wrap text-lg">
+                      {config.statusSearch.subtitle}
+                    </p>
+                  </div>
+
+                  <div className="max-w-xl mx-auto flex flex-col sm:flex-row gap-4 mb-8">
+                    <input 
+                      type="text" 
+                      value={searchDni}
+                      onChange={(e) => setSearchDni(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                      onKeyDown={(e) => e.key === 'Enter' && handleStatusSearch()}
+                      placeholder="Ingrese número de DNI" 
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-6 py-4 text-white text-lg tracking-widest font-mono focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all shadow-inner"
+                      disabled={searchLoading}
+                    />
+                    <button 
+                      onClick={handleStatusSearch}
+                      disabled={searchLoading || searchDni.length !== 8}
+                      className="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold px-10 py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-sky-500/20 active:scale-95 flex items-center justify-center min-w-[140px]"
+                    >
+                      {searchLoading ? 'Buscando...' : 'Buscar'}
+                    </button>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {searchError && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                        className="max-w-xl mx-auto bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-center font-medium"
+                      >
+                        {searchError}
+                      </motion.div>
+                    )}
+
+                    {searchResult && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                        className="mt-10 overflow-x-auto rounded-xl border border-white/10 bg-slate-950/50 shadow-inner"
+                      >
+                        <table className="w-full text-left border-collapse whitespace-nowrap">
+                          <thead>
+                            <tr className="bg-slate-900/80 text-sky-400 text-xs uppercase tracking-wider font-bold border-b border-white/10">
+                              <th className="p-4 rounded-tl-xl">Postulante</th>
+                              <th className="p-4">Nro Doc.</th>
+                              <th className="p-4">Estado</th>
+                              <th className="p-4">Fec. Estado</th>
+                              <th className="p-4">Dpto. / Prov. / Dist.</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {searchResult.map((res, i) => (
+                              <tr key={i} className="hover:bg-white/[0.02] transition-colors text-sm text-slate-300">
+                                <td className="p-4 font-medium text-white">{res.postulante}</td>
+                                <td className="p-4 font-mono">{res.dni_postulante}</td>
+                                <td className="p-4">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                                    {res.estado}
+                                  </span>
+                                </td>
+                                <td className="p-4 text-slate-400">{res.created_at ? new Date(res.created_at).toLocaleDateString() : '-'}</td>
+                                <td className="p-4">{[res.departamento, res.provincia, res.distrito].filter(Boolean).join(' / ') || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        )}
 
         <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/50 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto">
