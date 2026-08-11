@@ -14,7 +14,7 @@ import {
   ChevronUp,
   Image as ImageIcon,
   Phone,
-  DollarSign,
+  Coins,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -404,10 +404,8 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
               {" "}/ S/ {grandTotal.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
             </span>
           </div>
-          <button onClick={handleExport} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-amber-700/20">
-            <FileSpreadsheet className="w-4 h-4" /> Exportar
-          </button>
-          <button onClick={handleAddMaestro} className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20">
+
+          <button onClick={handleAddMaestro} className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 active:scale-95 transition-transform duration-150">
             <Plus className="w-4 h-4" />
             Consultar y Agregar Maestro
           </button>
@@ -492,16 +490,16 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
                       {" "}/ {totalM.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <button onClick={() => handleAddPago(m.id)} className="flex items-center gap-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-400 font-bold text-xs px-3 py-1.5 rounded-xl transition">
+                  <button onClick={() => handleAddPago(m.id)} className="flex items-center gap-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-400 font-bold text-xs px-3 py-1.5 rounded-xl transition active:scale-95 transition-transform duration-150">
                     <Plus className="w-3.5 h-3.5" /> Pago
                   </button>
-                  <button onClick={() => handleDownloadPDF(m)} className="flex items-center gap-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 font-bold text-xs px-3 py-1.5 rounded-xl transition" title="Exportar Cronograma PDF">
+                  <button onClick={() => handleDownloadPDF(m)} className="flex items-center gap-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 font-bold text-xs px-3 py-1.5 rounded-xl transition active:scale-95 transition-transform duration-150" title="Exportar Cronograma PDF">
                     <Download className="w-3.5 h-3.5" /> PDF
                   </button>
-                  <button onClick={() => handleToggle(m.id)} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                  <button onClick={() => handleToggle(m.id)} className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition active:scale-95 transition-transform duration-150">
                     {m.expandido ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
-                  <button onClick={() => handleDeleteMaestro(m.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition" title="Eliminar maestro">
+                  <button onClick={() => handleDeleteMaestro(m.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition active:scale-95 transition-transform duration-150" title="Eliminar maestro">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -515,7 +513,7 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
                       Monto por Vivienda (S/)
                     </label>
                     <div className="relative">
-                      <DollarSign className="w-3.5 h-3.5 text-amber-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <Coins className="w-3.5 h-3.5 text-amber-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="number"
                         step="100"
@@ -543,7 +541,7 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                       : "bg-slate-800 border-slate-700 text-slate-500"
                   }`}>
-                    <DollarSign className="w-3.5 h-3.5" />
+                    <Coins className="w-3.5 h-3.5" />
                     <span>S/ {contratoTotal.toLocaleString("es-PE", { minimumFractionDigits: 2 })}</span>
                     <span className="text-[10px] font-normal text-slate-400 ml-1">CONTRATO TOTAL</span>
                   </div>
@@ -551,7 +549,7 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/60">
                 <button
                   onClick={() => setSelectorOpen(selectorOpen === m.id ? null : m.id)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-3 py-1.5 transition"
+                  className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-3 py-1.5 transition active:scale-95 transition-transform duration-150"
                 >
                   <Users className="w-3.5 h-3.5 text-sky-400" />
                   {m.beneficiariosAsignados.length === 0 ? "Asignar beneficiarios" : `${m.beneficiariosAsignados.length} asignado(s)`}
@@ -610,7 +608,7 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold text-slate-400 uppercase">Monto (S/)</label>
                         <div className="relative">
-                          <DollarSign className="w-3.5 h-3.5 text-amber-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                          <Coins className="w-3.5 h-3.5 text-amber-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
                           <input
                             type="number"
                             step="100"
@@ -633,7 +631,7 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
                             <option value="Pagado">Pagado</option>
                           </select>
                         </div>
-                        <button onClick={() => handleDeletePago(m.id, p.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition mb-0.5" title="Eliminar pago">
+                        <button onClick={() => handleDeletePago(m.id, p.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition mb-0.5 active:scale-95 transition-transform duration-150" title="Eliminar pago">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -653,7 +651,7 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
                             </button>
                           </>
                         ) : (
-                          <button onClick={() => handleUploadClick(m.id, p.id)} className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-3 py-1.5 transition">
+                          <button onClick={() => handleUploadClick(m.id, p.id)} className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-3 py-1.5 transition active:scale-95 transition-transform duration-150">
                             <Upload className="w-3.5 h-3.5" /> Subir comprobante
                           </button>
                         )}

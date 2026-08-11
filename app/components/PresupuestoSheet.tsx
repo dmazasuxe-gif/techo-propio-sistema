@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { Dimensiones, Insumo, PartidaAPU } from "../types";
-import { TrendingUp, Trees, DollarSign, Edit3, ShieldCheck, Plus, Trash2, FileText, Download, Loader2 } from "lucide-react";
+import { TrendingUp, Trees, Coins, Edit3, ShieldCheck, Plus, Trash2, FileText, Download, Loader2 } from "lucide-react";
 
 interface CustomBudgetItem {
   id: string;
@@ -411,7 +411,7 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
         <div className="md:col-span-3 bg-slate-900 border border-slate-800 p-5 rounded-3xl flex flex-col justify-between space-y-4 shadow-xl">
           <div>
             <h3 className="text-sm font-extrabold text-white flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 text-emerald-400" /> Beneficio Tributario - Amazonía Peruana
+              <Coins className="w-4 h-4 text-emerald-400" /> Beneficio Tributario - Amazonía Peruana
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
               En virtud de la **Ley N° 27037 (Ley de Promoción de la Inversión en la Amazonía)**, las viviendas sociales ejecutadas en departamentos de la Selva (San Martín, Loreto, Ucayali, Madre de Dios, Amazonas) gozan de exoneración total del Impuesto General a las Ventas (IGV 0%).

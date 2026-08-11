@@ -325,7 +325,7 @@ export default function Home() {
                       if (beneficiarios.length > 0) setSelectedId(beneficiarios[0].id);
                       else setActiveNavView("registros");
                     }}
-                    className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20"
+                    className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 active:scale-95 transition-transform duration-150"
                   >
                     Ver Expediente de {beneficiarios[0]?.postulante || "Ejemplo"}
                   </button>
@@ -396,7 +396,7 @@ export default function Home() {
                             handleSaveExpedienteData("dimensiones", dimensiones);
                             confetti({ particleCount: 50, spread: 60 });
                           }}
-                          className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2 rounded-xl transition"
+                          className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2 rounded-xl transition active:scale-95 transition-transform duration-150"
                         >
                           Guardar Dimensiones
                         </button>

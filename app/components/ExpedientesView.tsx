@@ -124,100 +124,6 @@ export default function ExpedientesView({
     });
   }, [beneficiarios, selectedDeptFilter, selectedProvFilter, selectedDistFilter, textSearch]);
 
-  // Export to Excel CSV Table with UTF-8 BOM
-  const handleExportToExcel = () => {
-    if (filteredBeneficiarios.length === 0) {
-      alert("No hay beneficiarios para exportar.");
-      return;
-    }
-
-    const headers = [
-      "ID EXPEDIENTE",
-      "EXPEDIENTE / GRUPO",
-      "ESTADO",
-      "POSTULANTE (NOMBRE COMPLETO)",
-      "APELLIDO PATERNO",
-      "APELLIDO MATERNO",
-      "NOMBRES",
-      "DNI POSTULANTE",
-      "CELULAR",
-      "ESTADO CIVIL",
-      "CÓNYUGE",
-      "DNI CÓNYUGE",
-      "DEPARTAMENTO",
-      "PROVINCIA",
-      "DISTRITO",
-      "CENTRO POBLADO",
-      "BARRIO / SECTOR",
-      "JR / AV / CALLE",
-      "MANZANA",
-      "LOTE",
-      "COORDENADA X (ESTE UTM)",
-      "COORDENADA Y (NORTE UTM)",
-      "PARTIDA REGISTRAL SUNARP",
-      "ÁREA TOTAL (M2)",
-      "FRENTE (M)",
-      "DERECHA (M)",
-      "IZQUIERDA (M)",
-      "FONDO (M)",
-      "ÁREA TECHADA (M2)",
-      "ÁREA CONSTRUIDA (M2)",
-      "NOTAS / OBSERVACIONES"
-    ];
-
-    const escapeCsv = (str: string | undefined | null) => {
-      if (!str) return '""';
-      const clean = String(str).replace(/"/g, '""');
-      return `"${clean}"`;
-    };
-
-    const rows = filteredBeneficiarios.map(b => [
-      escapeCsv(b.id),
-      escapeCsv(b.expediente),
-      escapeCsv(b.estado),
-      escapeCsv(b.postulante),
-      escapeCsv(b.apellidoPaterno),
-      escapeCsv(b.apellidoMaterno),
-      escapeCsv(b.nombres),
-      escapeCsv(b.dniPostulante),
-      escapeCsv(b.celular),
-      escapeCsv(b.estadoCivil),
-      escapeCsv(b.conyuge),
-      escapeCsv(b.dniConyuge),
-      escapeCsv(b.departamento),
-      escapeCsv(b.provincia),
-      escapeCsv(b.distrito),
-      escapeCsv(b.centroPoblado),
-      escapeCsv(b.barrioSector),
-      escapeCsv(b.calle),
-      escapeCsv(b.manzana),
-      escapeCsv(b.lote),
-      escapeCsv(b.coordenadaX),
-      escapeCsv(b.coordenadaY),
-      escapeCsv(b.partidaElectronica),
-      escapeCsv(b.areaTotal),
-      escapeCsv(b.porFrente),
-      escapeCsv(b.porDerecha),
-      escapeCsv(b.porIzquierda),
-      escapeCsv(b.porFondo),
-      escapeCsv(b.areaTechada),
-      escapeCsv(b.areaConstruida),
-      escapeCsv(b.notas)
-    ].join(";")); // Excel friendly semicolon separator
-
-    // Add UTF-8 BOM \uFEFF for native Excel opening
-    const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `Beneficiarios_TechoPropio_MazaQuiroz_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   // Confirm delete
   const confirmDelete = () => {
     if (deletingId && onDeleteBeneficiary) {
@@ -254,17 +160,10 @@ export default function ExpedientesView({
 
         <div className="flex items-center gap-3">
           <button
-            onClick={handleExportToExcel}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition duration-150 shadow-md shadow-emerald-600/20"
-          >
-            <FileSpreadsheet className="w-4 h-4" /> Exportar a Excel
-          </button>
-
-          <button
             onClick={onRefresh}
-            className="flex items-center gap-2 border border-slate-700 hover:border-slate-500 bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow"
+            className="flex items-center gap-2 border border-slate-700 hover:border-slate-500 bg-slate-800/80 hover:bg-slate-800 active:scale-95 text-slate-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-sky-400" /> Actualizar
+            <RefreshCw className="w-4 h-4 text-sky-400" /> Actualizar
           </button>
         </div>
       </div>
@@ -449,21 +348,21 @@ export default function ExpedientesView({
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => onSelectBeneficiary(b.id)}
-                            className="p-1.5 bg-slate-900 hover:bg-sky-600/20 text-sky-400 hover:text-sky-300 rounded-lg border border-slate-800 transition"
+                            className="p-1.5 bg-slate-900 hover:bg-sky-600/20 text-sky-400 hover:text-sky-300 rounded-lg border border-slate-800 transition active:scale-95 transition-transform duration-150"
                             title="Ver expediente técnico"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => onOpenEditForm ? onOpenEditForm(b) : setEditingBeneficiary({ ...b })}
-                            className="p-1.5 bg-slate-900 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 rounded-lg border border-slate-800 transition"
+                            className="p-1.5 bg-slate-900 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 rounded-lg border border-slate-800 transition active:scale-95 transition-transform duration-150"
                             title="Editar en formulario completo"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => setDeletingId(b.id)}
-                            className="p-1.5 bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-800 transition"
+                            className="p-1.5 bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-lg border border-slate-800 transition active:scale-95 transition-transform duration-150"
                             title="Eliminar beneficiario"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -504,13 +403,13 @@ export default function ExpedientesView({
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setDeletingId(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition active:scale-95 transition-transform duration-150"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-rose-600/20"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-rose-600/20 active:scale-95 transition-transform duration-150"
               >
                 Eliminar
               </button>
@@ -643,7 +542,7 @@ export default function ExpedientesView({
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl active:scale-95 transition-transform duration-150"
                 >
                   <Save className="w-3.5 h-3.5" /> Guardar Cambios
                 </button>

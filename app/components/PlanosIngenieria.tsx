@@ -182,7 +182,7 @@ export default function PlanosIngenieria({ planos: initialPlanos, onSave }: Plan
           </h3>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-lg shadow-indigo-600/20"
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-lg shadow-indigo-600/20 active:scale-95 transition-transform duration-150"
           >
             <Plus className="w-4 h-4" /> Añadir Nuevo Plano
           </button>
@@ -210,7 +210,7 @@ export default function PlanosIngenieria({ planos: initialPlanos, onSave }: Plan
             </div>
             <button
               onClick={handleAddPlano}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition active:scale-95 transition-transform duration-150"
             >
               <Plus className="w-4 h-4" /> Agregar
             </button>
@@ -310,7 +310,7 @@ export default function PlanosIngenieria({ planos: initialPlanos, onSave }: Plan
                 {/* Delete Button */}
                 <button
                   onClick={() => handleDelete(plano.id)}
-                  className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-2 rounded-lg border bg-slate-900 hover:bg-rose-600 text-slate-500 hover:text-white border-slate-800 hover:border-rose-500 transition duration-150"
+                  className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-2 rounded-lg border bg-slate-900 hover:bg-rose-600 text-slate-500 hover:text-white border-slate-800 hover:border-rose-500 transition duration-150 active:scale-95 transition-transform duration-150"
                   title="Eliminar plano"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

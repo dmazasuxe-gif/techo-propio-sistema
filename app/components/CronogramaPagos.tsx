@@ -13,7 +13,7 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
-  DollarSign,
+  Coins,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -414,7 +414,7 @@ export default function CronogramaPagos({ beneficiarios }: CronogramaPagosProps)
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase">Monto (S/)</label>
                           <div className="relative">
-                            <DollarSign className="w-3.5 h-3.5 text-emerald-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                            <Coins className="w-3.5 h-3.5 text-emerald-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
                             <input
                               type="number"
                               step="500"

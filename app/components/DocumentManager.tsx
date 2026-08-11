@@ -211,6 +211,16 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
       console.error("Error eliminando documento:", err);
     }
   };
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (!onRefresh) return;
+    setIsSyncing(true);
+    await onRefresh();
+    // Extra delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setIsSyncing(false);
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in duration-300">
@@ -241,10 +251,12 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
 
         {onRefresh && (
           <button
-            onClick={onRefresh}
-            className="flex items-center gap-2 border border-slate-700 hover:border-sky-500 bg-slate-800 hover:bg-slate-800/80 text-slate-200 hover:text-white text-xs font-bold px-5 py-2.5 rounded-xl transition duration-200 shadow-lg relative z-10"
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="flex items-center gap-2 border border-slate-700 hover:border-sky-500 bg-slate-800 hover:bg-slate-800/80 active:scale-95 text-slate-200 hover:text-white text-xs font-bold px-5 py-2.5 rounded-xl transition duration-200 shadow-lg relative z-10 disabled:opacity-50"
           >
-            <RefreshCw className="w-4 h-4 text-sky-400" /> Sincronizar
+            <RefreshCw className={`w-4 h-4 text-sky-400 ${isSyncing ? "animate-spin" : ""}`} /> 
+            {isSyncing ? "Sincronizando..." : "Sincronizar"}
           </button>
         )}
       </div>
@@ -334,7 +346,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
 
             <button
               onClick={handleAddCustomField}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 border border-emerald-500 shrink-0 self-start sm:self-auto"
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 border border-emerald-500 shrink-0 self-start sm:self-auto active:scale-95 transition-transform duration-150"
             >
               <FilePlus className="w-4 h-4" /> Añadir Nuevo Cuadro
             </button>
@@ -390,7 +402,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                         <button
                           onClick={() => triggerUploadFor(tipo)}
                           disabled={isUploadingThis}
-                          className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-[11px] px-3.5 py-2 rounded-xl transition shadow-md"
+                          className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-[11px] px-3.5 py-2 rounded-xl transition shadow-md active:scale-95 transition-transform duration-150"
                         >
                           {isUploadingThis ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                           {isUploadingThis ? "Subiendo..." : "Subir Archivo"}
@@ -401,7 +413,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                         <>
                           <button
                             onClick={() => setPreviewDoc(doc)}
-                            className="p-2 bg-slate-950 hover:bg-slate-800 text-sky-400 hover:text-white rounded-xl border border-slate-700 transition"
+                            className="p-2 bg-slate-950 hover:bg-slate-800 text-sky-400 hover:text-white rounded-xl border border-slate-700 transition active:scale-95 transition-transform duration-150"
                             title="Previsualizar"
                           >
                             <Eye className="w-4 h-4" />
@@ -411,7 +423,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                             <a
                               href={doc.url}
                               download={doc.nombre}
-                              className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition"
+                              className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition active:scale-95 transition-transform duration-150"
                               title="Descargar"
                             >
                               <Download className="w-4 h-4" />
@@ -419,7 +431,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                           ) : (
                             <button
                               onClick={() => alert(`Descargando copia local de: ${doc.nombre}`)}
-                              className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition"
+                              className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition active:scale-95 transition-transform duration-150"
                               title="Descargar"
                             >
                               <Download className="w-4 h-4" />
@@ -428,7 +440,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                           
                           <button
                             onClick={() => handleDeleteDoc(doc.id || doc.url || doc.tipo)}
-                            className="p-2 bg-slate-950 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-xl border border-slate-700 transition"
+                            className="p-2 bg-slate-950 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-xl border border-slate-700 transition active:scale-95 transition-transform duration-150"
                             title="Eliminar Archivo"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -439,7 +451,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                       {!DEFAULT_DOCUMENT_TYPES.includes(tipo) && !doc && (
                         <button
                           onClick={() => handleRemoveField(tipo)}
-                          className="p-2 bg-slate-900 hover:bg-rose-500/20 text-slate-600 hover:text-rose-400 rounded-xl border border-slate-800 transition ml-2"
+                          className="p-2 bg-slate-900 hover:bg-rose-500/20 text-slate-600 hover:text-rose-400 rounded-xl border border-slate-800 transition ml-2 active:scale-95 transition-transform duration-150"
                           title="Eliminar Cuadro"
                         >
                           <X className="w-4 h-4" />
@@ -477,7 +489,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
 
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors active:scale-95 transition-transform duration-150"
               >
                 <X className="w-5 h-5" />
               </button>
