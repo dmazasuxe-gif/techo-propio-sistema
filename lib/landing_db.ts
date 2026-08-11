@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 
 export interface LandingContent {
   nav: {
+    logoImage: string;
     logoText: string;
     links: { label: string; href: string }[];
     ctaText: string;
@@ -17,7 +18,7 @@ export interface LandingContent {
   services: {
     title: string;
     subtitle: string;
-    items: { iconType: string; title: string; desc: string }[];
+    items: { iconType: string; title: string; desc: string; images: string[] }[];
   };
   standard: {
     titleHtml: string;
@@ -26,9 +27,18 @@ export interface LandingContent {
     items: { iconType: string; title: string; desc: string }[];
   };
   footer: {
+    logoImage: string;
     companyName: string;
     description: string;
     copyright: string;
+  };
+  announcement: {
+    enabled: boolean;
+    image: string;
+    title: string;
+    description: string;
+    buttonText: string;
+    buttonLink: string;
   };
 }
 
@@ -40,6 +50,7 @@ export interface LandingConfig {
 
 export const DEFAULT_LANDING_CONTENT: LandingContent = {
   nav: {
+    logoImage: "",
     logoText: "MAZA QUIROZ",
     links: [
       { label: "Servicios", href: "#servicios" },
@@ -62,9 +73,9 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     title: "Nuestra Experiencia",
     subtitle: "Ingeniería de precisión aplicada en diversos sectores de la construcción.",
     items: [
-      { iconType: "Ruler", title: "Residencial Premium", desc: "Proyectos residenciales a medida de alta gama diseñados para la longevidad y solidez estructural." },
-      { iconType: "Building2", title: "Infraestructura Comercial", desc: "Construcciones escalables entregadas con planificación meticulosa y estricto cumplimiento técnico." },
-      { iconType: "Hammer", title: "Renovación Estructural", desc: "Mejoras y transformaciones modernizadas de espacios existentes, priorizando seguridad." }
+      { iconType: "Ruler", title: "Residencial Premium", desc: "Proyectos residenciales a medida de alta gama diseñados para la longevidad y solidez estructural.", images: [] },
+      { iconType: "Building2", title: "Infraestructura Comercial", desc: "Construcciones escalables entregadas con planificación meticulosa y estricto cumplimiento técnico.", images: [] },
+      { iconType: "Hammer", title: "Renovación Estructural", desc: "Mejoras y transformaciones modernizadas de espacios existentes, priorizando seguridad.", images: [] }
     ]
   },
   standard: {
@@ -78,9 +89,18 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     ]
   },
   footer: {
+    logoImage: "",
     companyName: "MAZA QUIROZ",
     description: "Ingeniería de Precisión & Arquitectura Moderna. Elevando los estándares de construcción en cada proyecto.",
     copyright: "Constructora Maza Quiroz. Todos los derechos reservados."
+  },
+  announcement: {
+    enabled: false,
+    image: "",
+    title: "Anuncio Importante",
+    description: "Bienvenido a nuestro nuevo portal. Descubre nuestras últimas obras.",
+    buttonText: "Ver más",
+    buttonLink: "#"
   }
 };
 

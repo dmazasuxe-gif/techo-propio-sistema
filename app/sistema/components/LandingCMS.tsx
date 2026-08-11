@@ -1,14 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2, ArrowRight, ShieldCheck, Building2, Hammer, Ruler, Clock, Award, LucideIcon, HelpCircle } from 'lucide-react';
+import { 
+  Save, Loader2, ArrowRight, ShieldCheck, Building2, Hammer, Ruler, 
+  Clock, Award, HelpCircle, HardHat, Pickaxe, Shovel, Truck, Warehouse, 
+  Wrench, Paintbrush, X
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LandingContent, LandingConfig } from '@/lib/landing_db';
 import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
 import { EditableText } from './VisualEditor/EditableText';
 import { EditableImage } from './VisualEditor/EditableImage';
 
-const iconMap: Record<string, LucideIcon> = { Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award };
+const iconMap: Record<string, any> = { 
+  Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award, 
+  HardHat, Pickaxe, Shovel, Truck, Warehouse, Wrench, Paintbrush
+};
 
 export function LandingCMS() {
   const [config, setConfig] = useState<LandingContent | null>(null);
@@ -16,14 +23,33 @@ export function LandingCMS() {
   const [saving, setSaving] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // For services gallery modal in CMS
+  const [editingServiceIndex, setEditingServiceIndex] = useState<number | null>(null);
+
   useEffect(() => {
     fetch('/api/landing-config')
       .then(r => r.json())
       .then((data: LandingConfig) => {
         if (data && data.content) {
-          setConfig(data.content);
+          // Merge with default to ensure new fields (announcement, etc) exist
+          setConfig({
+            ...DEFAULT_LANDING_CONTENT,
+            ...data.content,
+            nav: { ...DEFAULT_LANDING_CONTENT.nav, ...data.content.nav },
+            services: { 
+              ...DEFAULT_LANDING_CONTENT.services, 
+              ...data.content.services,
+              items: data.content.services?.items?.map((item, i) => ({
+                ...DEFAULT_LANDING_CONTENT.services.items[i],
+                ...item,
+                images: item.images || []
+              })) || DEFAULT_LANDING_CONTENT.services.items
+            },
+            footer: { ...DEFAULT_LANDING_CONTENT.footer, ...data.content.footer },
+            announcement: { ...DEFAULT_LANDING_CONTENT.announcement, ...data.content.announcement }
+          });
         } else {
-          setConfig(DEFAULT_LANDING_CONTENT); // Fallback if empty DB
+          setConfig(DEFAULT_LANDING_CONTENT);
         }
         setLoading(false);
       })
@@ -34,7 +60,6 @@ export function LandingCMS() {
       });
   }, []);
 
-  // Slideshow interval
   useEffect(() => {
     if (!config?.hero.images || config.hero.images.length <= 1) return;
     const interval = setInterval(() => {
@@ -61,7 +86,7 @@ export function LandingCMS() {
     }
   };
 
-  const updateNestedConfig = (path: string[], value: any) => {
+  const updateNestedConfig = (path: string[], valueOrUpdater: any) => {
     setConfig((prev) => {
       if (!prev) return prev;
       const newConfig = JSON.parse(JSON.stringify(prev)); // Deep copy
@@ -69,24 +94,27 @@ export function LandingCMS() {
       for (let i = 0; i < path.length - 1; i++) {
         current = current[path[i]];
       }
-      current[path[path.length - 1]] = value;
+      const lastKey = path[path.length - 1];
+      
+      if (typeof valueOrUpdater === 'function') {
+        current[lastKey] = valueOrUpdater(current[lastKey]);
+      } else {
+        current[lastKey] = valueOrUpdater;
+      }
+      
       return newConfig;
     });
   };
 
-  if (loading) {
+  if (loading || !config) {
     return <div className="p-8 flex justify-center h-full items-center"><Loader2 className="animate-spin w-12 h-12 text-sky-500" /></div>;
   }
-
-  if (!config) return null;
-
-  const wppLink = `https://wa.me/${config.hero.phone.replace(/\D/g,'')}?text=Hola`;
 
   return (
     <div className="relative w-full h-[calc(100vh-80px)] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
       
       {/* Editor Toolbar */}
-      <div className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-b border-sky-500/30 p-4 flex justify-between items-center z-50 shadow-xl shadow-black/50 relative">
+      <div className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-b border-sky-500/30 p-4 flex justify-between items-center z-[100] shadow-xl shadow-black/50 relative">
         <div className="flex items-center gap-4">
           <div className="bg-sky-500/20 text-sky-400 p-2 rounded-lg">
             <Building2 className="w-5 h-5" />
@@ -94,20 +122,24 @@ export function LandingCMS() {
           <div>
             <h2 className="text-xl font-bold font-[family-name:var(--font-montserrat)] text-white flex items-center gap-2">
               Visual Builder 
-              <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30 uppercase tracking-widest font-bold">En Vivo</span>
+              <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30 uppercase tracking-widest font-bold">V3</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Haz clic sobre los textos para editarlos. Pasa el cursor sobre las imágenes para cambiarlas.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Haz clic sobre los textos, iconos y cuadros para editarlos.</p>
           </div>
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="group relative">
-            <HelpCircle className="w-5 h-5 text-slate-400 cursor-help" />
-            <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none z-50">
-              Presiona <strong>Enter</strong> o haz clic fuera para guardar un texto temporalmente. Dale al botón azul para publicar los cambios en tu web real.
-            </div>
-          </div>
-          
+          {/* Banner Toggle */}
+          <label className="flex items-center gap-2 cursor-pointer bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-sky-500 transition-colors">
+            <input 
+              type="checkbox" 
+              className="accent-sky-500 w-4 h-4"
+              checked={config.announcement.enabled}
+              onChange={(e) => updateNestedConfig(['announcement', 'enabled'], e.target.checked)}
+            />
+            <span className="text-xs text-white font-bold">Activar Popup Banner</span>
+          </label>
+
           <button 
             onClick={handleSave}
             disabled={saving}
@@ -119,14 +151,59 @@ export function LandingCMS() {
         </div>
       </div>
 
-      {/* 
-        ========================================================================
-        LANDING PAGE PREVIEW ENTORNO
-        ========================================================================
-      */}
+      {/* Editor Content Area */}
       <div className="flex-1 overflow-y-auto bg-[#0a0c10] text-[#e2e8f0] font-sans relative selection:bg-sky-500/30">
         
-        {/* Background Ambient */}
+        {/* =========================================
+            POPUP BANNER (Preview inside CMS)
+            ========================================= */}
+        {config.announcement.enabled && (
+          <div className="relative z-50 p-4">
+            <div className="max-w-2xl mx-auto bg-slate-800/90 backdrop-blur-xl border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden relative">
+              <div className="absolute top-2 right-2 p-2 bg-black/20 rounded-full text-slate-400">
+                <X className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-1/3 bg-slate-900 min-h-[150px] relative">
+                  <EditableImage 
+                    src={config.announcement.image} 
+                    onUpload={(url) => updateNestedConfig(['announcement', 'image'], url)}
+                    className="w-full h-full"
+                  >
+                    <img 
+                      src={config.announcement.image || "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=600&auto=format&fit=crop"} 
+                      alt="Banner" 
+                      className="w-full h-full object-cover absolute inset-0"
+                    />
+                  </EditableImage>
+                </div>
+                <div className="p-6 md:w-2/3 flex flex-col justify-center">
+                  <h3 className="text-xl font-bold text-white mb-2 font-[family-name:var(--font-montserrat)]">
+                    <EditableText 
+                      value={config.announcement.title} 
+                      onChange={(v) => updateNestedConfig(['announcement', 'title'], v)} 
+                    />
+                  </h3>
+                  <p className="text-slate-300 text-sm mb-4">
+                    <EditableText 
+                      value={config.announcement.description} 
+                      onChange={(v) => updateNestedConfig(['announcement', 'description'], v)} 
+                      multiline
+                    />
+                  </p>
+                  <div className="inline-block px-4 py-2 bg-sky-600 text-white text-sm font-bold rounded-lg w-fit">
+                    <EditableText 
+                      value={config.announcement.buttonText} 
+                      onChange={(v) => updateNestedConfig(['announcement', 'buttonText'], v)} 
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ambient Backgrounds */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-sky-600/10 blur-[120px]" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[150px]" />
@@ -137,9 +214,18 @@ export function LandingCMS() {
           <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
-                <Building2 className="text-white w-5 h-5" />
-              </div>
+              <EditableImage 
+                src={config.nav.logoImage} 
+                onUpload={(url) => updateNestedConfig(['nav', 'logoImage'], url)}
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 overflow-hidden cursor-pointer border border-sky-500/30 hover:border-sky-500">
+                  {config.nav.logoImage ? (
+                    <img src={config.nav.logoImage} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <Building2 className="text-white w-5 h-5" />
+                  )}
+                </div>
+              </EditableImage>
               <div className="font-bold tracking-widest text-lg hidden sm:block font-[family-name:var(--font-montserrat)] text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
                 <EditableText 
                   value={config.nav.logoText} 
@@ -182,9 +268,11 @@ export function LandingCMS() {
             <EditableImage 
               src={config.hero.images[currentImageIndex]} 
               onUpload={(url) => {
-                const newImages = [...config.hero.images];
-                newImages[currentImageIndex] = url;
-                updateNestedConfig(['hero', 'images'], newImages);
+                updateNestedConfig(['hero', 'images'], (old: string[]) => {
+                  const newArray = [...old];
+                  newArray[currentImageIndex] = url;
+                  return newArray;
+                });
               }}
               className="absolute inset-0 w-full h-full"
             >
@@ -206,8 +294,7 @@ export function LandingCMS() {
                     {config.hero.images.length > 1 && (
                       <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => {
                         e.stopPropagation();
-                        const newImages = config.hero.images.filter((_, idx) => idx !== i);
-                        updateNestedConfig(['hero', 'images'], newImages);
+                        updateNestedConfig(['hero', 'images'], (old: string[]) => old.filter((_, idx) => idx !== i));
                         setCurrentImageIndex(0);
                       }}>
                         <span className="text-white text-xs font-bold">X</span>
@@ -219,7 +306,8 @@ export function LandingCMS() {
                 <EditableImage 
                   src="" 
                   onUpload={(url) => {
-                    updateNestedConfig(['hero', 'images'], [...config.hero.images, url]);
+                    updateNestedConfig(['hero', 'images'], (old: string[]) => [...old, url]);
+                    // Auto-select the newly added image
                     setCurrentImageIndex(config.hero.images.length);
                   }}
                 >
@@ -234,7 +322,6 @@ export function LandingCMS() {
           <div className="max-w-4xl mx-auto text-center relative z-20">
             <div className="flex flex-col items-center">
               
-              {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold tracking-widest uppercase mb-8">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <EditableText 
@@ -243,7 +330,6 @@ export function LandingCMS() {
                 />
               </div>
               
-              {/* Title Html */}
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 font-[family-name:var(--font-montserrat)] leading-tight whitespace-pre-wrap">
                 <EditableText 
                   value={config.hero.titleHtml} 
@@ -252,7 +338,6 @@ export function LandingCMS() {
                 />
               </h1>
               
-              {/* Subtitle */}
               <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl font-[family-name:var(--font-work-sans)] leading-relaxed whitespace-pre-wrap">
                 <EditableText 
                   value={config.hero.subtitle} 
@@ -261,7 +346,6 @@ export function LandingCMS() {
                 />
               </p>
               
-              {/* CTA & Phone Editor */}
               <div className="flex flex-col items-center gap-4">
                 <div className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-sky-600 rounded-full shadow-lg shadow-sky-500/30">
                   <EditableText 
@@ -309,11 +393,10 @@ export function LandingCMS() {
               {config.services.items.map((service, i) => {
                 const Icon = iconMap[service.iconType] || Hammer;
                 return (
-                  <div key={i} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div key={i} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm shadow-2xl relative">
+                    
                     <div className="w-14 h-14 rounded-xl bg-sky-500/10 flex items-center justify-center mb-6 relative">
                       <Icon className="w-7 h-7 text-sky-400" />
-                      {/* Simple Icon Switcher */}
                       <select 
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         value={service.iconType}
@@ -326,6 +409,7 @@ export function LandingCMS() {
                         {Object.keys(iconMap).map(k => <option key={k} value={k}>{k}</option>)}
                       </select>
                     </div>
+
                     <h3 className="text-xl font-bold mb-3 font-[family-name:var(--font-montserrat)] text-white">
                       <EditableText 
                         value={service.title} 
@@ -336,7 +420,7 @@ export function LandingCMS() {
                         }} 
                       />
                     </h3>
-                    <p className="text-slate-400 leading-relaxed font-[family-name:var(--font-work-sans)]">
+                    <p className="text-slate-400 leading-relaxed font-[family-name:var(--font-work-sans)] mb-6">
                       <EditableText 
                         value={service.desc} 
                         onChange={(v) => {
@@ -347,6 +431,42 @@ export function LandingCMS() {
                         multiline
                       />
                     </p>
+
+                    {/* Services Gallery Mini-Manager */}
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex justify-between items-center">
+                        Galería de Imágenes 
+                        <span className="text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded">{service.images.length}</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {service.images.map((img, imgIdx) => (
+                          <div key={imgIdx} className="w-12 h-12 rounded border border-slate-700 overflow-hidden relative group">
+                            <img src={img} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" 
+                                 onClick={() => {
+                                   const newItems = [...config.services.items];
+                                   newItems[i].images = newItems[i].images.filter((_, idx) => idx !== imgIdx);
+                                   updateNestedConfig(['services', 'items'], newItems);
+                                 }}>
+                              <span className="text-white text-xs font-bold">X</span>
+                            </div>
+                          </div>
+                        ))}
+                        <EditableImage 
+                          src="" 
+                          onUpload={(url) => {
+                            const newItems = [...config.services.items];
+                            newItems[i].images = [...(newItems[i].images || []), url];
+                            updateNestedConfig(['services', 'items'], newItems);
+                          }}
+                        >
+                          <div className="w-12 h-12 rounded border border-dashed border-sky-500/50 flex items-center justify-center text-sky-400 hover:bg-sky-500/10 cursor-pointer transition-colors">
+                            +
+                          </div>
+                        </EditableImage>
+                      </div>
+                    </div>
+
                   </div>
                 );
               })}
@@ -446,9 +566,18 @@ export function LandingCMS() {
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center">
-                  <Building2 className="text-white w-4 h-4" />
-                </div>
+                <EditableImage 
+                  src={config.footer.logoImage} 
+                  onUpload={(url) => updateNestedConfig(['footer', 'logoImage'], url)}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center overflow-hidden cursor-pointer">
+                    {config.footer.logoImage ? (
+                      <img src={config.footer.logoImage} alt="Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <Building2 className="text-white w-4 h-4" />
+                    )}
+                  </div>
+                </EditableImage>
                 <span className="font-bold tracking-widest text-white font-[family-name:var(--font-montserrat)]">
                   <EditableText 
                     value={config.footer.companyName} 

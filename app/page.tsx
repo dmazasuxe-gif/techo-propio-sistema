@@ -3,12 +3,17 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
-import { Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award, LucideIcon } from 'lucide-react';
+import { 
+  Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award, 
+  LucideIcon, HardHat, Pickaxe, Shovel, Truck, Warehouse, Wrench, Paintbrush,
+  X, ChevronLeft, ChevronRight, ImageIcon
+} from 'lucide-react';
 import type { LandingContent, LandingConfig } from '@/lib/landing_db';
 import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
 
 const iconMap: Record<string, LucideIcon> = {
-  Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award
+  Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award,
+  HardHat, Pickaxe, Shovel, Truck, Warehouse, Wrench, Paintbrush
 };
 
 export default function LandingPage() {
@@ -19,13 +24,34 @@ export default function LandingPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
+  // Modal States
+  const [showAnnouncement, setShowAnnouncement] = useState(true);
+  const [viewingGalleryIndex, setViewingGalleryIndex] = useState<number | null>(null);
+  const [galleryImageIndex, setGalleryImageIndex] = useState(0);
+
   useEffect(() => {
     setMounted(true);
     fetch('/api/landing-config')
       .then(r => r.json())
       .then((data: LandingConfig) => {
         if (data && data.content) {
-          setConfig(data.content);
+          // Merge defaults in case db json lacks new properties
+          setConfig({
+            ...DEFAULT_LANDING_CONTENT,
+            ...data.content,
+            nav: { ...DEFAULT_LANDING_CONTENT.nav, ...data.content.nav },
+            services: { 
+              ...DEFAULT_LANDING_CONTENT.services, 
+              ...data.content.services,
+              items: data.content.services?.items?.map((item, i) => ({
+                ...DEFAULT_LANDING_CONTENT.services.items[i],
+                ...item,
+                images: item.images || []
+              })) || DEFAULT_LANDING_CONTENT.services.items
+            },
+            footer: { ...DEFAULT_LANDING_CONTENT.footer, ...data.content.footer },
+            announcement: { ...DEFAULT_LANDING_CONTENT.announcement, ...data.content.announcement }
+          });
         }
       })
       .catch(console.error);
@@ -72,22 +98,136 @@ export default function LandingPage() {
   if (!mounted) return <div className="min-h-screen bg-[#0a0c10]" />;
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-[#e2e8f0] selection:bg-sky-500/30 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0c10] text-[#e2e8f0] selection:bg-sky-500/30 font-sans overflow-x-hidden relative">
       
+      {/* =========================================
+          ANNOUNCEMENT POPUP
+          ========================================= */}
+      <AnimatePresence>
+        {config.announcement?.enabled && showAnnouncement && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ type: 'spring', bounce: 0.4, duration: 0.8 }}
+            className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-md z-[100] bg-slate-900/95 backdrop-blur-2xl border-2 border-sky-500/50 rounded-2xl shadow-2xl overflow-hidden"
+          >
+            <div className="absolute top-3 right-3 z-10">
+              <button 
+                onClick={() => setShowAnnouncement(false)}
+                className="p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {config.announcement.image && (
+              <div className="w-full h-32 relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent z-10"></div>
+                <img src={config.announcement.image} alt="Announcement" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className={`p-6 ${config.announcement.image ? 'pt-2' : ''}`}>
+              <h3 className="text-xl font-bold text-white mb-2 font-[family-name:var(--font-montserrat)]">
+                {config.announcement.title}
+              </h3>
+              <p className="text-slate-300 text-sm mb-4 leading-relaxed whitespace-pre-wrap">
+                {config.announcement.description}
+              </p>
+              {config.announcement.buttonText && (
+                <a 
+                  href={config.announcement.buttonLink || wppLink}
+                  className="inline-block px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-sky-500/20"
+                >
+                  {config.announcement.buttonText}
+                </a>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* =========================================
+          GALLERY LIGHTBOX
+          ========================================= */}
+      <AnimatePresence>
+        {viewingGalleryIndex !== null && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-4"
+          >
+            <button 
+              onClick={() => setViewingGalleryIndex(null)}
+              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-50"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {config.services.items[viewingGalleryIndex].images.length > 0 ? (
+              <div className="relative w-full max-w-6xl h-[80vh] flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.img 
+                    key={galleryImageIndex}
+                    src={config.services.items[viewingGalleryIndex].images[galleryImageIndex]}
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  />
+                </AnimatePresence>
+
+                {config.services.items[viewingGalleryIndex].images.length > 1 && (
+                  <>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const len = config.services.items[viewingGalleryIndex!].images.length;
+                        setGalleryImageIndex((prev) => (prev - 1 + len) % len);
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"
+                    >
+                      <ChevronLeft className="w-8 h-8" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const len = config.services.items[viewingGalleryIndex!].images.length;
+                        setGalleryImageIndex((prev) => (prev + 1) % len);
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"
+                    >
+                      <ChevronRight className="w-8 h-8" />
+                    </button>
+                  </>
+                )}
+                
+                <div className="absolute bottom-[-40px] left-0 w-full text-center text-white/50 text-sm font-semibold tracking-widest">
+                  {galleryImageIndex + 1} / {config.services.items[viewingGalleryIndex].images.length}
+                </div>
+              </div>
+            ) : (
+              <div className="text-white text-xl">No hay imágenes en esta galería.</div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-sky-600/10 blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[150px]" />
       </div>
 
-      <nav className="fixed top-0 left-0 w-full z-50 border-b border-white/5 bg-[#0a0c10]/50 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 w-full z-40 border-b border-white/5 bg-[#0a0c10]/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           
           <motion.div 
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
             className="flex items-center gap-3 cursor-pointer group" onClick={handleLogoClick} title="Constructora"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 group-hover:shadow-sky-500/40 transition-shadow">
-              <Building2 className="text-white w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 group-hover:shadow-sky-500/40 transition-shadow overflow-hidden">
+              {config.nav.logoImage ? (
+                <img src={config.nav.logoImage} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <Building2 className="text-white w-5 h-5" />
+              )}
             </div>
             <span className="font-bold tracking-widest text-lg hidden sm:block font-[family-name:var(--font-montserrat)] text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
               {config.nav.logoText}
@@ -156,20 +296,58 @@ export default function LandingPage() {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="mb-20 text-center">
               <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-montserrat)] mb-4">{config.services.title}</motion.h2>
               <motion.div variants={fadeUp} className="w-24 h-1 bg-gradient-to-r from-sky-500 to-indigo-500 mx-auto rounded-full mb-6"></motion.div>
-              <motion.p variants={fadeUp} className="text-slate-400 max-w-2xl mx-auto">{config.services.subtitle}</motion.p>
+              <motion.p variants={fadeUp} className="text-slate-400 max-w-2xl mx-auto whitespace-pre-wrap">{config.services.subtitle}</motion.p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {config.services.items.map((service, i) => {
                 const Icon = iconMap[service.iconType] || Hammer;
+                const hasImages = service.images && service.images.length > 0;
+                
                 return (
-                  <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-sky-500/30 hover:bg-white/[0.04] transition-all hover:-translate-y-2 backdrop-blur-sm shadow-2xl relative overflow-hidden">
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} 
+                    className={`group p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm shadow-2xl relative overflow-hidden transition-all duration-300 ${hasImages ? 'cursor-pointer hover:border-sky-500/50 hover:bg-sky-500/5 hover:-translate-y-2' : 'hover:border-sky-500/30 hover:bg-white/[0.04]'}`}
+                    onClick={() => {
+                      if (hasImages) {
+                        setGalleryImageIndex(0);
+                        setViewingGalleryIndex(i);
+                      }
+                    }}
+                  >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="w-14 h-14 rounded-xl bg-sky-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <Icon className="w-7 h-7 text-sky-400" />
+                    
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-14 h-14 rounded-xl bg-sky-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Icon className="w-7 h-7 text-sky-400" />
+                      </div>
+                      {hasImages && (
+                        <div className="flex items-center gap-2 bg-sky-500/10 text-sky-400 text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          Ver Galería
+                        </div>
+                      )}
                     </div>
+
                     <h3 className="text-xl font-bold mb-3 font-[family-name:var(--font-montserrat)] text-white">{service.title}</h3>
-                    <p className="text-slate-400 leading-relaxed font-[family-name:var(--font-work-sans)]">{service.desc}</p>
+                    <p className="text-slate-400 leading-relaxed font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{service.desc}</p>
+                    
+                    {/* Visual Indicator of Gallery images below */}
+                    {hasImages && (
+                      <div className="mt-6 flex gap-2">
+                        {service.images.slice(0, 3).map((img, idx) => (
+                          <div key={idx} className="w-10 h-10 rounded border border-white/10 overflow-hidden opacity-50 group-hover:opacity-100 transition-opacity">
+                            <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0" />
+                          </div>
+                        ))}
+                        {service.images.length > 3 && (
+                          <div className="w-10 h-10 rounded border border-white/10 bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400 opacity-50 group-hover:opacity-100">
+                            +{service.images.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}
@@ -182,7 +360,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
                 <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-montserrat)] mb-6 leading-tight whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: config.standard.titleHtml }} />
-                <p className="text-lg text-slate-400 mb-10 font-[family-name:var(--font-work-sans)]">{config.standard.subtitle}</p>
+                <p className="text-lg text-slate-400 mb-10 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{config.standard.subtitle}</p>
                 <div className="space-y-6">
                   {config.standard.items.map((item, i) => {
                     const Icon = iconMap[item.iconType] || ShieldCheck;
@@ -195,7 +373,7 @@ export default function LandingPage() {
                         </div>
                         <div>
                           <h4 className="text-white font-bold tracking-wide mb-1 font-[family-name:var(--font-montserrat)]">{item.title}</h4>
-                          <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{item.desc}</p>
                         </div>
                       </div>
                     );
@@ -214,12 +392,16 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center">
-                  <Building2 className="text-white w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center overflow-hidden">
+                  {config.footer.logoImage ? (
+                    <img src={config.footer.logoImage} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <Building2 className="text-white w-4 h-4" />
+                  )}
                 </div>
                 <span className="font-bold tracking-widest text-white font-[family-name:var(--font-montserrat)]">{config.footer.companyName}</span>
               </div>
-              <p className="text-slate-500 text-sm max-w-sm mb-6">{config.footer.description}</p>
+              <p className="text-slate-500 text-sm max-w-sm mb-6 whitespace-pre-wrap">{config.footer.description}</p>
               <div className="text-slate-600 text-xs">© {new Date().getFullYear()} {config.footer.copyright}</div>
             </div>
             <div className="flex flex-col gap-4">
