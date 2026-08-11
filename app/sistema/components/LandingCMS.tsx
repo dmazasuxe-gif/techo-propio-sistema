@@ -1,28 +1,47 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Save, Upload, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
-import type { LandingConfig } from '@/lib/landing_db';
+import { Save, Loader2, ArrowRight, ShieldCheck, Building2, Hammer, Ruler, Clock, Award, LucideIcon, HelpCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { LandingContent, LandingConfig } from '@/lib/landing_db';
+import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
+import { EditableText } from './VisualEditor/EditableText';
+import { EditableImage } from './VisualEditor/EditableImage';
+
+const iconMap: Record<string, LucideIcon> = { Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award };
 
 export function LandingCMS() {
-  const [config, setConfig] = useState<LandingConfig | null>(null);
+  const [config, setConfig] = useState<LandingContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetch('/api/landing-config')
       .then(r => r.json())
-      .then(data => {
-        setConfig(data);
+      .then((data: LandingConfig) => {
+        if (data && data.content) {
+          setConfig(data.content);
+        } else {
+          setConfig(DEFAULT_LANDING_CONTENT); // Fallback if empty DB
+        }
         setLoading(false);
       })
       .catch(err => {
         console.error("Error loading config:", err);
+        setConfig(DEFAULT_LANDING_CONTENT);
         setLoading(false);
       });
   }, []);
+
+  // Slideshow interval
+  useEffect(() => {
+    if (!config?.hero.images || config.hero.images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % config.hero.images.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [config?.hero.images]);
 
   const handleSave = async () => {
     if (!config) return;
@@ -31,10 +50,10 @@ export function LandingCMS() {
       const res = await fetch('/api/landing-config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ content: config }),
       });
       if (!res.ok) throw new Error("Error saving config");
-      alert("Configuración guardada correctamente");
+      alert("¡Configuración de la web actualizada y en vivo!");
     } catch (error) {
       alert("Hubo un error al guardar la configuración");
     } finally {
@@ -42,141 +61,422 @@ export function LandingCMS() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !config) return;
-
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('subfolder', 'landing_images');
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      
-      if (data.ok && data.url) {
-        setConfig({
-          ...config,
-          imagenes_fondo: [...(config.imagenes_fondo || []), data.url]
-        });
-      } else {
-        alert("Error al subir imagen");
+  const updateNestedConfig = (path: string[], value: any) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const newConfig = JSON.parse(JSON.stringify(prev)); // Deep copy
+      let current = newConfig;
+      for (let i = 0; i < path.length - 1; i++) {
+        current = current[path[i]];
       }
-    } catch (error) {
-      console.error(error);
-      alert("Error al procesar la subida");
-    } finally {
-      setUploading(false);
-      e.target.value = ''; // clear input
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    if (!config) return;
-    const newImages = [...config.imagenes_fondo];
-    newImages.splice(index, 1);
-    setConfig({ ...config, imagenes_fondo: newImages });
+      current[path[path.length - 1]] = value;
+      return newConfig;
+    });
   };
 
   if (loading) {
-    return <div className="p-8 flex justify-center"><Loader2 className="animate-spin w-8 h-8 text-sky-500" /></div>;
+    return <div className="p-8 flex justify-center h-full items-center"><Loader2 className="animate-spin w-12 h-12 text-sky-500" /></div>;
   }
 
-  if (!config) {
-    return <div className="p-8 text-red-500">Error: No se pudo cargar la configuración de la base de datos. ¿Aseguraste de ejecutar el script SQL?</div>;
-  }
+  if (!config) return null;
+
+  const wppLink = `https://wa.me/${config.hero.phone.replace(/\D/g,'')}?text=Hola`;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 bg-slate-900 p-8 rounded-xl border border-slate-800 text-slate-200">
-      <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-        <div>
-          <h2 className="text-2xl font-bold font-[family-name:var(--font-montserrat)] text-white">Configuración Landing Page</h2>
-          <p className="text-sm text-slate-400 mt-1">Edita los textos y gestiona las imágenes de fondo en vivo.</p>
+    <div className="relative w-full h-[calc(100vh-80px)] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+      
+      {/* Editor Toolbar */}
+      <div className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-b border-sky-500/30 p-4 flex justify-between items-center z-50 shadow-xl shadow-black/50 relative">
+        <div className="flex items-center gap-4">
+          <div className="bg-sky-500/20 text-sky-400 p-2 rounded-lg">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold font-[family-name:var(--font-montserrat)] text-white flex items-center gap-2">
+              Visual Builder 
+              <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30 uppercase tracking-widest font-bold">En Vivo</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Haz clic sobre los textos para editarlos. Pasa el cursor sobre las imágenes para cambiarlas.</p>
+          </div>
         </div>
-        <button 
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
-        >
-          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-          Guardar Cambios
-        </button>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-semibold mb-2">Título Principal (Hero)</label>
-          <input 
-            type="text" 
-            value={config.titulo_principal}
-            onChange={(e) => setConfig({ ...config, titulo_principal: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">Subtítulo (Descripción)</label>
-          <textarea 
-            rows={3}
-            value={config.subtitulo}
-            onChange={(e) => setConfig({ ...config, subtitulo: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">Teléfono de Contacto (Cotizaciones)</label>
-          <input 
-            type="text" 
-            value={config.telefono_contacto}
-            onChange={(e) => setConfig({ ...config, telefono_contacto: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"
-          />
-        </div>
-
-        <div className="border-t border-slate-800 pt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-white">Fondo Rotativo (Slideshow)</h3>
-            <label className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg cursor-pointer transition-colors text-sm font-medium">
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              Subir Imagen
-              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-            </label>
+        
+        <div className="flex items-center gap-3">
+          <div className="group relative">
+            <HelpCircle className="w-5 h-5 text-slate-400 cursor-help" />
+            <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none z-50">
+              Presiona <strong>Enter</strong> o haz clic fuera para guardar un texto temporalmente. Dale al botón azul para publicar los cambios en tu web real.
+            </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {config.imagenes_fondo && config.imagenes_fondo.length > 0 ? (
-              config.imagenes_fondo.map((url, i) => (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  key={i} 
-                  className="relative group aspect-video bg-slate-800 rounded-lg overflow-hidden border border-slate-700"
-                >
-                  <img src={url} alt={`Fondo ${i+1}`} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button 
-                      onClick={() => handleRemoveImage(i)}
-                      className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-colors"
-                      title="Eliminar imagen"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full py-8 text-center border-2 border-dashed border-slate-700 rounded-lg text-slate-500 flex flex-col items-center">
-                <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                <p>No hay imágenes subidas. El fondo será oscuro por defecto.</p>
-              </div>
-            )}
-          </div>
+          <button 
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-lg font-bold transition-all shadow-lg shadow-sky-500/20 disabled:opacity-50 hover:scale-105 active:scale-95"
+          >
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+            {saving ? 'Publicando...' : 'Publicar Cambios'}
+          </button>
         </div>
+      </div>
+
+      {/* 
+        ========================================================================
+        LANDING PAGE PREVIEW ENTORNO
+        ========================================================================
+      */}
+      <div className="flex-1 overflow-y-auto bg-[#0a0c10] text-[#e2e8f0] font-sans relative selection:bg-sky-500/30">
+        
+        {/* Background Ambient */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-sky-600/10 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[150px]" />
+        </div>
+
+        {/* 1. NAVIGATION BAR */}
+        <nav className="sticky top-0 left-0 w-full z-40 border-b border-white/5 bg-[#0a0c10]/70 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+                <Building2 className="text-white w-5 h-5" />
+              </div>
+              <div className="font-bold tracking-widest text-lg hidden sm:block font-[family-name:var(--font-montserrat)] text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+                <EditableText 
+                  value={config.nav.logoText} 
+                  onChange={(v) => updateNestedConfig(['nav', 'logoText'], v)} 
+                />
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+              {config.nav.links.map((link, i) => (
+                <EditableText 
+                  key={i} 
+                  value={link.label} 
+                  onChange={(v) => {
+                    const newLinks = [...config.nav.links];
+                    newLinks[i].label = v;
+                    updateNestedConfig(['nav', 'links'], newLinks);
+                  }} 
+                />
+              ))}
+            </div>
+
+            <div>
+              <div className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-sm font-semibold flex items-center gap-2">
+                <EditableText 
+                  value={config.nav.ctaText} 
+                  onChange={(v) => updateNestedConfig(['nav', 'ctaText'], v)} 
+                />
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* 2. HERO SECTION */}
+        <section className="relative w-full min-h-[90vh] flex items-center justify-center px-6 pt-10">
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#0a0c10]">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0c10]/40 via-[#0a0c10]/80 to-[#0a0c10] z-10 pointer-events-none"></div>
+            
+            <EditableImage 
+              src={config.hero.images[currentImageIndex]} 
+              onUpload={(url) => {
+                const newImages = [...config.hero.images];
+                newImages[currentImageIndex] = url;
+                updateNestedConfig(['hero', 'images'], newImages);
+              }}
+              className="absolute inset-0 w-full h-full"
+            >
+              <img 
+                key={currentImageIndex}
+                src={config.hero.images[currentImageIndex] || "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"}
+                alt="Fondo de Construcción" 
+                className="w-full h-full object-cover absolute inset-0 opacity-40 scale-100"
+              />
+            </EditableImage>
+            
+            {/* Quick Background Manager */}
+            <div className="absolute top-24 right-6 z-50 bg-slate-900/90 border border-slate-700 p-4 rounded-xl shadow-xl flex flex-col gap-3 backdrop-blur-sm max-w-[200px]">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest border-b border-slate-700 pb-2">Fondos Rotativos</h4>
+              <div className="flex flex-wrap gap-2">
+                {config.hero.images.map((img, i) => (
+                  <div key={i} className={`w-10 h-10 rounded border-2 cursor-pointer overflow-hidden relative group ${i === currentImageIndex ? 'border-sky-500' : 'border-transparent'}`} onClick={() => setCurrentImageIndex(i)}>
+                    <img src={img} className="w-full h-full object-cover" />
+                    {config.hero.images.length > 1 && (
+                      <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => {
+                        e.stopPropagation();
+                        const newImages = config.hero.images.filter((_, idx) => idx !== i);
+                        updateNestedConfig(['hero', 'images'], newImages);
+                        setCurrentImageIndex(0);
+                      }}>
+                        <span className="text-white text-xs font-bold">X</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                <EditableImage 
+                  src="" 
+                  onUpload={(url) => {
+                    updateNestedConfig(['hero', 'images'], [...config.hero.images, url]);
+                    setCurrentImageIndex(config.hero.images.length);
+                  }}
+                >
+                  <div className="w-10 h-10 rounded border-2 border-dashed border-slate-600 flex items-center justify-center text-slate-400 hover:text-white hover:border-sky-500 cursor-pointer">
+                    +
+                  </div>
+                </EditableImage>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto text-center relative z-20">
+            <div className="flex flex-col items-center">
+              
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold tracking-widest uppercase mb-8">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <EditableText 
+                  value={config.hero.badgeText} 
+                  onChange={(v) => updateNestedConfig(['hero', 'badgeText'], v)} 
+                />
+              </div>
+              
+              {/* Title Html */}
+              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 font-[family-name:var(--font-montserrat)] leading-tight whitespace-pre-wrap">
+                <EditableText 
+                  value={config.hero.titleHtml} 
+                  onChange={(v) => updateNestedConfig(['hero', 'titleHtml'], v)} 
+                  multiline
+                />
+              </h1>
+              
+              {/* Subtitle */}
+              <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl font-[family-name:var(--font-work-sans)] leading-relaxed whitespace-pre-wrap">
+                <EditableText 
+                  value={config.hero.subtitle} 
+                  onChange={(v) => updateNestedConfig(['hero', 'subtitle'], v)} 
+                  multiline
+                />
+              </p>
+              
+              {/* CTA & Phone Editor */}
+              <div className="flex flex-col items-center gap-4">
+                <div className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-sky-600 rounded-full shadow-lg shadow-sky-500/30">
+                  <EditableText 
+                    value={config.hero.ctaText} 
+                    onChange={(v) => updateNestedConfig(['hero', 'ctaText'], v)} 
+                  />
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </div>
+
+                <div className="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-full border border-slate-700/50 mt-4">
+                  <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">WhatsApp:</span>
+                  <EditableText 
+                    value={config.hero.phone} 
+                    onChange={(v) => updateNestedConfig(['hero', 'phone'], v)} 
+                    className="text-green-400 font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* 3. SERVICES SECTION */}
+        <section id="servicios" className="py-32 px-6 relative z-10">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-20 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-montserrat)] mb-4">
+                <EditableText 
+                  value={config.services.title} 
+                  onChange={(v) => updateNestedConfig(['services', 'title'], v)} 
+                />
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-sky-500 to-indigo-500 mx-auto rounded-full mb-6"></div>
+              <p className="text-slate-400 max-w-2xl mx-auto">
+                <EditableText 
+                  value={config.services.subtitle} 
+                  onChange={(v) => updateNestedConfig(['services', 'subtitle'], v)} 
+                  multiline
+                />
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {config.services.items.map((service, i) => {
+                const Icon = iconMap[service.iconType] || Hammer;
+                return (
+                  <div key={i} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="w-14 h-14 rounded-xl bg-sky-500/10 flex items-center justify-center mb-6 relative">
+                      <Icon className="w-7 h-7 text-sky-400" />
+                      {/* Simple Icon Switcher */}
+                      <select 
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        value={service.iconType}
+                        onChange={(e) => {
+                          const newItems = [...config.services.items];
+                          newItems[i].iconType = e.target.value;
+                          updateNestedConfig(['services', 'items'], newItems);
+                        }}
+                      >
+                        {Object.keys(iconMap).map(k => <option key={k} value={k}>{k}</option>)}
+                      </select>
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 font-[family-name:var(--font-montserrat)] text-white">
+                      <EditableText 
+                        value={service.title} 
+                        onChange={(v) => {
+                          const newItems = [...config.services.items];
+                          newItems[i].title = v;
+                          updateNestedConfig(['services', 'items'], newItems);
+                        }} 
+                      />
+                    </h3>
+                    <p className="text-slate-400 leading-relaxed font-[family-name:var(--font-work-sans)]">
+                      <EditableText 
+                        value={service.desc} 
+                        onChange={(v) => {
+                          const newItems = [...config.services.items];
+                          newItems[i].desc = v;
+                          updateNestedConfig(['services', 'items'], newItems);
+                        }} 
+                        multiline
+                      />
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* 4. THE STANDARD SECTION */}
+        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-xl relative z-10">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-montserrat)] mb-6 leading-tight whitespace-pre-wrap">
+                  <EditableText 
+                    value={config.standard.titleHtml} 
+                    onChange={(v) => updateNestedConfig(['standard', 'titleHtml'], v)} 
+                    multiline
+                  />
+                </h2>
+                <p className="text-lg text-slate-400 mb-10 font-[family-name:var(--font-work-sans)]">
+                  <EditableText 
+                    value={config.standard.subtitle} 
+                    onChange={(v) => updateNestedConfig(['standard', 'subtitle'], v)} 
+                    multiline
+                  />
+                </p>
+
+                <div className="space-y-6">
+                  {config.standard.items.map((item, i) => {
+                    const Icon = iconMap[item.iconType] || ShieldCheck;
+                    return (
+                      <div key={i} className="flex gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                        <div className="mt-1 relative">
+                          <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-white/10 relative">
+                            <Icon className="w-5 h-5 text-indigo-400" />
+                            <select 
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                              value={item.iconType}
+                              onChange={(e) => {
+                                const newItems = [...config.standard.items];
+                                newItems[i].iconType = e.target.value;
+                                updateNestedConfig(['standard', 'items'], newItems);
+                              }}
+                            >
+                              {Object.keys(iconMap).map(k => <option key={k} value={k}>{k}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-bold tracking-wide mb-1 font-[family-name:var(--font-montserrat)]">
+                            <EditableText 
+                              value={item.title} 
+                              onChange={(v) => {
+                                const newItems = [...config.standard.items];
+                                newItems[i].title = v;
+                                updateNestedConfig(['standard', 'items'], newItems);
+                              }} 
+                            />
+                          </h4>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            <EditableText 
+                              value={item.desc} 
+                              onChange={(v) => {
+                                const newItems = [...config.standard.items];
+                                newItems[i].desc = v;
+                                updateNestedConfig(['standard', 'items'], newItems);
+                              }} 
+                              multiline
+                            />
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="relative h-[600px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-sky-900/20">
+                <EditableImage 
+                  src={config.standard.image}
+                  onUpload={(url) => updateNestedConfig(['standard', 'image'], url)}
+                  className="w-full h-full"
+                >
+                  <img 
+                    className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700" 
+                    alt="Standard" 
+                    src={config.standard.image} 
+                  />
+                </EditableImage>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. FOOTER */}
+        <footer id="contacto" className="border-t border-white/10 py-16 bg-[#06080a] relative z-10">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center">
+                  <Building2 className="text-white w-4 h-4" />
+                </div>
+                <span className="font-bold tracking-widest text-white font-[family-name:var(--font-montserrat)]">
+                  <EditableText 
+                    value={config.footer.companyName} 
+                    onChange={(v) => updateNestedConfig(['footer', 'companyName'], v)} 
+                  />
+                </span>
+              </div>
+              <p className="text-slate-500 text-sm max-w-sm mb-6">
+                <EditableText 
+                  value={config.footer.description} 
+                  onChange={(v) => updateNestedConfig(['footer', 'description'], v)} 
+                  multiline
+                />
+              </p>
+              <div className="text-slate-600 text-xs">
+                © {new Date().getFullYear()} <EditableText value={config.footer.copyright} onChange={(v) => updateNestedConfig(['footer', 'copyright'], v)} />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-bold mb-2">Navegación (Solo vista)</h4>
+              {config.nav.links.map((link, i) => (
+                <span key={i} className="text-slate-500 text-sm">{link.label}</span>
+              ))}
+            </div>
+          </div>
+        </footer>
+
       </div>
     </div>
   );

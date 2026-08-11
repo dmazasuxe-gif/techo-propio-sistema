@@ -13,7 +13,8 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const updated = await updateLandingConfig(body);
+    const content = body.content || body; // Fallback in case client sends direct content
+    const updated = await updateLandingConfig(content);
     if (!updated) {
       return NextResponse.json({ error: 'Failed to update config' }, { status: 500 });
     }
