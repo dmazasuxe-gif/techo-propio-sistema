@@ -1,26 +1,51 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, Variants } from 'framer-motion';
+import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award } from 'lucide-react';
+import type { LandingConfig } from '@/lib/landing_db';
 
 export default function LandingPage() {
   const router = useRouter();
   
   // Easter egg: 3 taps on logo to login
   const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
+  const [config, setConfig] = useState<LandingConfig | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/landing-config')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.error) setConfig(data);
+      })
+      .catch(console.error);
+  }, []);
+
+  // Background Image Slideshow
+  useEffect(() => {
+    if (!config?.imagenes_fondo || config.imagenes_fondo.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        (prevIndex + 1) % config.imagenes_fondo.length
+      );
+    }, 6000); // Cambiar cada 6 segundos
+
+    return () => clearInterval(interval);
+  }, [config?.imagenes_fondo]);
 
   const handleLogoClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const now = Date.now();
-    const newTimestamps = [...clickTimestamps, now].slice(-3); // Keep only last 3 clicks
+    const newTimestamps = [...clickTimestamps, now].slice(-3);
     setClickTimestamps(newTimestamps);
 
     if (newTimestamps.length === 3) {
       const timeDifference = newTimestamps[2] - newTimestamps[0];
-      if (timeDifference < 1000) { // 3 clicks within 1 second
+      if (timeDifference < 1000) {
         router.push('/sistema');
       }
     }
@@ -40,6 +65,18 @@ export default function LandingPage() {
       }
     }
   };
+
+  // Fallback defaults in case config fails to load quickly
+  const title = config?.titulo_principal || "Construyendo el Futuro con Precisión";
+  const subtitle = config?.subtitulo || "Calidad inquebrantable e integridad estructural para proyectos residenciales, comerciales y de infraestructura a gran escala. Diseñamos la permanencia.";
+  const phone = config?.telefono_contacto || "+51999999999";
+  
+  const formattedPhone = phone.replace(/\D/g,'');
+  const wppLink = `https://wa.me/${formattedPhone}?text=Hola,%20quisiera%20cotizar%20un%20proyecto`;
+
+  const images = config?.imagenes_fondo?.length ? config.imagenes_fondo : [
+    "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
+  ];
 
   return (
     <div className="min-h-screen bg-[#0a0c10] text-[#e2e8f0] selection:bg-sky-500/30 font-sans overflow-x-hidden">
@@ -89,7 +126,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <a href="#contacto" className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-sm font-semibold transition-all hover:scale-105 hover:border-sky-500/30 flex items-center gap-2">
+            <a href={wppLink} target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-sm font-semibold transition-all hover:scale-105 hover:border-sky-500/30 flex items-center gap-2">
               Cotizar Proyecto <ArrowRight className="w-4 h-4" />
             </a>
           </motion.div>
@@ -100,13 +137,20 @@ export default function LandingPage() {
         
         {/* HERO SECTION */}
         <section className="relative w-full min-h-[90vh] flex items-center justify-center px-6">
-          <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#0a0c10]">
             <div className="absolute inset-0 bg-gradient-to-b from-[#0a0c10]/40 via-[#0a0c10]/80 to-[#0a0c10] z-10"></div>
-            <img 
-              src="https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop" 
-              alt="Construcción moderna" 
-              className="w-full h-full object-cover opacity-40 scale-105"
-            />
+            <AnimatePresence mode="popLayout">
+              <motion.img 
+                key={currentImageIndex}
+                src={images[currentImageIndex]}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 0.4, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                alt="Fondo de Construcción" 
+                className="w-full h-full object-cover absolute inset-0"
+              />
+            </AnimatePresence>
           </div>
 
           <div className="max-w-4xl mx-auto text-center relative z-20">
@@ -121,17 +165,16 @@ export default function LandingPage() {
                 Ingeniería de Precisión
               </motion.div>
               
-              <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 font-[family-name:var(--font-montserrat)] leading-tight">
-                Construyendo el <br className="hidden md:block"/> 
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500">Futuro con Precisión</span>
+              <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 font-[family-name:var(--font-montserrat)] leading-tight whitespace-pre-wrap">
+                {title}
               </motion.h1>
               
-              <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl font-[family-name:var(--font-work-sans)] leading-relaxed">
-                Calidad inquebrantable e integridad estructural para proyectos residenciales, comerciales y de infraestructura a gran escala. <strong className="text-slate-200">Diseñamos la permanencia.</strong>
+              <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl font-[family-name:var(--font-work-sans)] leading-relaxed whitespace-pre-wrap">
+                {subtitle}
               </motion.p>
               
               <motion.div variants={fadeUp}>
-                <a href="#contacto" className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-sky-600 rounded-full hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-600 shadow-lg shadow-sky-500/30 overflow-hidden">
+                <a href={wppLink} target="_blank" rel="noopener noreferrer" className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-sky-600 rounded-full hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-600 shadow-lg shadow-sky-500/30 overflow-hidden">
                   <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
                   <span className="relative flex items-center gap-2">Inicia tu Proyecto <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
                 </a>

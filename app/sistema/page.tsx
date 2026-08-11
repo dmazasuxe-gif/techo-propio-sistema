@@ -24,6 +24,7 @@ import CronogramaPagos from "../components/CronogramaPagos";
 import CronogramaMaestros from "../components/CronogramaMaestros";
 import ConsultaDniView from "../components/ConsultaDniView";
 import LoginScreen from "../components/LoginScreen";
+import { LandingCMS } from "./components/LandingCMS";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -467,6 +468,11 @@ export default function Home() {
             <ConsultaDniView />
           )}
 
+          {/* Module 9: Configuración Landing */}
+          {activeNavView === "landing_config" && (
+            <LandingCMS />
+          )}
+
         </main>
 
         {/* ── MOBILE Bottom Navigation Bar ── */}
@@ -478,6 +484,7 @@ export default function Home() {
             { id: "documentos",    label: "Docs",      emoji: "📄" },
             { id: "pagos",         label: "Pagos",     emoji: "💳" },
             { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
+            { id: "landing_config",label: "Landing",   emoji: "🖥️" },
           ] as { id: import("../components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
             <button
               key={item.id}
