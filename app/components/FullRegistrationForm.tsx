@@ -489,8 +489,13 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                       />
                       <button
                         type="button"
-                        onClick={async () => {
+                        onClick={async (e) => {
+                          e.preventDefault();
                           if (integrante.dni.length === 8) {
+                            const btn = e.currentTarget;
+                            const originalText = btn.innerHTML;
+                            btn.innerHTML = '⏳';
+                            btn.disabled = true;
                             try {
                               const res = await fetch(`/api/consulta-dni?dni=${integrante.dni}`);
                               const data = await res.json();
@@ -502,12 +507,17 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                               } else {
                                 alert("DNI no encontrado");
                               }
-                            } catch (e) {
+                            } catch (error) {
                               alert("Error consultando DNI");
+                            } finally {
+                              btn.innerHTML = originalText;
+                              btn.disabled = false;
                             }
+                          } else {
+                            alert("Ingrese 8 dígitos para el DNI");
                           }
                         }}
-                        className="bg-sky-600 hover:bg-sky-500 text-white px-2 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center"
+                        className="bg-sky-600 hover:bg-sky-500 text-white px-2 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center disabled:opacity-50"
                         title="Consultar DNI"
                       >
                         🔍

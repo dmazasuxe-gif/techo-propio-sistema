@@ -49,7 +49,6 @@ export default function Home() {
     setSelectedId(id);
     setActiveTab("ficha");
     setActiveNavView("expedientes");
-    setDimensiones({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
   };
 
   const handleOpenNewModal = () => {
@@ -62,6 +61,31 @@ export default function Home() {
     if (view === "expedientes" && !selectedId && beneficiarios.length > 0) {
       setSelectedId(beneficiarios[0].id);
     }
+  };
+
+  // Sync Dimensiones with selected beneficiary
+  useEffect(() => {
+    if (selectedBeneficiary?.notas) {
+      try {
+        const parsed = JSON.parse(selectedBeneficiary.notas);
+        if (parsed.dimensiones) {
+          setDimensiones(parsed.dimensiones);
+          return;
+        }
+      } catch(e) {}
+    }
+    setDimensiones({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
+  }, [selectedId, beneficiarios]);
+
+  const handleSaveExpedienteData = (key: string, data: any) => {
+    if (!selectedBeneficiary) return;
+    let notasObj: any = {};
+    if (selectedBeneficiary.notas) {
+      try { notasObj = JSON.parse(selectedBeneficiary.notas); } catch (e) {}
+    }
+    notasObj[key] = data;
+    const updatedBeneficiario = { ...selectedBeneficiary, notas: JSON.stringify(notasObj) };
+    handleEditBeneficiary(updatedBeneficiario);
   };
 
   const loadBeneficiarios = useCallback(async () => {
@@ -359,10 +383,25 @@ export default function Home() {
                     />
                   )}
                   {activeTab === "plano" && (
-                    <InteractivePlano
-                      dimensiones={dimensiones}
-                      onChange={setDimensiones}
-                    />
+                    <div>
+                      <InteractivePlano
+                        dimensiones={dimensiones}
+                        onChange={(newDim) => {
+                          setDimensiones(newDim);
+                        }}
+                      />
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => {
+                            handleSaveExpedienteData("dimensiones", dimensiones);
+                            confetti({ particleCount: 50, spread: 60 });
+                          }}
+                          className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2 rounded-xl transition"
+                        >
+                          Guardar Dimensiones
+                        </button>
+                      </div>
+                    </div>
                   )}
                   {activeTab === "presupuesto" && (
                     <PresupuestoSheet
@@ -372,10 +411,36 @@ export default function Home() {
                     />
                   )}
                   {activeTab === "gantt" && (
-                    <CronogramaObra />
+                    <CronogramaObra 
+                      tareas={
+                        (() => {
+                          if (selectedBeneficiary?.notas) {
+                            try {
+                              const parsed = JSON.parse(selectedBeneficiary.notas);
+                              if (parsed.cronogramaObra) return parsed.cronogramaObra;
+                            } catch(e) {}
+                          }
+                          return [];
+                        })()
+                      }
+                      onSave={(tareas) => handleSaveExpedienteData("cronogramaObra", tareas)}
+                    />
                   )}
                   {activeTab === "planos" && (
-                    <PlanosIngenieria />
+                    <PlanosIngenieria 
+                      planos={
+                        (() => {
+                          if (selectedBeneficiary?.notas) {
+                            try {
+                              const parsed = JSON.parse(selectedBeneficiary.notas);
+                              if (parsed.planosIngenieria) return parsed.planosIngenieria;
+                            } catch(e) {}
+                          }
+                          return [];
+                        })()
+                      }
+                      onSave={(planos) => handleSaveExpedienteData("planosIngenieria", planos)}
+                    />
                   )}
                 </div>
               </div>

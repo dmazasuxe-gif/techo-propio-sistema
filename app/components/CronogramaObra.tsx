@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Hourglass, TrendingUp } from "lucide-react";
 
-interface TareaGantt {
+export interface TareaGantt {
   id: string;
   actividad: string;
   inicioSemana: number;
@@ -12,38 +12,40 @@ interface TareaGantt {
   responsable: string;
 }
 
-export default function CronogramaObra() {
-  const [tareas, setTareas] = useState<TareaGantt[]>([
-    { id: "t1", actividad: "01. Obras Preliminares & Excavación",       inicioSemana: 1, duracionSemanas: 1, avancePct: 0, responsable: "Maestro de Obra" },
-    { id: "t2", actividad: "02. Cimentación & Sobrecimientos",          inicioSemana: 1, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
-    { id: "t3", actividad: "03. Muros de Ladrillo Soga",                inicioSemana: 2, duracionSemanas: 2, avancePct: 0, responsable: "Albañilería" },
-    { id: "t4", actividad: "04. Columnas y Vigas de Concreto",          inicioSemana: 3, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
-    { id: "t5", actividad: "05. Techo Aligerado & Vaciado",             inicioSemana: 4, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
-    { id: "t6", actividad: "06. Tarrajeo, Pisos & Zócalos",             inicioSemana: 5, duracionSemanas: 2, avancePct: 0, responsable: "Acabados" },
-    { id: "t7", actividad: "07. Instalaciones Sanitarias & Eléctricas", inicioSemana: 6, duracionSemanas: 2, avancePct: 0, responsable: "Instalaciones" },
-    { id: "t8", actividad: "08. Pintura & Puertas / Ventanas",          inicioSemana: 7, duracionSemanas: 2, avancePct: 0, responsable: "Pintura" },
-  ]);
+export const TAREAS_GANTT_INICIALES: TareaGantt[] = [
+  { id: "t1", actividad: "01. Obras Preliminares & Excavación",       inicioSemana: 1, duracionSemanas: 1, avancePct: 0, responsable: "Maestro de Obra" },
+  { id: "t2", actividad: "02. Cimentación & Sobrecimientos",          inicioSemana: 1, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
+  { id: "t3", actividad: "03. Muros de Ladrillo Soga",                inicioSemana: 2, duracionSemanas: 2, avancePct: 0, responsable: "Albañilería" },
+  { id: "t4", actividad: "04. Columnas y Vigas de Concreto",          inicioSemana: 3, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
+  { id: "t5", actividad: "05. Techo Aligerado & Vaciado",             inicioSemana: 4, duracionSemanas: 2, avancePct: 0, responsable: "Estructuras" },
+  { id: "t6", actividad: "06. Tarrajeo, Pisos & Zócalos",             inicioSemana: 5, duracionSemanas: 2, avancePct: 0, responsable: "Acabados" },
+  { id: "t7", actividad: "07. Instalaciones Sanitarias & Eléctricas", inicioSemana: 6, duracionSemanas: 2, avancePct: 0, responsable: "Instalaciones" },
+  { id: "t8", actividad: "08. Pintura & Puertas / Ventanas",          inicioSemana: 7, duracionSemanas: 2, avancePct: 0, responsable: "Pintura" },
+];
+
+interface CronogramaObraProps {
+  tareas: TareaGantt[];
+  onSave: (tareas: TareaGantt[]) => void;
+}
+
+export default function CronogramaObra({ tareas: initialTareas, onSave }: CronogramaObraProps) {
+  const [tareas, setTareas] = useState<TareaGantt[]>(
+    initialTareas && initialTareas.length > 0 ? initialTareas : TAREAS_GANTT_INICIALES
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   React.useEffect(() => {
-    fetch("/api/obras/cronograma")
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setTareas(data);
-        }
-      })
-      .catch(err => console.error("Error loading cronogramaObra", err));
-  }, []);
+    if (initialTareas && initialTareas.length > 0) {
+      setTareas(initialTareas);
+    } else {
+      setTareas(TAREAS_GANTT_INICIALES);
+    }
+  }, [initialTareas]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await fetch("/api/obras/cronograma", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tareas)
-      });
+      await onSave(tareas);
     } catch (error) {
       console.error("Error saving cronogramaObra", error);
     } finally {

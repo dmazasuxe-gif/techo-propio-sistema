@@ -21,19 +21,30 @@ const DEFAULT_PLANOS: PlanoItem[] = [
   { id: "PLN-DEFAULT-4", title: "Instalaciones Eléctricas (Alumbrado y Tomacorrientes)", type: "DWG (AutoCAD)", fileName: "", fileUrl: "", fileSize: "" },
 ];
 
-export default function PlanosIngenieria() {
-  const [planos, setPlanos] = useState<PlanoItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState<string | null>(null); // ID of plano being uploaded
+interface PlanosIngenieriaProps {
+  planos: PlanoItem[];
+  onSave: (planos: PlanoItem[]) => void;
+}
+
+export default function PlanosIngenieria({ planos: initialPlanos, onSave }: PlanosIngenieriaProps) {
+  const [planos, setPlanos] = useState<PlanoItem[]>(
+    initialPlanos && initialPlanos.length > 0 ? initialPlanos : DEFAULT_PLANOS
+  );
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  // Load planos from API
+  // Sync state if props change from outside (e.g. switching beneficiary)
   useEffect(() => {
-    loadPlanos();
-  }, []);
+    if (initialPlanos && initialPlanos.length > 0) {
+      setPlanos(initialPlanos);
+    } else {
+      setPlanos(DEFAULT_PLANOS);
+    }
+  }, [initialPlanos]);
 
   // Auto-dismiss toasts
   useEffect(() => {
@@ -42,31 +53,6 @@ export default function PlanosIngenieria() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-
-  const loadPlanos = async () => {
-    try {
-      const res = await fetch("/api/planos");
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setPlanos(data);
-        } else {
-          // Initialize with defaults
-          await fetch("/api/planos", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "set_all", planos: DEFAULT_PLANOS }),
-          });
-          setPlanos(DEFAULT_PLANOS);
-        }
-      }
-    } catch (err) {
-      console.error("Error loading planos:", err);
-      setPlanos(DEFAULT_PLANOS);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleUploadClick = (planoId: string) => {
     fileInputRefs.current[planoId]?.click();
@@ -87,31 +73,14 @@ export default function PlanosIngenieria() {
 
       const uploadData = await uploadRes.json();
 
-      // Update plano in DB
-      const updateRes = await fetch("/api/planos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update",
-          id: planoId,
-          data: {
-            fileName: uploadData.fileName,
-            fileUrl: uploadData.url,
-            fileSize: formatFileSize(uploadData.size),
-          },
-        }),
-      });
-
-      if (updateRes.ok) {
-        setPlanos((prev) =>
-          prev.map((p) =>
-            p.id === planoId
-              ? { ...p, fileName: uploadData.fileName, fileUrl: uploadData.url, fileSize: formatFileSize(uploadData.size) }
-              : p
-          )
-        );
-        setToast({ msg: `✅ Archivo "${uploadData.fileName}" subido correctamente.`, type: "success" });
-      }
+      const updatedPlanos = planos.map((p) =>
+        p.id === planoId
+          ? { ...p, fileName: uploadData.fileName, fileUrl: uploadData.url, fileSize: formatFileSize(uploadData.size) }
+          : p
+      );
+      setPlanos(updatedPlanos);
+      onSave(updatedPlanos);
+      setToast({ msg: `✅ Archivo "${uploadData.fileName}" subido correctamente.`, type: "success" });
     } catch (err) {
       console.error("Upload error:", err);
       setToast({ msg: "❌ Error al subir el archivo.", type: "error" });
@@ -139,34 +108,36 @@ export default function PlanosIngenieria() {
 
   const handleDelete = async (planoId: string) => {
     try {
-      await fetch("/api/planos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", id: planoId }),
-      });
-      setPlanos((prev) => prev.filter((p) => p.id !== planoId));
+      const updatedPlanos = planos.filter((p) => p.id !== planoId);
+      setPlanos(updatedPlanos);
+      onSave(updatedPlanos);
       setToast({ msg: "🗑️ Plano eliminado.", type: "success" });
     } catch (err) {
       console.error("Delete error:", err);
-      setToast({ msg: "❌ Error al eliminar.", type: "error" });
+      setToast({ msg: "❌ Error eliminando plano.", type: "error" });
     }
   };
 
-  const handleAddPlano = async () => {
-    const title = newTitle.trim() || "Nuevo Plano";
+  const handleAddPlano = async (e?: React.SyntheticEvent) => {
+    if (e) e.preventDefault();
+    if (!newTitle) return;
     try {
-      const res = await fetch("/api/planos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add", title, type: "DWG (AutoCAD)" }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPlanos((prev) => [...prev, data.plano]);
-        setNewTitle("");
-        setShowAddForm(false);
-        setToast({ msg: `✅ Plano "${title}" agregado.`, type: "success" });
-      }
+      const newPlano = {
+        id: `PLN-${Date.now()}`,
+        title: newTitle,
+        type: "DWG (AutoCAD)",
+        fileName: "",
+        fileUrl: "",
+        fileSize: "",
+        createdAt: new Date().toISOString(),
+      };
+      const updatedPlanos = [...planos, newPlano];
+      setPlanos(updatedPlanos);
+      onSave(updatedPlanos);
+      
+      setNewTitle("");
+      setShowAddForm(false);
+      setToast({ msg: "✨ Nuevo plano creado.", type: "success" });
     } catch (err) {
       console.error("Add error:", err);
       setToast({ msg: "❌ Error al agregar plano.", type: "error" });
