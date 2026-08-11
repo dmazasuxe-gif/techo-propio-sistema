@@ -104,8 +104,18 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
     setIsDniModalOpen(true);
   };
 
-  const handleDeleteMaestro = (id: string) =>
+  const handleDeleteMaestro = async (id: string) => {
+    // 1. Remove from local state + sync cronograma_maestros via POST
     setMaestros(prev => prev.filter(m => m.id !== id));
+
+    // 2. Also delete from the main `maestros` table in Supabase
+    try {
+      await fetch(`/api/maestros/cronograma?id=${id}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Error eliminando maestro de la tabla principal:", err);
+    }
+  };
+
 
   const handleUpdateMaestro = <K extends keyof Maestro>(id: string, field: K, value: Maestro[K]) =>
     setMaestros(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));

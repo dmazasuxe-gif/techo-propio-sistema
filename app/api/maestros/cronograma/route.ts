@@ -56,3 +56,58 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to save" }, { status: 500 });
   }
 }
+
+/**
+ * DELETE /api/maestros/cronograma?id=MAESTRO_ID
+ * Elimina el maestro de TODAS las tablas:
+ *   1. maestros            (tabla principal)
+ *   2. cronograma_maestros (tabla de cronograma)
+ *   3. beneficiarios       (limpia la referencia maestro_asignado_id)
+ */
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: "ID del maestro es requerido" }, { status: 400 });
+    }
+
+    // 1. Liberar beneficiarios asignados a este maestro
+    const { error: errBen } = await supabase
+      .from('beneficiarios')
+      .update({ maestro_asignado_id: null, maestro_asignado_nombre: null })
+      .eq('maestro_asignado_id', id);
+
+    if (errBen) {
+      console.error("Error liberando beneficiarios del maestro:", errBen);
+      // No abortamos — intentamos continuar con el borrado
+    }
+
+    // 2. Eliminar de cronograma_maestros
+    const { error: errCronograma } = await supabase
+      .from('cronograma_maestros')
+      .delete()
+      .eq('id', id);
+
+    if (errCronograma) {
+      console.error("Error eliminando de cronograma_maestros:", errCronograma);
+    }
+
+    // 3. Eliminar de la tabla principal maestros
+    const { error: errMaestro } = await supabase
+      .from('maestros')
+      .delete()
+      .eq('id', id);
+
+    if (errMaestro) {
+      console.error("Error eliminando de maestros:", errMaestro);
+      return NextResponse.json({ error: errMaestro.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: `Maestro ${id} eliminado de todas las tablas.` });
+  } catch (error: any) {
+    console.error("Error en DELETE maestro:", error);
+    return NextResponse.json({ error: error.message || "Error interno" }, { status: 500 });
+  }
+}
