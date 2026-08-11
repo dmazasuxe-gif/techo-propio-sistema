@@ -502,40 +502,6 @@ export function LandingCMS() {
           </div>
         </section>
 
-        {/* =========================================
-            STATUS SEARCH PREVIEW
-            ========================================= */}
-        {config.statusSearch?.enabled && (
-          <section className="py-12 px-6 border-t border-white/5 bg-[#0a0c10]">
-            <div className="max-w-6xl mx-auto bg-slate-900/50 rounded-2xl p-6 md:p-8 border border-white/10 shadow-2xl">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
-                <EditableText 
-                  value={config.statusSearch.title} 
-                  onChange={(v) => updateNestedConfig(['statusSearch', 'title'], v)} 
-                />
-              </h2>
-              <p className="text-slate-400 text-center mb-8">
-                <EditableText 
-                  value={config.statusSearch.subtitle} 
-                  onChange={(v) => updateNestedConfig(['statusSearch', 'subtitle'], v)} 
-                  multiline
-                />
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto pointer-events-none opacity-50 grayscale">
-                <input 
-                  type="text" 
-                  placeholder="Ingrese número de DNI" 
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white"
-                />
-                <button className="bg-sky-600 text-white font-bold px-8 py-3 rounded-lg">
-                  Buscar
-                </button>
-              </div>
-              <p className="text-xs text-center text-slate-500 mt-4">(Esta es una vista previa, la búsqueda real funcionará en la página pública)</p>
-            </div>
-          </section>
-        )}
 
         {/* 4. THE STANDARD SECTION */}
         <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-xl relative z-10">
@@ -623,6 +589,41 @@ export function LandingCMS() {
             </div>
           </div>
         </section>
+
+        {/* =========================================
+            STATUS SEARCH PREVIEW
+            ========================================= */}
+        {config.statusSearch?.enabled && (
+          <section className="py-12 px-6 border-t border-white/5 bg-[#0a0c10]">
+            <div className="max-w-6xl mx-auto bg-slate-900/50 rounded-2xl p-6 md:p-8 border border-white/10 shadow-2xl">
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
+                <EditableText 
+                  value={config.statusSearch.title} 
+                  onChange={(v) => updateNestedConfig(['statusSearch', 'title'], v)} 
+                />
+              </h2>
+              <p className="text-slate-400 text-center mb-8">
+                <EditableText 
+                  value={config.statusSearch.subtitle} 
+                  onChange={(v) => updateNestedConfig(['statusSearch', 'subtitle'], v)} 
+                  multiline
+                />
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto pointer-events-none opacity-50 grayscale">
+                <input 
+                  type="text" 
+                  placeholder="Ingrese número de DNI" 
+                  className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white"
+                />
+                <button className="bg-sky-600 text-white font-bold px-8 py-3 rounded-lg">
+                  Buscar
+                </button>
+              </div>
+              <p className="text-xs text-center text-slate-500 mt-4">(Esta es una vista previa, la búsqueda real funcionará en la página pública)</p>
+            </div>
+          </section>
+        )}
 
         {/* 5. FOOTER */}
         <footer id="contacto" className="border-t border-white/10 py-16 bg-[#06080a] relative z-10">

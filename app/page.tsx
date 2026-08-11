@@ -419,6 +419,41 @@ export default function LandingPage() {
           </div>
         </section>
 
+
+
+        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/50 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-montserrat)] mb-6 leading-tight whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: config.standard.titleHtml }} />
+                <p className="text-lg text-slate-400 mb-10 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{config.standard.subtitle}</p>
+                <div className="space-y-6">
+                  {config.standard.items.map((item, i) => {
+                    const Icon = iconMap[item.iconType] || ShieldCheck;
+                    return (
+                      <div key={i} className="flex gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                        <div className="mt-1">
+                          <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-white/10">
+                            <Icon className="w-5 h-5 text-indigo-400" />
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-bold tracking-wide mb-1 font-[family-name:var(--font-montserrat)]">{item.title}</h4>
+                          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{item.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative h-[600px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-sky-900/20 group">
+                <div className="absolute inset-0 bg-sky-500/10 group-hover:bg-transparent transition-colors z-10 mix-blend-overlay"></div>
+                <img className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100" alt="Standard Blueprint" src={config.standard.image} />
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
         {/* =========================================
             STATUS SEARCH SECTION
             ========================================= */}
@@ -519,39 +554,6 @@ export default function LandingPage() {
             </div>
           </section>
         )}
-
-        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/50 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-                <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-montserrat)] mb-6 leading-tight whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: config.standard.titleHtml }} />
-                <p className="text-lg text-slate-400 mb-10 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{config.standard.subtitle}</p>
-                <div className="space-y-6">
-                  {config.standard.items.map((item, i) => {
-                    const Icon = iconMap[item.iconType] || ShieldCheck;
-                    return (
-                      <div key={i} className="flex gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                        <div className="mt-1">
-                          <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-white/10">
-                            <Icon className="w-5 h-5 text-indigo-400" />
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="text-white font-bold tracking-wide mb-1 font-[family-name:var(--font-montserrat)]">{item.title}</h4>
-                          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{item.desc}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative h-[600px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-sky-900/20 group">
-                <div className="absolute inset-0 bg-sky-500/10 group-hover:bg-transparent transition-colors z-10 mix-blend-overlay"></div>
-                <img className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100" alt="Standard Blueprint" src={config.standard.image} />
-              </motion.div>
-            </div>
-          </div>
-        </section>
 
         <footer id="contacto" className="border-t border-white/10 py-16 bg-[#06080a]">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
