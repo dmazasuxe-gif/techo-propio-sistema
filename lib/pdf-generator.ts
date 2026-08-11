@@ -731,3 +731,136 @@ export async function generarCronogramaObraPDF(): Promise<string | null> {
     return null;
   }
 }
+
+export async function generarFinancieraPDFFromData(financiera: any, beneficiarios: Beneficiario[] = []): Promise<string | null> {
+  const fileName = `Financiera_${financiera.id}_${Date.now()}.pdf`;
+  const filePath = path.join(UPLOADS_DIR, fileName);
+  ensureDirectoryExistence(filePath);
+
+  let totalMonto = 0;
+  let totalDesembolsado = 0;
+
+  const desembolsosHtml = (financiera.desembolsos || []).map((d: any) => {
+    totalMonto += (d.monto || 0);
+    if (d.estado === "Desembolsado") totalDesembolsado += (d.monto || 0);
+
+    const bNames = (d.beneficiariosAsignados || [])
+      .map((bId: string) => {
+        const b = beneficiarios.find(x => x.id === bId);
+        return b ? b.postulante : bId;
+      })
+      .join(" | ");
+
+    let estadoClass = "bg-slate";
+    let icon = "⏳";
+    if (d.estado === "Desembolsado") { estadoClass = "bg-emerald"; icon = "✅"; }
+    if (d.estado === "En trámite") { estadoClass = "bg-sky"; icon = "🔄"; }
+
+    return `
+      <div class="desembolso-card">
+        <div class="desembolso-header">
+          <div>
+            <span class="hito-title">${d.hito}</span>
+            <div class="hito-fecha">Fecha programada/ejecutada: ${d.fecha}</div>
+          </div>
+          <div class="monto-badge">S/ ${(d.monto || 0).toLocaleString("es-PE", { minimumFractionDigits: 2 })}</div>
+        </div>
+        <div class="desembolso-body">
+          <div class="estado-badge ${estadoClass}">${icon} ${d.estado}</div>
+          <div class="beneficiarios">
+            <strong>Beneficiarios Asignados:</strong><br/>
+            ${bNames || "<em>Ninguno asignado</em>"}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const printContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Reporte de Financiera</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 15mm 12mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1e293b; font-size: 11px; }
+    
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); color: #fff; padding: 18px 22px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header-title h1 { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+    .header-title p { font-size: 10px; opacity: 0.7; }
+    
+    .summary-box { display: flex; gap: 15px; margin-bottom: 20px; }
+    .stat-card { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; }
+    .stat-card .label { font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+    .stat-card .val { font-size: 16px; font-weight: 900; color: #0f172a; font-family: monospace; }
+    .stat-card.highlight .val { color: #10b981; }
+
+    .desembolso-card { border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 12px; overflow: hidden; page-break-inside: avoid; }
+    .desembolso-header { background: #f1f5f9; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; }
+    .hito-title { font-weight: 800; font-size: 12px; color: #334155; }
+    .hito-fecha { font-size: 9px; color: #64748b; margin-top: 2px; }
+    .monto-badge { font-family: monospace; font-size: 14px; font-weight: 900; color: #059669; }
+    
+    .desembolso-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .estado-badge { align-self: flex-start; padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; color: #fff; }
+    .bg-emerald { background: #10b981; }
+    .bg-sky { background: #38bdf8; }
+    .bg-slate { background: #64748b; }
+    
+    .beneficiarios { font-size: 10px; color: #475569; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px dashed #cbd5e1; }
+    
+    .footer { margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px; display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <h1>🏦 Reporte de Entidad Financiera</h1>
+      <p>Programa Techo Propio — Constructora Maza Quiroz</p>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:14px;font-weight:900;color:#38bdf8">${financiera.nombre}</div>
+      <div style="font-size:9px;opacity:0.8">ID: ${financiera.id}</div>
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <div class="stat-card">
+      <div class="label">Total Pactado / Proyectado</div>
+      <div class="val">S/ ${totalMonto.toLocaleString("es-PE", { minimumFractionDigits: 2 })}</div>
+    </div>
+    <div class="stat-card highlight">
+      <div class="label">Total Desembolsado (Recibido)</div>
+      <div class="val">S/ ${totalDesembolsado.toLocaleString("es-PE", { minimumFractionDigits: 2 })}</div>
+    </div>
+  </div>
+  
+  <h3 style="font-size:12px; color:#334155; margin-bottom:10px; border-bottom: 2px solid #e2e8f0; padding-bottom:4px;">Detalle de Hitos / Desembolsos</h3>
+  
+  <div class="desembolsos">
+    ${desembolsosHtml || "<p style='color:#94a3b8;font-size:10px;'>No hay desembolsos registrados.</p>"}
+  </div>
+
+  <div class="footer">
+    <div>Sistema Techo Propio — Constructora Maza Quiroz</div>
+    <div>Generado el ${new Date().toLocaleString("es-PE")}</div>
+  </div>
+</body>
+</html>`;
+
+  try {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    await page.setContent(printContent, { waitUntil: 'load' });
+    await page.pdf({ path: filePath, format: 'A4', margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' } });
+    await browser.close();
+    const publicUrl = await saveLocalFileToStorage(filePath, 'financieras');
+    return publicUrl || filePath;
+  } catch (error) {
+    console.error("Puppeteer error generating financiera PDF:", error);
+    return null;
+  }
+}
+

@@ -195,38 +195,30 @@ export default function CronogramaPagos({ beneficiarios }: CronogramaPagosProps)
     setUploadTarget(null);
   };
 
-  // ─── Export to CSV ────────────────────────────────────────────────────────
+  const [isExportingPDF, setIsExportingPDF] = useState<string | null>(null);
 
-  const handleExport = () => {
-    const rows: string[] = [
-      ["FINANCIERA", "HITO", "FECHA", "MONTO (S/)", "ESTADO", "BENEFICIARIOS ASIGNADOS"].join(";"),
-    ];
-    financieras.forEach(f => {
-      f.desembolsos.forEach(d => {
-        const benNames = d.beneficiariosAsignados
-          .map(id => beneficiarios.find(b => b.id === id)?.postulante || id)
-          .join(" | ");
-        rows.push(
-          [
-            `"${f.nombre}"`,
-            `"${d.hito}"`,
-            d.fecha,
-            d.monto,
-            d.estado,
-            `"${benNames}"`,
-          ].join(";")
-        );
+  const handleExportFinancieraPDF = async (fin: Financiera) => {
+    try {
+      setIsExportingPDF(fin.id);
+      const res = await fetch("/api/financieras/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ financiera: fin, beneficiarios })
       });
-    });
-    const csv = "\uFEFF" + rows.join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `CronogramaPagos_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+      if (!res.ok) throw new Error("Error generando PDF");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Reporte_${fin.nombre.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.click();
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo generar el PDF");
+    } finally {
+      setIsExportingPDF(null);
+    }
   };
-
   // ─── Totals ───────────────────────────────────────────────────────────────
 
   const grandTotal = financieras.flatMap(f => f.desembolsos || []).reduce((s, d) => s + (d?.monto || 0), 0);
@@ -292,12 +284,6 @@ export default function CronogramaPagos({ beneficiarios }: CronogramaPagosProps)
             </span>
           </div>
           <button
-            onClick={handleExport}
-            className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-700/20"
-          >
-            <FileSpreadsheet className="w-4 h-4" /> Exportar
-          </button>
-          <button
             onClick={handleAddFinanciera}
             className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20"
           >
@@ -346,6 +332,14 @@ export default function CronogramaPagos({ beneficiarios }: CronogramaPagosProps)
                     {" "}/ {totalFin.toLocaleString("es-PE", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
+                <button
+                  onClick={() => handleExportFinancieraPDF(fin)}
+                  disabled={isExportingPDF === fin.id}
+                  className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center shrink-0"
+                  title="Generar PDF"
+                >
+                  {isExportingPDF === fin.id ? <AlertCircle className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+                </button>
                 <button
                   onClick={() => handleAddDesembolso(fin.id)}
                   className="flex items-center gap-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 font-bold text-xs px-3 py-1.5 rounded-xl transition"

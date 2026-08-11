@@ -82,6 +82,7 @@ HABILIDADES:
 - Generación de cronogramas y presupuestos PDF.
 - Gestión de documentos (agregar, enviar).
 - Consulta de desembolsos financieros.
+- Generación y envío de PDF por Entidad Financiera (Cajas, Bancos).
 
 Usa emojis y mantén un tono profesional pero amigable.`;
 
@@ -209,6 +210,43 @@ Usa emojis y mantén un tono profesional pero amigable.`;
             return sent ? { mensaje: "Cronograma enviado con éxito." } : { error: "Error enviando cronograma a Telegram." };
           } catch (e: any) {
             return { error: `Error generando cronograma: ${e.message}` };
+          }
+        }
+      },
+      {
+        name: "generar_y_enviar_reporte_financiera",
+        description: "Genera un PDF de la financiera solicitada y lo envía al chat de Telegram.",
+        parametersSchema: {
+          type: "object",
+          properties: {
+            financiera_nombre: { type: "string", description: "Nombre de la financiera (ej. Caja Piura, BanBif)" }
+          },
+          required: ["financiera_nombre"]
+        },
+        execute: async ({ financiera_nombre }: any) => {
+          console.log(`[TOOL:generar_y_enviar_reporte_financiera] INPUT: financiera_nombre="${financiera_nombre}"`);
+          try {
+            const { data: financieras } = await supabase.from('financieras').select('*');
+            if (!financieras || financieras.length === 0) return { error: "No hay financieras registradas en la base de datos." };
+            
+            // Búsqueda simple insensible a mayúsculas
+            const term = (financiera_nombre || "").toLowerCase().trim();
+            let fin = financieras.find(f => (f.nombre || "").toLowerCase().includes(term));
+            
+            if (!fin) return { error: `No se encontró la financiera "${financiera_nombre}".` };
+            
+            const { data: beneficiariosData } = await supabase.from('beneficiarios').select('*');
+            const beneficiarios = beneficiariosData || [];
+            
+            const { generarFinancieraPDFFromData } = await import('./pdf-generator');
+            const absolutePath = await generarFinancieraPDFFromData(fin, beneficiarios);
+            if (!absolutePath) return { error: "Falló la generación del PDF de la financiera." };
+            
+            const { sendDocumentToTelegram } = require('./telegram-sender');
+            const sent = await sendDocumentToTelegram(chatId, absolutePath, `🏦 Reporte de Entidad Financiera — ${fin.nombre}`);
+            return sent ? { mensaje: `Reporte de ${fin.nombre} enviado con éxito.` } : { error: "Error enviando reporte a Telegram." };
+          } catch (e: any) {
+            return { error: `Error generando reporte financiera: ${e.message}` };
           }
         }
       },
