@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { LandingContent, LandingConfig } from '@/lib/landing_db';
 import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
+import { getExpedienteStatusBadge } from '@/lib/status-helper';
 
 const iconMap: Record<string, LucideIcon> = {
   Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award,
@@ -422,14 +423,14 @@ export default function LandingPage() {
             STATUS SEARCH SECTION
             ========================================= */}
         {config.statusSearch?.enabled && (
-          <section id="consulta-estado" className="py-16 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-md relative z-10">
-            <div className="max-w-3xl mx-auto">
-              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+          <section id="consulta-estado" className="py-12 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-md relative z-10">
+            <div className="max-w-6xl mx-auto">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-[80px]"></div>
                 
                 <div className="relative z-10">
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl md:text-3xl font-bold font-[family-name:var(--font-montserrat)] text-white mb-3">
+                  <div className="text-center mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold font-[family-name:var(--font-montserrat)] text-white mb-2">
                       {config.statusSearch.title}
                     </h2>
                     <p className="text-slate-400 max-w-2xl mx-auto whitespace-pre-wrap text-lg">
@@ -482,23 +483,32 @@ export default function LandingPage() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-white/5">
-                            {searchResult.map((res, i) => (
-                              <tr key={i} className="hover:bg-white/[0.02] transition-colors text-sm text-slate-300">
-                                <td className="p-4 font-medium text-white">{res.postulante}</td>
-                                <td className="p-4 font-mono">{res.dni_postulante}</td>
-                                <td className="p-4">
-                                  <motion.span 
-                                    animate={{ scale: [1, 1.05, 1], boxShadow: ["0px 0px 0px rgba(14,165,233,0)", "0px 0px 15px rgba(14,165,233,0.6)", "0px 0px 0px rgba(14,165,233,0)"] }}
-                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/50"
-                                  >
-                                    {res.estado}
-                                  </motion.span>
-                                </td>
-                                <td className="p-4 text-slate-400">{res.created_at ? new Date(res.created_at).toLocaleDateString() : '-'}</td>
-                                <td className="p-4">{[res.departamento, res.provincia, res.distrito].filter(Boolean).join(' / ') || '-'}</td>
-                              </tr>
-                            ))}
+                            {searchResult.map((res, i) => {
+                              const badge = getExpedienteStatusBadge(res.estado);
+                              const rgb = badge.hexColor === '#64748b' ? '100,116,139' :
+                                          badge.hexColor === '#eab308' ? '234,179,8' :
+                                          badge.hexColor === '#ef4444' ? '239,68,68' :
+                                          badge.hexColor === '#22c55e' ? '34,197,94' :
+                                          badge.hexColor === '#22d3ee' ? '34,211,238' :
+                                          badge.hexColor === '#f97316' ? '249,115,22' : '14,165,233';
+                              return (
+                                <tr key={i} className="hover:bg-white/[0.02] transition-colors text-sm text-slate-300">
+                                  <td className="p-4 font-medium text-white">{res.postulante}</td>
+                                  <td className="p-4 font-mono">{res.dni_postulante}</td>
+                                  <td className="p-4">
+                                    <motion.span 
+                                      animate={{ scale: [1, 1.05, 1], boxShadow: [`0px 0px 0px rgba(${rgb},0)`, `0px 0px 15px rgba(${rgb},0.6)`, `0px 0px 0px rgba(${rgb},0)`] }}
+                                      transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold border ${badge.colorClass}`}
+                                    >
+                                      {badge.label}
+                                    </motion.span>
+                                  </td>
+                                  <td className="p-4 text-slate-400">{res.created_at ? new Date(res.created_at).toLocaleDateString() : '-'}</td>
+                                  <td className="p-4">{[res.departamento, res.provincia, res.distrito].filter(Boolean).join(' / ') || '-'}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </motion.div>

@@ -41,15 +41,15 @@ export function getExpedienteStatusBadge(estado: string) {
   if (norm.includes("codigo") || norm.includes("código")) {
     return {
       label: "Expediente con Código de Proyecto",
-      colorClass: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-      hexColor: "#a855f7" // Morado
+      colorClass: "bg-cyan-500/20 text-cyan-300 border-cyan-400/50",
+      hexColor: "#22d3ee" // Celeste Brillante
     };
   }
   if (norm.includes("aproba")) {
     return {
       label: "Expediente Aprobado",
-      colorClass: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-      hexColor: "#3b82f6" // Azul
+      colorClass: "bg-orange-500/20 text-orange-300 border-orange-500/50",
+      hexColor: "#f97316" // Mezcla amarillo/naranja (Orange)
     };
   }
 
