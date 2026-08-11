@@ -1,13 +1,38 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import * as OTPAuth from 'otpauth';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, username, password } = body;
+    const { email, username, password, verificationCode } = body;
 
-    if (!email || !username || !password) {
+    if (!email || !username || !password || !verificationCode) {
       return NextResponse.json({ success: false, message: 'Faltan campos obligatorios' }, { status: 400 });
+    }
+
+    const adminSecret = process.env.ADMIN_TOTP_SECRET;
+
+    if (!adminSecret) {
+      console.error("ADMIN_TOTP_SECRET no está configurado en las variables de entorno.");
+      return NextResponse.json({ success: false, message: 'Error de configuración del sistema (Falta clave de seguridad)' }, { status: 500 });
+    }
+
+    // Verificar el código usando otpauth
+    let totp = new OTPAuth.TOTP({
+      issuer: "TechoPropioSistema",
+      label: "Admin",
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+      secret: adminSecret, // Acepta la string base32 directamente
+    });
+
+    const delta = totp.validate({ token: verificationCode, window: 1 });
+    const isValid = delta !== null;
+
+    if (!isValid) {
+      return NextResponse.json({ success: false, message: 'Código de autorización inválido o expirado. Consulta al administrador.' }, { status: 401 });
     }
 
     // Comprobar si el usuario ya existe

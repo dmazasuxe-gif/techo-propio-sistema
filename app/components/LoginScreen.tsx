@@ -12,6 +12,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -24,15 +25,15 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
     try {
       if (isRegistering) {
-        if (!email || !username || !password) {
-          setError("Por favor completa todos los campos.");
+        if (!email || !username || !password || !verificationCode) {
+          setError("Por favor completa todos los campos (incluyendo el código de 6 dígitos).");
           setIsLoading(false);
           return;
         }
         const res = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, username, password }),
+          body: JSON.stringify({ email, username, password, verificationCode }),
         });
         const data = await res.json();
         if (data.success) {
@@ -162,6 +163,34 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 </button>
               </div>
             </div>
+
+            {/* TOTP Verification Code - only when registering */}
+            {isRegistering && (
+              <div className="login-field mt-2 p-4 bg-sky-900/20 border border-sky-500/30 rounded-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full blur-[40px] pointer-events-none"></div>
+                <label className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Autorización requerida
+                </label>
+                <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                  Para registrarte, solicita al administrador el <strong>Código Dinámico (6 dígitos)</strong>. Este código cambia cada 30 segundos.
+                </p>
+                <div className="login-input-wrap">
+                  <Lock className="login-icon text-sky-500" />
+                  <input
+                    id="login-verification"
+                    type="text"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Ej: 123456"
+                    className="login-input font-mono tracking-[0.5em] font-bold text-sky-300 text-center"
+                    style={{ paddingLeft: '14px' }}
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Error */}
             {error && (
