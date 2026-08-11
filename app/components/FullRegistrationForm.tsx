@@ -499,13 +499,13 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                             try {
                               const res = await fetch(`/api/consulta-dni?dni=${integrante.dni}`);
                               const data = await res.json();
-                              if (data.success && data.data) {
+                              if (res.ok && data.dni) {
                                 const newCarga = [...(form.cargaFamiliar || [])];
-                                newCarga[index].nombres = data.data.nombres || "";
-                                newCarga[index].apellidos = `${data.data.apellidoPaterno || ""} ${data.data.apellidoMaterno || ""}`.trim();
+                                newCarga[index].nombres = data.nombres || "";
+                                newCarga[index].apellidos = `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim();
                                 setForm({ ...form, cargaFamiliar: newCarga });
                               } else {
-                                alert("DNI no encontrado");
+                                alert(data.error || "DNI no encontrado");
                               }
                             } catch (error) {
                               alert("Error consultando DNI");
