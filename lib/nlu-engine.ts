@@ -67,6 +67,7 @@ export async function processUserMessage(chatId: number | string, text: string, 
    - Linderos: Área Total, Frente, Derecha, Izquierda, Fondo.
    - Documentos: PREGUNTA EXPLÍCITAMENTE si va a subir documentos (DNI, Contrato, Planos, Voucher, Acta) y pídele que envíe el archivo si es así.
    Solo registra cuando tengas esta información.
+8. ESTADOS DE EXPEDIENTE PERMITIDOS: "Expediente en Revisión", "Expediente Inscrito", "Expediente Elegible", "Expediente No Elegible", "Expediente con Código de Proyecto", "Expediente Aprobado". NUNCA uses otros estados (como "Rechazado").
 
 METODOLOGÍA DE TRABAJO:
 1. PENSAR: ¿Qué herramienta es la más directa para lo que pide el usuario?
