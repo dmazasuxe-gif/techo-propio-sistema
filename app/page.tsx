@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
 import { Beneficiario, Dimensiones, Insumo, PartidaAPU } from "./types";
 import { BENEFICIARIOS_INICIALES, INSUMOS_INICIALES, PARTIDAS_APU_INICIALES } from "./constants/initialData";
-import { ArrowLeft, User, Ruler, Wrench, FileSpreadsheet, Hourglass, FileText, CheckCircle2, UserPlus, Send } from "lucide-react";
+import { ArrowLeft, User, Ruler, Wrench, Hourglass, FileText, CheckCircle2, Menu, X } from "lucide-react";
 
 import Sidebar, { NavView } from "./components/Sidebar";
 import PeruMap from "./components/PeruMap";
@@ -36,6 +36,7 @@ export default function Home() {
   // Navigation View State
   const [activeNavView, setActiveNavView] = useState<NavView>("resumen");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   // Dynamic engineering simulation states
   const [dimensiones, setDimensiones] = useState<Dimensiones>({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
@@ -53,6 +54,14 @@ export default function Home() {
 
   const handleOpenNewModal = () => {
     setIsModalOpen(true);
+  };
+
+  const handleNavSelect = (view: NavView) => {
+    setActiveNavView(view);
+    setMobileMenuOpen(false);
+    if (view === "expedientes" && !selectedId && beneficiarios.length > 0) {
+      setSelectedId(beneficiarios[0].id);
+    }
   };
 
   const loadBeneficiarios = useCallback(async () => {
@@ -159,42 +168,71 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
+    <div className="flex h-[100svh] w-full bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
       
-      {/* Left Sidebar Menu (Maza Quiroz) */}
-      <Sidebar
-        activeView={activeNavView}
-        onSelectView={(view) => {
-          setActiveNavView(view);
-          if (view === "expedientes" && !selectedId && beneficiarios.length > 0) {
-            setSelectedId(beneficiarios[0].id);
-          }
-        }}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        onLogout={() => handleLoginStatus(false)}
-      />
+      {/* ── DESKTOP Sidebar (hidden on mobile) ── */}
+      <div className="hidden md:flex md:flex-shrink-0">
+        <Sidebar
+          activeView={activeNavView}
+          onSelectView={handleNavSelect}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onLogout={() => handleLoginStatus(false)}
+        />
+      </div>
 
-      {/* Main App Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
+      {/* ── MOBILE Drawer overlay ── */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* ── MOBILE Drawer panel ── */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col md:hidden transition-transform duration-300 ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar
+          activeView={activeNavView}
+          onSelectView={handleNavSelect}
+          isCollapsed={false}
+          onToggleCollapse={() => setMobileMenuOpen(false)}
+          onLogout={() => { handleLoginStatus(false); setMobileMenuOpen(false); }}
+        />
+      </div>
+
+      {/* ── Main App Content Area ── */}
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         
         {/* Top App Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between shadow-md">
+        <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow-md flex-shrink-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
-              Techo Propio <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 font-bold border border-sky-500/20">Maza Quiroz</span>
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+              aria-label="Abrir menú"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-sm md:text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+              Techo Propio
+              <span className="hidden sm:inline text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 font-bold border border-sky-500/20">Maza Quiroz</span>
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400 font-semibold border border-slate-800 bg-slate-900 px-3 py-1.5 rounded-xl">
-              Sistema de Gestión Techo Propio
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline text-xs text-slate-400 font-semibold border border-slate-800 bg-slate-900 px-3 py-1.5 rounded-xl">
+              Sistema de Gestión
             </span>
           </div>
         </header>
 
         {/* View Router */}
-        <main className="flex-1 p-4 md:p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6">
           
           {/* Module 1: Resumen (Mapa Interactivo del Perú) */}
           {activeNavView === "resumen" && (
@@ -365,6 +403,34 @@ export default function Home() {
           )}
 
         </main>
+
+        {/* ── MOBILE Bottom Navigation Bar ── */}
+        <nav className="md:hidden flex-shrink-0 flex items-stretch border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl safe-bottom">
+          {([
+            { id: "resumen",       label: "Inicio",    emoji: "🗺️" },
+            { id: "registros",     label: "Lista",     emoji: "👥" },
+            { id: "expedientes",   label: "Expediente",emoji: "📁" },
+            { id: "documentos",    label: "Docs",      emoji: "📄" },
+            { id: "pagos",         label: "Pagos",     emoji: "💳" },
+            { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
+          ] as { id: import("./components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
+            <button
+              key={item.id}
+              onClick={() => handleNavSelect(item.id)}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+                activeNavView === item.id
+                  ? "text-sky-400"
+                  : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              <span className="text-base leading-none">{item.emoji}</span>
+              <span className="text-[9px] font-bold tracking-wide">{item.label}</span>
+              {activeNavView === item.id && (
+                <span className="absolute bottom-0 w-8 h-0.5 bg-sky-500 rounded-full" />
+              )}
+            </button>
+          ))}
+        </nav>
       </div>
     </div>
   );
