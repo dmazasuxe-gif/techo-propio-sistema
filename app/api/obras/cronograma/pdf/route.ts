@@ -11,14 +11,23 @@ export async function GET() {
     }
 
     const absolutePath = pdfRelativePath; // already absolute path
+    let pdfBuffer: Buffer;
 
-    if (!fs.existsSync(absolutePath)) {
-      return NextResponse.json({ error: "Archivo PDF no encontrado." }, { status: 404 });
+    if (absolutePath.startsWith("http://") || absolutePath.startsWith("https://")) {
+      const response = await fetch(absolutePath);
+      if (!response.ok) {
+        return NextResponse.json({ error: "Error descargando el PDF remoto." }, { status: 500 });
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      pdfBuffer = Buffer.from(arrayBuffer);
+    } else {
+      if (!fs.existsSync(absolutePath)) {
+        return NextResponse.json({ error: "Archivo PDF no encontrado." }, { status: 404 });
+      }
+      pdfBuffer = fs.readFileSync(absolutePath);
     }
 
-    const pdfBuffer = fs.readFileSync(absolutePath);
-
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

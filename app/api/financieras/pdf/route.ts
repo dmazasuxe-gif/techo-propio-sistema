@@ -19,14 +19,25 @@ export async function POST(req: Request) {
     }
 
     const absolutePath = pdfRelativePath;
+    let pdfBuffer: Buffer;
 
-    if (!fs.existsSync(absolutePath)) {
-      return NextResponse.json({ error: "Archivo PDF no encontrado." }, { status: 404 });
+    if (absolutePath.startsWith("http://") || absolutePath.startsWith("https://")) {
+      // It's a public URL returned by Supabase Storage
+      const response = await fetch(absolutePath);
+      if (!response.ok) {
+        return NextResponse.json({ error: "Error descargando el PDF remoto." }, { status: 500 });
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      pdfBuffer = Buffer.from(arrayBuffer);
+    } else {
+      // It's a local file path
+      if (!fs.existsSync(absolutePath)) {
+        return NextResponse.json({ error: "Archivo PDF no encontrado." }, { status: 404 });
+      }
+      pdfBuffer = fs.readFileSync(absolutePath);
     }
 
-    const pdfBuffer = fs.readFileSync(absolutePath);
-
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
