@@ -168,7 +168,7 @@ export function LandingCMS() {
       </div>
 
       {/* Editor Content Area */}
-      <div className="flex-1 overflow-y-auto bg-[#0a0c10] text-[#e2e8f0] font-sans relative selection:bg-sky-500/30">
+      <div className="flex-1 overflow-y-auto bg-[#131b2c] text-[#e2e8f0] font-sans relative selection:bg-sky-500/30">
         
         {/* =========================================
             POPUP BANNER (Preview inside CMS)
@@ -238,7 +238,7 @@ export function LandingCMS() {
         </div>
 
         {/* 1. NAVIGATION BAR */}
-        <nav className="sticky top-0 left-0 w-full z-40 border-b border-white/5 bg-[#0a0c10]/70 backdrop-blur-md">
+        <nav className="sticky top-0 left-0 w-full z-40 border-b border-white/5 bg-[#131b2c]/70 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             
             <div className="flex items-center gap-3">
@@ -290,8 +290,8 @@ export function LandingCMS() {
 
         {/* 2. HERO SECTION */}
         <section className="relative w-full min-h-[90vh] flex items-center justify-center px-6 pt-10">
-          <div className="absolute inset-0 z-0 overflow-hidden bg-[#0a0c10]">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0c10]/40 via-[#0a0c10]/80 to-[#0a0c10] z-10 pointer-events-none"></div>
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#131b2c]">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#131b2c]/40 via-[#131b2c]/80 to-[#131b2c] z-10 pointer-events-none"></div>
             
             <EditableImage 
               src={config.hero.images[currentImageIndex]} 
@@ -519,7 +519,7 @@ export function LandingCMS() {
 
 
         {/* 4. THE STANDARD SECTION */}
-        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-xl relative z-10">
+        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#131b2c]/80 backdrop-blur-xl relative z-10">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
@@ -609,7 +609,7 @@ export function LandingCMS() {
             STATUS SEARCH PREVIEW
             ========================================= */}
         {config.statusSearch?.enabled && (
-          <section className="py-12 px-6 border-t border-white/5 bg-[#0a0c10]">
+          <section className="py-12 px-6 border-t border-white/5 bg-[#131b2c]">
             <div className="max-w-6xl mx-auto bg-slate-900/50 rounded-2xl p-6 md:p-8 border border-white/10 shadow-2xl">
               <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
                 <EditableText 

@@ -150,10 +150,10 @@ export default function LandingPage() {
     }
   };
 
-  if (!mounted) return <div className="min-h-screen bg-[#0a0c10]" />;
+  if (!mounted) return <div className="min-h-screen bg-[#131b2c]" />;
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-[#e2e8f0] selection:bg-sky-500/30 font-sans overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#131b2c] text-[#e2e8f0] selection:bg-sky-500/30 font-sans overflow-x-hidden relative">
       
       {/* =========================================
           ANNOUNCEMENT POPUP
@@ -282,7 +282,7 @@ export default function LandingPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[150px]" />
       </div>
 
-      <nav className="fixed top-0 left-0 w-full z-40 border-b border-white/5 bg-[#0a0c10]/50 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 w-full z-40 border-b border-white/5 bg-[#131b2c]/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           
           <motion.div 
@@ -321,8 +321,8 @@ export default function LandingPage() {
       <main className="relative z-10 pt-20">
         
         <section className="relative w-full min-h-[90vh] flex items-center justify-center px-6">
-          <div className="absolute inset-0 z-0 overflow-hidden bg-[#0a0c10]">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0c10]/40 via-[#0a0c10]/80 to-[#0a0c10] z-10"></div>
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#131b2c]">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#131b2c]/40 via-[#131b2c]/80 to-[#131b2c] z-10"></div>
             <AnimatePresence mode="popLayout">
               <motion.img 
                 key={currentImageIndex}
@@ -424,7 +424,7 @@ export default function LandingPage() {
 
 
 
-        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#0a0c10]/50 backdrop-blur-xl">
+        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#131b2c]/50 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
@@ -461,7 +461,7 @@ export default function LandingPage() {
             STATUS SEARCH SECTION
             ========================================= */}
         {config.statusSearch?.enabled && (
-          <section id="consulta-estado" className="py-12 px-6 border-t border-white/5 bg-[#0a0c10]/80 backdrop-blur-md relative z-10">
+          <section id="consulta-estado" className="py-12 px-6 border-t border-white/5 bg-[#131b2c]/80 backdrop-blur-md relative z-10">
             <div className="max-w-6xl mx-auto">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-[80px]"></div>
