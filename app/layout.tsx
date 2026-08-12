@@ -36,9 +36,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${outfit.variable} ${montserrat.variable} ${workSans.variable} h-full antialiased`}>
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-      </head>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  </head>
       <body className="font-sans min-h-full flex flex-col bg-[#0a0c10] text-[#e2e8f0]">
         {children}
       </body>

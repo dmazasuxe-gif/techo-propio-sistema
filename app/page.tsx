@@ -322,7 +322,7 @@ export default function LandingPage() {
 
       <main className="relative z-10 pt-20">
         
-        <section className="relative w-full min-h-[90vh] flex items-center justify-center px-6">
+        <section className="relative w-full min-h-[50vh] md:min-h-[90vh] flex items-center justify-center px-6">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#2a3a55]">
             <div className="absolute inset-0 bg-gradient-to-b from-[#2a3a55]/40 via-[#2a3a55]/80 to-[#2a3a55] z-10"></div>
             <AnimatePresence mode="popLayout">
@@ -560,10 +560,10 @@ export default function LandingPage() {
           </section>
         )}
 
-        <footer id="contacto" className="border-t border-white/10 py-16 bg-[#06080a]">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+        <footer id="contacto" className="border-t border-slate-200 py-8 bg-white w-full">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center overflow-hidden">
                   {config.footer.logoImage ? (
                     <img src={config.footer.logoImage} alt="Logo" className="w-full h-full object-cover" />
@@ -571,21 +571,21 @@ export default function LandingPage() {
                     <Building2 className="text-white w-4 h-4" />
                   )}
                 </div>
-                <span className="font-bold tracking-widest text-white font-[family-name:var(--font-montserrat)]">{config.footer.companyName}</span>
+                <span className="font-bold tracking-widest text-slate-900 font-[family-name:var(--font-montserrat)]">{config.footer.companyName}</span>
               </div>
-              <p className="text-slate-500 text-sm max-w-sm mb-6 whitespace-pre-wrap">{config.footer.description}</p>
-              <div className="text-slate-600 text-xs">© {new Date().getFullYear()} {config.footer.copyright}</div>
+              <p className="text-slate-600 text-sm max-w-sm mb-4 whitespace-pre-wrap">{config.footer.description}</p>
+              <div className="text-slate-500 text-xs">© {new Date().getFullYear()} {config.footer.copyright}</div>
             </div>
-            <div className="flex flex-col gap-4">
-              <h4 className="text-white font-bold mb-2">Navegación</h4>
+            <div className="flex flex-col gap-3">
+              <h4 className="text-slate-900 font-bold mb-1">Navegación</h4>
               {config.nav.links.map((link, i) => (
-                <a key={i} href={link.href} className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">{link.label}</a>
+                <a key={i} href={link.href} className="text-slate-600 hover:text-sky-600 text-sm transition-colors w-fit">{link.label}</a>
               ))}
             </div>
-            <div className="flex flex-col gap-4">
-              <h4 className="text-white font-bold mb-2">Legal & Social</h4>
-              <a href="/privacidad" className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">Aviso de Privacidad</a>
-              <a href="/terminos" className="text-slate-400 hover:text-sky-400 text-sm transition-colors w-fit">Términos de Servicio</a>
+            <div className="flex flex-col gap-3">
+              <h4 className="text-slate-900 font-bold mb-1">Legal & Social</h4>
+              <a href="/privacidad" className="text-slate-600 hover:text-sky-600 text-sm transition-colors w-fit">Aviso de Privacidad</a>
+              <a href="/terminos" className="text-slate-600 hover:text-sky-600 text-sm transition-colors w-fit">Términos de Servicio</a>
             </div>
           </div>
         </footer>
