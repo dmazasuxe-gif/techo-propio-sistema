@@ -195,7 +195,7 @@ export default function LandingPage() {
                       scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
                     }}
                     alt="Announcement" 
-                    className="w-full h-full object-contain max-h-[90vh] drop-shadow-2xl rounded-xl shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                    className="w-full h-full object-contain max-h-[90vh] drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                   />
                 </AnimatePresence>
                 
