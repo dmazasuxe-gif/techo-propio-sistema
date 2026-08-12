@@ -187,12 +187,15 @@ export default function LandingPage() {
                   <motion.img 
                     key={announcementImageIndex}
                     src={config.announcement.images[announcementImageIndex]}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: [0.98, 1.02, 0.98] }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ 
+                      opacity: { duration: 0.5 },
+                      scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                    }}
                     alt="Announcement" 
-                    className="w-full h-full object-contain max-h-[90vh] drop-shadow-2xl rounded-xl"
+                    className="w-full h-full object-contain max-h-[90vh] drop-shadow-2xl rounded-xl shadow-[0_0_40px_rgba(255,255,255,0.2)]"
                   />
                 </AnimatePresence>
                 
@@ -324,7 +327,7 @@ export default function LandingPage() {
               <motion.img 
                 key={currentImageIndex}
                 src={images[currentImageIndex]}
-                initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 0.4, scale: 1 }} exit={{ opacity: 0 }}
+                initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: (config.hero.bgOpacity ?? 30) / 100, scale: 1 }} exit={{ opacity: 0 }}
                 transition={{ duration: 1.5, ease: "easeInOut" }}
                 alt="Fondo de Construcción" className="w-full h-full object-cover absolute inset-0"
               />

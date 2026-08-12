@@ -14,6 +14,7 @@ export interface LandingContent {
     ctaText: string;
     phone: string;
     images: string[];
+    bgOpacity?: number;
   };
   services: {
     title: string;
@@ -69,7 +70,8 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     phone: "+51999999999",
     images: [
       "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
-    ]
+    ],
+    bgOpacity: 30
   },
   services: {
     title: "Nuestra Experiencia",

@@ -308,14 +308,29 @@ export function LandingCMS() {
                 key={currentImageIndex}
                 src={config.hero.images[currentImageIndex] || "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"}
                 alt="Fondo de Construcción" 
-                className="w-full h-full object-cover absolute inset-0 opacity-40 scale-100"
+                className="w-full h-full object-cover absolute inset-0 scale-100"
+                style={{ opacity: (config.hero.bgOpacity ?? 30) / 100 }}
               />
             </EditableImage>
             
             {/* Quick Background Manager */}
-            <div className="absolute top-24 right-6 z-50 bg-slate-900/90 border border-slate-700 p-4 rounded-xl shadow-xl flex flex-col gap-3 backdrop-blur-sm max-w-[200px]">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest border-b border-slate-700 pb-2">Fondos Rotativos</h4>
-              <div className="flex flex-wrap gap-2">
+            <div className="absolute top-24 right-6 z-50 bg-slate-900/90 border border-slate-700 p-4 rounded-xl shadow-xl flex flex-col gap-3 backdrop-blur-sm max-w-[250px]">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest border-b border-slate-700 pb-2">Fondos y Opacidad</h4>
+              
+              <div className="flex flex-col gap-1 w-full">
+                <div className="flex justify-between text-xs text-slate-300 font-bold">
+                  <span>Opacidad de Imágenes:</span>
+                  <span className="text-sky-400">{config.hero.bgOpacity ?? 30}%</span>
+                </div>
+                <input 
+                  type="range" min="0" max="100" 
+                  value={config.hero.bgOpacity ?? 30}
+                  onChange={(e) => updateNestedConfig(['hero', 'bgOpacity'], Number(e.target.value))}
+                  className="w-full accent-sky-500"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-1">
                 {config.hero.images.map((img, i) => (
                   <div key={i} className={`w-10 h-10 rounded border-2 cursor-pointer overflow-hidden relative group ${i === currentImageIndex ? 'border-sky-500' : 'border-transparent'}`} onClick={() => setCurrentImageIndex(i)}>
                     <img src={img} className="w-full h-full object-cover" />
