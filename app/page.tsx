@@ -86,6 +86,8 @@ export default function LandingPage() {
     if (newTimestamps.length === 3) {
       const timeDifference = newTimestamps[2] - newTimestamps[0];
       if (timeDifference < 1000) {
+        // Force logout before navigating to the system page so the login screen appears
+        localStorage.removeItem('techo-propio-logged-in');
         router.push('/sistema');
       }
     }
@@ -150,10 +152,10 @@ export default function LandingPage() {
     }
   };
 
-  if (!mounted) return <div className="min-h-screen bg-[#131b2c]" />;
+  if (!mounted) return <div className="min-h-screen bg-[#2a3a55]" />;
 
   return (
-    <div className="min-h-screen bg-[#131b2c] text-[#e2e8f0] selection:bg-sky-500/30 font-sans overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#2a3a55] text-[#ffffff] selection:bg-sky-500/30 font-sans overflow-x-hidden relative">
       
       {/* =========================================
           ANNOUNCEMENT POPUP
@@ -282,7 +284,7 @@ export default function LandingPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[150px]" />
       </div>
 
-      <nav className="fixed top-0 left-0 w-full z-40 border-b border-white/5 bg-[#131b2c]/50 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 w-full z-40 border-b border-white/5 bg-[#2a3a55]/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           
           <motion.div 
@@ -321,8 +323,8 @@ export default function LandingPage() {
       <main className="relative z-10 pt-20">
         
         <section className="relative w-full min-h-[90vh] flex items-center justify-center px-6">
-          <div className="absolute inset-0 z-0 overflow-hidden bg-[#131b2c]">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#131b2c]/40 via-[#131b2c]/80 to-[#131b2c] z-10"></div>
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#2a3a55]">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#2a3a55]/40 via-[#2a3a55]/80 to-[#2a3a55] z-10"></div>
             <AnimatePresence mode="popLayout">
               <motion.img 
                 key={currentImageIndex}
@@ -344,7 +346,7 @@ export default function LandingPage() {
                 dangerouslySetInnerHTML={{ __html: config.hero.titleHtml }}
               />
               
-              <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl font-[family-name:var(--font-work-sans)] leading-relaxed whitespace-pre-wrap">
+              <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl font-[family-name:var(--font-work-sans)] leading-relaxed whitespace-pre-wrap">
                 {config.hero.subtitle}
               </motion.p>
               
@@ -363,7 +365,7 @@ export default function LandingPage() {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="mb-20 text-center">
               <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-montserrat)] mb-4">{config.services.title}</motion.h2>
               <motion.div variants={fadeUp} className="w-24 h-1 bg-gradient-to-r from-sky-500 to-indigo-500 mx-auto rounded-full mb-6"></motion.div>
-              <motion.p variants={fadeUp} className="text-slate-400 max-w-2xl mx-auto whitespace-pre-wrap">{config.services.subtitle}</motion.p>
+              <motion.p variants={fadeUp} className="text-slate-300 max-w-2xl mx-auto whitespace-pre-wrap">{config.services.subtitle}</motion.p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -398,7 +400,7 @@ export default function LandingPage() {
                     </div>
 
                     <h3 className="text-xl font-bold mb-3 font-[family-name:var(--font-montserrat)] text-white">{service.title}</h3>
-                    <p className="text-slate-400 leading-relaxed font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{service.desc}</p>
+                    <p className="text-slate-300 leading-relaxed font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{service.desc}</p>
                     
                     {/* Visual Indicator of Gallery images below */}
                     {hasImages && (
@@ -424,12 +426,12 @@ export default function LandingPage() {
 
 
 
-        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#131b2c]/50 backdrop-blur-xl">
+        <section id="estandar" className="py-32 px-6 border-t border-white/5 bg-[#2a3a55]/50 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
                 <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-montserrat)] mb-6 leading-tight whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: config.standard.titleHtml }} />
-                <p className="text-lg text-slate-400 mb-10 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{config.standard.subtitle}</p>
+                <p className="text-lg text-slate-300 mb-10 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap">{config.standard.subtitle}</p>
                 <div className="space-y-6">
                   {config.standard.items.map((item, i) => {
                     const Icon = iconMap[item.iconType] || ShieldCheck;
@@ -442,7 +444,7 @@ export default function LandingPage() {
                         </div>
                         <div>
                           <h4 className="text-white font-bold tracking-wide mb-1 font-[family-name:var(--font-montserrat)]">{item.title}</h4>
-                          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{item.desc}</p>
+                          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{item.desc}</p>
                         </div>
                       </div>
                     );
@@ -461,7 +463,7 @@ export default function LandingPage() {
             STATUS SEARCH SECTION
             ========================================= */}
         {config.statusSearch?.enabled && (
-          <section id="consulta-estado" className="py-12 px-6 border-t border-white/5 bg-[#131b2c]/80 backdrop-blur-md relative z-10">
+          <section id="consulta-estado" className="py-12 px-6 border-t border-white/5 bg-[#2a3a55]/80 backdrop-blur-md relative z-10">
             <div className="max-w-6xl mx-auto">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full blur-[80px]"></div>
@@ -471,7 +473,7 @@ export default function LandingPage() {
                     <h2 className="text-xl md:text-2xl font-bold font-[family-name:var(--font-montserrat)] text-white mb-2">
                       {config.statusSearch.title}
                     </h2>
-                    <p className="text-slate-400 max-w-2xl mx-auto whitespace-pre-wrap text-lg">
+                    <p className="text-slate-300 max-w-2xl mx-auto whitespace-pre-wrap text-lg">
                       {config.statusSearch.subtitle}
                     </p>
                   </div>

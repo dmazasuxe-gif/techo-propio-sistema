@@ -116,7 +116,7 @@ export function LandingCMS() {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-80px)] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+    <div className="relative w-full h-[calc(100vh-80px)] bg-[#2a3a55] border border-slate-800 rounded-xl overflow-hidden flex flex-col">
       
       {/* Editor Toolbar */}
       <div className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-b border-sky-500/30 p-4 flex justify-between items-center z-[100] shadow-xl shadow-black/50 relative">
