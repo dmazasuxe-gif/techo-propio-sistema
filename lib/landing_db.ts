@@ -9,17 +9,14 @@ export interface LandingContent {
   };
   hero: {
     badgeText: string;
-    titleHtml: string;
-    subtitle: string;
-    ctaText: string;
     phone: string;
     images: string[];
-    bgOpacity?: number;
+    bgOpacity: number;
   };
   services: {
     title: string;
     subtitle: string;
-    items: { iconType: string; title: string; desc: string; images: string[] }[];
+    items: { iconType: string; title: string; desc: string; images: string[]; statNum?: string; statText?: string }[];
   };
   standard: {
     titleHtml: string;
@@ -32,6 +29,9 @@ export interface LandingContent {
     companyName: string;
     description: string;
     copyright: string;
+    email: string;
+    links: { label: string; href: string }[];
+    socialLinks: { platform: string; url: string }[];
   };
   announcement: {
     enabled: boolean;
@@ -40,8 +40,29 @@ export interface LandingContent {
   };
   statusSearch: {
     enabled: boolean;
+    sectionTitle: string;
     title: string;
     subtitle: string;
+    placeholder: string;
+    buttonText: string;
+  };
+  projects: {
+    title: string;
+    items: { images: string[]; title: string }[];
+  };
+  about: {
+    enabled: boolean;
+    title: string;
+    subtitle: string;
+    content: string;
+    image: string;
+  };
+  fonts: Record<string, string>;
+  colors: Record<string, string>;
+  chatbot?: {
+    systemPrompt: string;
+    companyInfo: string;
+    images: { title: string; url: string; category: string }[];
   };
 }
 
@@ -58,15 +79,12 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     links: [
       { label: "Servicios", href: "#servicios" },
       { label: "Proyectos", href: "#proyectos" },
-      { label: "El Estándar", href: "#estandar" }
+      { label: "Quienes Somos?", href: "#nosotros" }
     ],
     ctaText: "Cotizar Proyecto"
   },
   hero: {
     badgeText: "Ingeniería de Precisión",
-    titleHtml: "Construyendo el \nFuturo con Precisión",
-    subtitle: "Calidad inquebrantable e integridad estructural para proyectos residenciales, comerciales y de infraestructura a gran escala. Diseñamos la permanencia.",
-    ctaText: "Inicia tu Proyecto",
     phone: "+51999999999",
     images: [
       "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
@@ -77,9 +95,9 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     title: "Nuestra Experiencia",
     subtitle: "Ingeniería de precisión aplicada en diversos sectores de la construcción.",
     items: [
-      { iconType: "Ruler", title: "Residencial Premium", desc: "Proyectos residenciales a medida de alta gama diseñados para la longevidad y solidez estructural.", images: [] },
-      { iconType: "Building2", title: "Infraestructura Comercial", desc: "Construcciones escalables entregadas con planificación meticulosa y estricto cumplimiento técnico.", images: [] },
-      { iconType: "Hammer", title: "Renovación Estructural", desc: "Mejoras y transformaciones modernizadas de espacios existentes, priorizando seguridad.", images: [] }
+      { iconType: 'hammer', title: 'Diseño y Planificación', desc: 'Desarrollamos planos arquitectónicos y distribución eficiente del espacio respetando la normativa.', images: [], statNum: '10+', statText: 'Años de Experiencia' },
+      { iconType: 'hard-hat', title: 'Construcción Segura', desc: 'Utilizamos materiales certificados y mano de obra calificada para garantizar la durabilidad de tu vivienda.', images: [], statNum: '500+', statText: 'Casas Construidas' },
+      { iconType: 'ruler', title: 'Acabados de Primera', desc: 'Entregamos viviendas listas para habitar con acabados estéticos y funcionales que mejoran tu calidad de vida.', images: [], statNum: '98%', statText: 'Clientes Satisfechos' }
     ]
   },
   standard: {
@@ -96,7 +114,20 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     logoImage: "",
     companyName: "MAZA QUIROZ",
     description: "Ingeniería de Precisión & Arquitectura Moderna. Elevando los estándares de construcción en cada proyecto.",
-    copyright: "Constructora Maza Quiroz. Todos los derechos reservados."
+    copyright: "Constructora Maza Quiroz. Todos los derechos reservados.",
+    email: "mail@sistematecho.com",
+    links: [
+      { label: "Contáctanos", href: "#contacto" },
+      { label: "Aviso Legal", href: "/privacidad" },
+      { label: "Soporte", href: "#" },
+      { label: "FAQs", href: "#" },
+      { label: "Trabaja con Nosotros", href: "#" }
+    ],
+    socialLinks: [
+      { platform: "facebook", url: "#" },
+      { platform: "instagram", url: "#" },
+      { platform: "linkedin", url: "#" }
+    ]
   },
   announcement: {
     enabled: false,
@@ -105,9 +136,34 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   },
   statusSearch: {
     enabled: true,
+    sectionTitle: "Consulta tu DNI",
     title: "ESTADO DE POSTULACIÓN",
-    subtitle: "Para obtener una búsqueda más detallada indica las características de tu interés:"
-  }
+    subtitle: "Para obtener una búsqueda más detallada indica las características de tu interés:",
+    placeholder: "Ingresa DNI",
+    buttonText: "Consultar"
+  },
+  projects: {
+    title: "Últimos Proyectos",
+    items: [
+      { images: [], title: "Último Proyecto" },
+      { images: [], title: "Último Proyecto" },
+      { images: [], title: "Último Proyecto" }
+    ]
+  },
+  about: {
+    enabled: false,
+    title: "Sobre Nosotros",
+    subtitle: "Construyendo el futuro con bases sólidas",
+    content: "Somos una empresa líder en el desarrollo de proyectos inmobiliarios bajo el programa Techo Propio, comprometidos con mejorar la calidad de vida de las familias peruanas mediante la construcción de viviendas dignas, seguras y modernas.",
+    image: "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
+  },
+  chatbot: {
+    systemPrompt: "Eres el asistente virtual oficial y vendedor estrella de la empresa de construcción. Tu objetivo es ser extremadamente amable, resolver dudas y animarlos a contactarnos para iniciar su proyecto. Responde SIEMPRE de manera breve, clara y conversacional.",
+    companyInfo: "Construimos casas bajo el programa Techo Propio. Nuestras casas tienen 2 habitaciones, sala, comedor, cocina y baño.",
+    images: []
+  },
+  fonts: {},
+  colors: {}
 };
 
 export async function getLandingConfig(): Promise<LandingConfig | null> {
@@ -128,8 +184,42 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
   }
   
   // Merge loaded content with default content to ensure missing keys are present
-  // (In case the database JSON lacks some newly added fields)
-  const mergedContent = { ...DEFAULT_LANDING_CONTENT, ...data.content };
+  // Deep-ish merge to ensure nested objects have their defaults if missing keys
+  const mergedContent: LandingContent = {
+    ...DEFAULT_LANDING_CONTENT,
+    ...data.content,
+    nav: { ...DEFAULT_LANDING_CONTENT.nav, ...(data.content.nav || {}) },
+    hero: { ...DEFAULT_LANDING_CONTENT.hero, ...(data.content.hero || {}) },
+    services: { ...DEFAULT_LANDING_CONTENT.services, ...(data.content.services || {}) },
+    statusSearch: { ...DEFAULT_LANDING_CONTENT.statusSearch, ...(data.content.statusSearch || {}) },
+    projects: { ...DEFAULT_LANDING_CONTENT.projects, ...(data.content.projects || {}) },
+    about: { ...DEFAULT_LANDING_CONTENT.about, ...(data.content.about || {}) },
+    footer: { ...DEFAULT_LANDING_CONTENT.footer, ...(data.content.footer || {}) },
+    chatbot: {
+      systemPrompt: data.content.chatbot?.systemPrompt || DEFAULT_LANDING_CONTENT.chatbot!.systemPrompt,
+      companyInfo: data.content.chatbot?.companyInfo || DEFAULT_LANDING_CONTENT.chatbot!.companyInfo,
+      images: data.content.chatbot?.images || DEFAULT_LANDING_CONTENT.chatbot!.images,
+    },
+  };
+
+  // Data migrations for legacy objects
+  if (!Array.isArray(mergedContent.footer.socialLinks)) {
+    mergedContent.footer.socialLinks = DEFAULT_LANDING_CONTENT.footer.socialLinks;
+  }
+  if (!Array.isArray(mergedContent.projects.items)) {
+    mergedContent.projects.items = DEFAULT_LANDING_CONTENT.projects.items;
+  }
+  if (!Array.isArray(mergedContent.footer.links)) {
+    mergedContent.footer.links = DEFAULT_LANDING_CONTENT.footer.links;
+  }
+  
+  // Data migration for Nosotros link
+  if (mergedContent.nav && Array.isArray(mergedContent.nav.links)) {
+    mergedContent.nav.links = mergedContent.nav.links.map(link => 
+      link.href === '#estandar' ? { ...link, href: '#nosotros' } : link
+    );
+  }
+
   return { ...data, content: mergedContent };
 }
 

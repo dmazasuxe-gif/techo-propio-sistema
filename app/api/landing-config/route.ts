@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { getLandingConfig, updateLandingConfig } from '@/lib/landing_db';
 
 export async function GET() {
