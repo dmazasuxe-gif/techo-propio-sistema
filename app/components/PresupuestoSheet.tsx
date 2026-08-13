@@ -18,10 +18,11 @@ interface CustomBudgetItem {
 interface PresupuestoSheetProps {
   dimensiones: Dimensiones;
   insumos: Insumo[];
-  partidasApu: PartidaAPU[];
+  partidasApu: any[]; // Using this for the custom budget items now
+  onSaveMaster?: (items: any[]) => void;
 }
 
-export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: PresupuestoSheetProps) {
+export default function PresupuestoSheet({ dimensiones, insumos, partidasApu, onSaveMaster }: PresupuestoSheetProps) {
   const { largo, ancho, altura, habitaciones } = dimensiones;
 
   // State for editable Costo Directo, Gastos Generales, Utilidad and Selva Exemption
@@ -31,8 +32,14 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
   const [utilidadPct, setUtilidadPct] = useState<number>(5);
 
   // Custom Items added manually or by bot
-  const [customItems, setCustomItems] = useState<CustomBudgetItem[]>([]);
+  const [customItems, setCustomItems] = useState<CustomBudgetItem[]>(partidasApu as any[] || []);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sync customItems when partidasApu changes
+  React.useEffect(() => {
+    setCustomItems(partidasApu as any[] || []);
+  }, [partidasApu]);
 
   // Form State for Adding New Item
   const [newItemCode, setNewItemCode] = useState<string>("");
@@ -75,12 +82,7 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
     return total;
   };
 
-  const basePresupuestoItems = partidasApu.map(p => {
-    const metrado = getMetrado(p.item);
-    const unitario = getCostoUnitario(p);
-    const parcial = metrado * unitario;
-    return { ...p, metrado, unitario, parcial };
-  });
+  const basePresupuestoItems: any[] = [];
 
   const autoCostoDirectoBase = basePresupuestoItems.reduce((acc, curr) => acc + curr.parcial, 0);
 
@@ -101,21 +103,15 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemDesc.trim() || !newItemQty || !newItemPrice) return;
-
-    const qty = parseFloat(newItemQty) || 0;
-    const price = parseFloat(newItemPrice) || 0;
-    const itemCode = newItemCode.trim() || `09.${String(customItems.length + 1).padStart(2, "0")}`;
-
-    const newItem: CustomBudgetItem = {
-      id: `ITEM-${Date.now()}`,
-      item: itemCode,
-      descripcion: newItemDesc.trim(),
+    const newItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      item: newItemCode || `0${customItems.length + 1}.00`,
+      descripcion: newItemDesc,
       unidad: newItemUnd,
-      metrado: qty,
-      unitario: price,
-      parcial: qty * price
+      metrado: parseFloat(newItemQty),
+      unitario: parseFloat(newItemPrice),
+      parcial: parseFloat(newItemQty) * parseFloat(newItemPrice),
     };
-
     setCustomItems([...customItems, newItem]);
     setNewItemCode("");
     setNewItemDesc("");
@@ -124,7 +120,20 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
   };
 
   const handleRemoveCustomItem = (id: string) => {
-    setCustomItems(customItems.filter(item => item.id !== id));
+    setCustomItems(customItems.filter(i => i.id !== id));
+  };
+
+  const handleManualSave = async () => {
+    if (!onSaveMaster) return;
+    setIsSaving(true);
+    try {
+      await onSaveMaster(customItems);
+      alert("¡Presupuesto guardado exitosamente en Supabase!");
+    } catch (e) {
+      alert("Error al guardar presupuesto.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleExportToPDF = () => {
@@ -442,8 +451,8 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
           <Plus className="w-4 h-4 text-sky-400" />
-          <h3 className="text-xs font-black uppercase text-white tracking-wider">
-            AGREGAR NUEVO PRODUCTO / PARTIDA AL PRESUPUESTO
+          <h3 className="text-xs font-black uppercase text-white tracking-wider flex-1">
+            AGREGAR NUEVO PRODUCTO / PARTIDA AL PRESUPUESTO MAESTRO
           </h3>
         </div>
 
@@ -532,14 +541,24 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu }: 
           <h3 className="text-xs font-black uppercase text-white tracking-wider">
             PRESUPUESTO DETALLADO DE VIVIENDA UNIFAMILIAR
           </h3>
-          <button
-            onClick={handleExportToPDF}
-            disabled={isExporting}
-            className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:underline disabled:opacity-50"
-          >
-            {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            {isExporting ? "Generando..." : "Exportar PDF"}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={handleManualSave}
+              disabled={isSaving}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              {isSaving ? "Guardando..." : "Guardar Presupuesto"}
+            </button>
+            <button
+              onClick={handleExportToPDF}
+              disabled={isExporting}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50"
+            >
+              {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {isExporting ? "Generando..." : "Exportar PDF"}
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto border border-slate-800 rounded-2xl bg-slate-950/50">

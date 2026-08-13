@@ -41,8 +41,40 @@ export default function Home() {
 
   // Dynamic engineering simulation states
   const [dimensiones, setDimensiones] = useState<Dimensiones>({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
-  const [insumos, setInsumos] = useState<Insumo[]>(INSUMOS_INICIALES);
-  const [partidasApu, setPartidasApu] = useState<PartidaAPU[]>(PARTIDAS_APU_INICIALES);
+  const [insumos, setInsumos] = useState<Insumo[]>([]);
+  const [partidasApu, setPartidasApu] = useState<PartidaAPU[]>([]);
+
+  // Add fetch for Presupuesto Master
+  useEffect(() => {
+    const fetchPresupuestoMaster = async () => {
+      try {
+        const res = await fetch('/api/presupuesto-master');
+        if (res.ok) {
+          const data = await res.json();
+          setInsumos(data.insumos || []);
+          setPartidasApu(data.partidas || []);
+        }
+      } catch (err) {
+        console.error("Error fetching presupuesto maestro:", err);
+      }
+    };
+    fetchPresupuestoMaster();
+  }, []);
+
+  const handleSavePresupuestoMaster = async (newPartidas: PartidaAPU[]) => {
+    try {
+      const res = await fetch('/api/presupuesto-master', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ insumos, partidas: newPartidas })
+      });
+      if (res.ok) {
+        setPartidasApu(newPartidas);
+      }
+    } catch (err) {
+      console.error("Error saving presupuesto maestro:", err);
+    }
+  };
 
   const selectedBeneficiary = beneficiarios.find(b => b.id === selectedId);
 
@@ -409,6 +441,7 @@ export default function Home() {
                       dimensiones={dimensiones}
                       insumos={insumos}
                       partidasApu={partidasApu}
+                      onSaveMaster={handleSavePresupuestoMaster}
                     />
                   )}
                   {activeTab === "gantt" && (
