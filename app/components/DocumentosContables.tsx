@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { DocumentoContable } from "../types";
-import { Receipt, FileText, Search, Loader2 } from "lucide-react";
+import { Receipt, FileText, Search, Loader2, Trash2 } from "lucide-react";
 
 export default function DocumentosContables() {
   const [docs, setDocs] = useState<DocumentoContable[]>([]);
@@ -27,6 +27,21 @@ export default function DocumentosContables() {
   useEffect(() => {
     loadDocs();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Estás seguro que deseas eliminar este documento contable?")) return;
+    try {
+      const res = await fetch(`/api/documentos-contables?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setDocs(prev => prev.filter(doc => doc.id !== id));
+      } else {
+        alert("Hubo un error al eliminar el documento.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión.");
+    }
+  };
 
   const filtered = docs.filter(d => 
     (d.emisor || "").toLowerCase().includes(search.toLowerCase()) || 
@@ -67,6 +82,7 @@ export default function DocumentosContables() {
                 <th className="px-6 py-4 font-bold">Concepto</th>
                 <th className="px-6 py-4 font-bold">Monto</th>
                 <th className="px-6 py-4 font-bold">Estado</th>
+                <th className="px-6 py-4 font-bold text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
@@ -111,6 +127,15 @@ export default function DocumentosContables() {
                       <span className="text-xs font-bold bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">
                         {doc.estado || 'Registrado'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        onClick={() => doc.id && handleDelete(doc.id)}
+                        className="p-2 bg-slate-800/50 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl transition-colors"
+                        title="Eliminar documento"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))

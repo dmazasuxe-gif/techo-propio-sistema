@@ -373,8 +373,17 @@ export async function addDocumentoContable(doc: DocumentoContable): Promise<Docu
 export async function getDocumentosContables(): Promise<DocumentoContable[]> {
   const { data, error } = await supabase.from('documentos_contables').select('*').order('created_at', { ascending: false });
   if (error) {
-    console.error("Error fetching documentos_contables:", error);
+    console.error("Error obteniendo documentos contables:", error);
     return [];
   }
   return data.map(convertKeysToCamelCase);
-}
+};
+
+export const deleteDocumentoContable = async (id: string): Promise<boolean> => {
+  const { error } = await supabase.from('documentos_contables').delete().eq('id', id);
+  if (error) {
+    console.error("Error eliminando documento contable:", error);
+    return false;
+  }
+  return true;
+};
