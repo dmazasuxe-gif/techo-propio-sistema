@@ -326,6 +326,26 @@ export const procesarDocumentoVision = {
         ? "Extrae los datos de esta ficha de beneficiario. Devuelve los campos: postulante, dni_postulante, celular, departamento, provincia, distrito. En formato JSON puro sin formato adicional."
         : "Extrae los datos de este documento contable (factura o recibo). Devuelve los campos: tipoDocumento (Factura o Recibo), fecha, monto (solo número), emisor, ruc, concepto. En formato JSON puro sin formato adicional.";
 
+      const isPdf = url.toLowerCase().includes('.pdf');
+      let messagesContent: any[] = [];
+
+      if (isPdf) {
+        const pdfParse = require('pdf-parse');
+        const pdfRes = await fetch(url);
+        const pdfBuffer = await pdfRes.arrayBuffer();
+        const pdfData = await pdfParse(Buffer.from(pdfBuffer));
+        const extractedText = pdfData.text || "No se pudo extraer texto del PDF.";
+        
+        messagesContent = [
+          { type: "text", text: promptText + "\n\nTexto extraído del documento PDF:\n" + extractedText }
+        ];
+      } else {
+        messagesContent = [
+          { type: "text", text: promptText },
+          { type: "image_url", image_url: { url: url } }
+        ];
+      }
+
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -338,10 +358,7 @@ export const procesarDocumentoVision = {
           messages: [
             {
               role: "user",
-              content: [
-                { type: "text", text: promptText },
-                { type: "image_url", image_url: { url: url } }
-              ]
+              content: messagesContent
             }
           ]
         })

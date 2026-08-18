@@ -25,6 +25,7 @@
     "nodemailer": "^9.0.5",
     "openai": "^6.49.0",
     "otpauth": "^9.5.1",
+    "pdf-parse": "^2.4.5",
     "pdfkit": "^0.19.1",
     "puppeteer": "^24.43.1",
     "puppeteer-core": "^24.43.1",
