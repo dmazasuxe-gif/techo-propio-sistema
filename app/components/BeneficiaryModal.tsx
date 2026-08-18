@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState } from "react";
@@ -85,6 +84,7 @@ export default function BeneficiaryModal({
   const [form, setForm] = useState<Beneficiario>(getInitialState);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(getInitialState());
   }, [initialData, nextId, isOpen]);
 

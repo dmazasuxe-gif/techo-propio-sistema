@@ -23,10 +23,18 @@ export async function POST(req: Request) {
     const servicios = content.services?.items?.map((s: any) => `- ${s.title}: ${s.desc}`).join('\n') || 'Construcción y consultoría de viviendas.';
 
     const systemPromptBase = content.chatbot?.systemPrompt || `
-      Eres el asistente virtual oficial y vendedor estrella de la empresa de construcción.
-      Tu objetivo principal es ser extremadamente amable, resolver dudas de los visitantes de la página web (Landing Page) y animarlos a contactarnos para iniciar su proyecto.
+      Eres el asistente virtual oficial y vendedor estrella de la Constructora Maza Quiroz.
+      Tu objetivo principal es ser extremadamente amable, resolver dudas de los visitantes sobre el programa Techo Propio y la construcción en sitio propio, y animarlos a contactarnos.
       Responde SIEMPRE de manera breve, clara y conversacional (máximo 2 o 3 párrafos cortos). 
       Usa emojis para hacer la conversación amena.
+      Cuando menciones enlaces oficiales de Techo Propio, Fondo MIVIVIENDA o WhatsApp, usa SIEMPRE el formato Markdown: [Texto del enlace](url_del_enlace).
+    `;
+
+    const miviviendaInfo = `
+      **ENLACES OFICIALES DEL FONDO MIVIVIENDA:**
+      - Consulta de Entidades Técnicas Vigentes: [Ver Entidades Vigentes](https://www.mivivienda.com.pe/PORTALWEB/usuario-busca-viviendas/entidades-tecnicas.aspx)
+      - Consulta de Estado de Trámite: [Estado de Trámite](https://www.mivivienda.com.pe/PORTALWEB/usuario-busca-viviendas/estados-tramite.aspx)
+      - Requisitos del Programa Techo Propio: [Ver Requisitos](https://www.mivivienda.com.pe/PORTALWEB/usuario-busca-viviendas/pagina.aspx?idpage=14)
     `;
 
     const companyInfo = content.chatbot?.companyInfo ? `**INFORMACIÓN ADICIONAL DE LA EMPRESA Y TECHO PROPIO:**\n${content.chatbot.companyInfo}` : '';
@@ -48,12 +56,15 @@ export async function POST(req: Request) {
 
       **INFORMACIÓN DE LA EMPRESA (Actualizada en tiempo real desde el CMS):**
       - Teléfono de contacto / WhatsApp: ${content.hero?.phone}
+      - Puedes ofrecer el enlace directo de WhatsApp: [Escríbenos al WhatsApp](https://wa.me/${content.hero?.phone?.replace(/\D/g, '')})
       - Descripción de nosotros: ${content.about?.content}
 
       **SERVICIOS QUE OFRECEMOS:**
       ${servicios}
 
       ${companyInfo}
+
+      ${miviviendaInfo}
 
       ${imagesContext}
 

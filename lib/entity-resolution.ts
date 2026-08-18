@@ -7,6 +7,8 @@
  * Todas las tools de la IA deben usar este servicio en lugar de implementar
  * su propia lógica de búsqueda.
  */
+
+
 import { supabase } from './supabase';
 
 // ============================================================

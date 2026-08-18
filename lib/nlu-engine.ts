@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getChatHistory, saveChatHistory, CoreMessage } from "./session-store";
 import { 
   buscarBeneficiarios, 
@@ -9,9 +8,12 @@ import {
   asignarBeneficiarioAMaestro,
   consultarDesembolsos,
   registrarMaestro,
-  registrarBeneficiario
+  registrarBeneficiario,
+  procesarDocumentoVision,
+  registrarDocumentoContable,
+  buscarDocumentosContables
 } from "./ai-tools";
-import { executeDbOperation } from "./db";
+import { getDb, logAIAction, executeDbOperation } from './db';
 import { supabase } from "./supabase";
 import { customGenerateText } from "./custom-llm";
 
@@ -68,6 +70,8 @@ export async function processUserMessage(chatId: number | string, text: string, 
    - Documentos: PREGUNTA EXPLÍCITAMENTE si va a subir documentos (DNI, Contrato, Planos, Voucher, Acta) y pídele que envíe el archivo si es así.
    Solo registra cuando tengas esta información.
 8. ESTADOS DE EXPEDIENTE PERMITIDOS: "Expediente en Revisión", "Expediente Inscrito", "Expediente Elegible", "Expediente No Elegible", "Expediente con Código de Proyecto", "Expediente Aprobado". NUNCA uses otros estados (como "Rechazado").
+9. DOCUMENTOS E IMÁGENES: Si el usuario envía una imagen o PDF con la frase "ficha", "factura", "recibo" o similar, usa INMEDIATAMENTE la herramienta "procesar_documento_vision" pasando el [Archivo adjunto URL] como parámetro "url". 
+10. MÓDULO CONTABLE: Eres capaz de buscar y registrar documentos contables. Si un usuario te pide registrar una factura o recibo (o sube una imagen de ella), extrae los datos con "procesar_documento_vision" y luego usa "registrar_documento_contable".
 
 METODOLOGÍA DE TRABAJO:
 1. PENSAR: ¿Qué herramienta es la más directa para lo que pide el usuario?
@@ -81,7 +85,7 @@ HABILIDADES:
 - Asignación de beneficiarios a maestros (pasar los NOMBRES directamente a la herramienta).
 - Generación y envío de fichas PDF (beneficiario o maestro).
 - Generación de cronogramas y presupuestos PDF.
-- Gestión de documentos (agregar, enviar).
+- Gestión de documentos y contabilidad (Facturas, recibos, OCR con Vision AI).
 - Consulta de desembolsos financieros.
 - Generación y envío de PDF por Entidad Financiera (Cajas, Bancos).
 - Consulta de DNI (Reniec) para obtener datos reales de personas por su número de DNI.
@@ -98,6 +102,10 @@ Usa emojis y mantén un tono profesional pero amigable.`;
       consultarDesembolsos,
       registrarMaestro,
       registrarBeneficiario,
+      procesarDocumentoVision,
+      registrarDocumentoContable,
+      buscarDocumentosContables,
+
       {
         name: "agregar_documento_beneficiario",
         description: 'Agrega un documento o imagen a un beneficiario. Requiere el ID real del beneficiario.',
@@ -196,10 +204,10 @@ Usa emojis y mantén un tono profesional pero amigable.`;
             const { resolverBeneficiario, resolverMaestro } = require('./entity-resolution');
             let entidad = null;
             let esMaestro = false;
-            let resBen = await resolverBeneficiario(nombre_o_id);
+            const resBen = await resolverBeneficiario(nombre_o_id);
             if (resBen.success) { entidad = resBen.entity; }
             else {
-              let resMae = await resolverMaestro(nombre_o_id);
+              const resMae = await resolverMaestro(nombre_o_id);
               if (resMae.success) { entidad = resMae.entity; esMaestro = true; }
             }
             if (!entidad) return { error: "No se encontró ningún beneficiario o maestro con ese nombre." };
@@ -276,7 +284,7 @@ Usa emojis y mantén un tono profesional pero amigable.`;
             
             // Búsqueda simple insensible a mayúsculas
             const term = (financiera_nombre || "").toLowerCase().trim();
-            let fin = financieras.find(f => (f.nombre || "").toLowerCase().includes(term));
+            const fin = financieras.find(f => (f.nombre || "").toLowerCase().includes(term));
             
             if (!fin) return { error: `No se encontró la financiera "${financiera_nombre}".` };
             

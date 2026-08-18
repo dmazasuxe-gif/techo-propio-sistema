@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any , react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -83,6 +82,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
 
   useEffect(() => {
     if (editingData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm(editingData);
     }
   }, [editingData]);

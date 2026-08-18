@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import fs from "fs";
 import { generarFinancieraPDFFromData } from "@/lib/pdf-generator";

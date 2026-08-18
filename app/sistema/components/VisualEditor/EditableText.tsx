@@ -55,6 +55,7 @@ export function EditableText({ value, onChange, className = "", multiline = fals
 
   // Sync value if changed from outside
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTempValue(value);
   }, [value]);
 

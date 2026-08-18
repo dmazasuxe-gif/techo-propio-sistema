@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars , react-hooks/set-state-in-effect */
+
 "use client";
+
+
 
 import React, { useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
@@ -102,6 +104,7 @@ export default function Home() {
       try {
         const parsed = JSON.parse(selectedBeneficiary.notas);
         if (parsed.dimensiones) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setDimensiones(parsed.dimensiones);
           return;
         }
@@ -136,9 +139,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBeneficiarios();
     const storedLogin = localStorage.getItem("techo-propio-logged-in");
     if (storedLogin === "true") {
+       
       setIsLoggedIn(true);
     }
   }, [loadBeneficiarios]);

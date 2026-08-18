@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 const normalizeStr = (s?: string) => s ? s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
 
 export async function GET() {
-  let report = {
+  const report = {
     maestrosSynced: 0,
     beneficiariosFixed: 0,
     maestrosNames: [] as string[],

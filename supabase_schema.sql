@@ -147,3 +147,20 @@ CREATE TABLE chat_history (
   history JSONB DEFAULT '[]'::jsonb,
   last_updated TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
+
+-- 8. Tabla de Documentos Contables
+CREATE TABLE documentos_contables (
+  id TEXT PRIMARY KEY,
+  tipo_documento TEXT NOT NULL,
+  fecha TEXT,
+  monto NUMERIC,
+  emisor TEXT,
+  ruc TEXT,
+  concepto TEXT,
+  url_archivo TEXT,
+  estado TEXT DEFAULT 'Registrado',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+ALTER TABLE documentos_contables ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir todo a anon (Desarrollo) - Documentos Contables" ON documentos_contables FOR ALL USING (true);

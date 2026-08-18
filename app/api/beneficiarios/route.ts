@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import { getBeneficiarios, addBeneficiario, updateBeneficiario, deleteBeneficiario } from "@/lib/db";
 import { Beneficiario } from "@/app/types";

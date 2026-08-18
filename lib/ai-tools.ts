@@ -189,7 +189,7 @@ export const asignarBeneficiarioAMaestro = {
       
       const { data: newCm } = await supabase.from('cronograma_maestros').select('beneficiarios_asignados').eq('id', maestroId).single();
       if (newCm) {
-        let asignados = Array.isArray(newCm.beneficiarios_asignados) ? newCm.beneficiarios_asignados : [];
+        const asignados = Array.isArray(newCm.beneficiarios_asignados) ? newCm.beneficiarios_asignados : [];
         if (!asignados.includes(beneficiarioId)) {
           asignados.push(beneficiarioId);
           await supabase.from('cronograma_maestros').update({ beneficiarios_asignados: asignados }).eq('id', maestroId);
@@ -303,5 +303,103 @@ export const registrarBeneficiario = {
     if (!result) return { error: "Error al registrar en la base de datos." };
     await logAIAction('registrar_beneficiario', 'beneficiarios', id, beneficiario, 'success');
     return { mensaje: `✅ Beneficiario "${postulante}" registrado correctamente con expediente ${id}.`, beneficiario: result };
+  }
+};
+
+export const procesarDocumentoVision = {
+  name: "procesar_documento_vision",
+  description: 'Lee una imagen o documento (URL) mediante Vision AI para extraer datos de una Ficha de Beneficiario o Documento Contable (Factura/Recibo).',
+  parametersSchema: {
+    type: "object",
+    properties: {
+      url: { type: "string", description: "URL de la imagen o documento proporcionada por el usuario" },
+      tipo: { type: "string", description: "'ficha' o 'contable'" }
+    },
+    required: ["url", "tipo"]
+  },
+  execute: async ({ url, tipo }: any) => {
+    try {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) throw new Error("OPENAI_API_KEY is missing");
+      
+      const promptText = tipo === 'ficha' 
+        ? "Extrae los datos de esta ficha de beneficiario. Devuelve los campos: postulante, dni_postulante, celular, departamento, provincia, distrito. En formato JSON puro sin formato adicional."
+        : "Extrae los datos de este documento contable (factura o recibo). Devuelve los campos: tipoDocumento (Factura o Recibo), fecha, monto (solo número), emisor, ruc, concepto. En formato JSON puro sin formato adicional.";
+
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: promptText },
+                { type: "image_url", image_url: { url: url } }
+              ]
+            }
+          ]
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      const content = data.choices[0].message.content;
+      return { status: "success", datos_extraidos: JSON.parse(content) };
+    } catch (e: any) {
+      return { status: "error", error: e.message };
+    }
+  }
+};
+
+export const registrarDocumentoContable = {
+  name: "registrar_documento_contable",
+  description: 'Registra una factura o recibo en la base de datos de documentos contables.',
+  parametersSchema: {
+    type: "object",
+    properties: {
+      tipoDocumento: { type: "string", description: "Factura, Recibo, etc." },
+      fecha: { type: "string" },
+      monto: { type: "number" },
+      emisor: { type: "string" },
+      ruc: { type: "string" },
+      concepto: { type: "string" },
+      urlArchivo: { type: "string" }
+    },
+    required: ["tipoDocumento", "monto", "emisor"]
+  },
+  execute: async (doc: any) => {
+    const { addDocumentoContable } = require('./db');
+    const result = await addDocumentoContable(doc);
+    if (!result) return { error: "Error al registrar el documento contable en la BD." };
+    return { mensaje: "✅ Documento contable registrado exitosamente.", documento: result };
+  }
+};
+
+export const buscarDocumentosContables = {
+  name: "buscar_documentos_contables",
+  description: 'Busca documentos contables en la base de datos.',
+  parametersSchema: {
+    type: "object",
+    properties: {
+      emisor: { type: "string", description: "Opcional. Buscar por nombre o razón social del emisor" },
+      tipoDocumento: { type: "string", description: "Opcional. Factura o Recibo" }
+    }
+  },
+  execute: async ({ emisor, tipoDocumento }: any) => {
+    const { supabase } = require('./supabase');
+    let query = supabase.from('documentos_contables').select('*');
+    if (emisor) query = query.ilike('emisor', `%${emisor}%`);
+    if (tipoDocumento) query = query.eq('tipo_documento', tipoDocumento);
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(10);
+    if (error) return { error: error.message };
+    if (!data || data.length === 0) return { mensaje: "No se encontraron documentos contables." };
+    return { documentos: data };
   }
 };

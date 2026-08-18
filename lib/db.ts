@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
-import { Beneficiario, MaestroObra, DocumentoAdjunto, Financiera } from '../app/types';
+import { Beneficiario, MaestroObra, DocumentoAdjunto, Financiera, DocumentoContable } from '../app/types';
+
+
 
 // Utility functions for converting between camelCase and snake_case
 function toSnakeCase(str: string) {
@@ -42,7 +44,9 @@ export interface DatabaseSchema {
   cronogramaObra?: any[];
   budget?: { productos: any[] };
   planosIngenieria?: any[];
+  documentosContables?: DocumentoContable[];
 }
+
 
 export async function getDb(): Promise<DatabaseSchema> {
   const [
@@ -51,14 +55,16 @@ export async function getDb(): Promise<DatabaseSchema> {
     { data: financieras },
     { data: cronogramaMaestros },
     { data: cronogramaObra },
-    { data: planosIngenieria }
+    { data: planosIngenieria },
+    { data: documentosContables }
   ] = await Promise.all([
     supabase.from('beneficiarios').select('*'),
     supabase.from('maestros').select('*'),
     supabase.from('financieras').select('*'),
     supabase.from('cronograma_maestros').select('*'),
     supabase.from('cronograma_obra').select('*').order('id', { ascending: true }),
-    supabase.from('planos_ingenieria').select('*')
+    supabase.from('planos_ingenieria').select('*'),
+    supabase.from('documentos_contables').select('*')
   ]);
 
   return {
@@ -67,12 +73,13 @@ export async function getDb(): Promise<DatabaseSchema> {
     financieras: (financieras || []).map(convertKeysToCamelCase),
     cronogramaMaestros: (cronogramaMaestros || []).map(convertKeysToCamelCase),
     cronogramaObra: (cronogramaObra || []).map(convertKeysToCamelCase),
-    planosIngenieria: (planosIngenieria || []).map(convertKeysToCamelCase)
+    planosIngenieria: (planosIngenieria || []).map(convertKeysToCamelCase),
+    documentosContables: (documentosContables || []).map(convertKeysToCamelCase)
   };
 }
 
 // Deprecated function, kept to prevent compilation errors until API routes are updated
-export async function saveDb(data: DatabaseSchema): Promise<void> {
+export async function saveDb(_data: DatabaseSchema): Promise<void> {
   console.warn("saveDb is deprecated with Supabase. Use specific insert/update functions instead.");
 }
 
@@ -224,7 +231,7 @@ export async function updateBeneficiarioEstado(id: string, nuevoEstado: string):
   return convertKeysToCamelCase(data);
 }
 
-export async function updateGlobalCronogramaObra(stageIndex: number, pct: number, stageName: string): Promise<void> {
+export async function updateGlobalCronogramaObra(stageIndex: number, pct: number, _stageName: string): Promise<void> {
   const id = `t${stageIndex + 1}`;
   await supabase.from('cronograma_obra').update({ avance_pct: pct }).eq('id', id);
 }
@@ -351,4 +358,23 @@ export async function addPlano(plano: any): Promise<any> {
 export async function deletePlano(id: string): Promise<boolean> {
   const { error } = await supabase.from('planos_ingenieria').delete().eq('id', id);
   return !error;
+}
+
+export async function addDocumentoContable(doc: DocumentoContable): Promise<DocumentoContable | null> {
+  if (!doc.id) doc.id = `DOC-CONT-${Date.now()}`;
+  const { data, error } = await supabase.from('documentos_contables').insert(convertKeysToSnakeCase(doc)).select().single();
+  if (error) {
+    console.error("Error adding documento_contable:", error);
+    return null;
+  }
+  return convertKeysToCamelCase(data);
+}
+
+export async function getDocumentosContables(): Promise<DocumentoContable[]> {
+  const { data, error } = await supabase.from('documentos_contables').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error("Error fetching documentos_contables:", error);
+    return [];
+  }
+  return data.map(convertKeysToCamelCase);
 }

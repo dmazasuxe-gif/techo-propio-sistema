@@ -3,7 +3,8 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import chromium from '@sparticuz/chromium';
 import { saveLocalFileToStorage } from './file-manager';
-import { Beneficiario, MaestroObra } from '../app/types';
+import { Beneficiario } from '../app/types';
+
 
 async function getBrowser() {
   const browserlessToken = process.env.BROWSERLESS_API_TOKEN;

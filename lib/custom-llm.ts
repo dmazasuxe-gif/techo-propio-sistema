@@ -6,7 +6,7 @@ export async function customGenerateText(options: {
   tools: any[],
   maxSteps?: number
 }) {
-  let currentMessages: any[] = [
+  const currentMessages: any[] = [
     { role: 'system', content: options.system },
     ...options.messages
   ];

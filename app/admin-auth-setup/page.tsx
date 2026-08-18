@@ -12,11 +12,12 @@ export default function AdminAuthSetup() {
 
   useEffect(() => {
     // Generar un nuevo secreto aleatorio al cargar
-    let newSecret = new OTPAuth.Secret({ size: 20 }).base32;
+    const newSecret = new OTPAuth.Secret({ size: 20 }).base32;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSecret(newSecret);
 
     // Generar URI otpauth
-    let totp = new OTPAuth.TOTP({
+    const totp = new OTPAuth.TOTP({
       issuer: "TechoPropioSistema",
       label: "Admin",
       algorithm: "SHA1",
@@ -55,7 +56,7 @@ export default function AdminAuthSetup() {
 
           <h1 className="text-3xl font-bold font-[family-name:var(--font-montserrat)] mb-3">Configuración de Seguridad Master</h1>
           <p className="text-slate-400 mb-8 max-w-sm">
-            Escanea este código con tu aplicación de autenticación (ej. "Mis contraseñas" en iPhone, Authy, o Google Authenticator).
+            Escanea este código con tu aplicación de autenticación (ej. &quot;Mis contraseñas&quot; en iPhone, Authy, o Google Authenticator).
           </p>
 
           <div className="bg-white p-4 rounded-xl shadow-lg shadow-black/50 mb-8 border-4 border-slate-800">

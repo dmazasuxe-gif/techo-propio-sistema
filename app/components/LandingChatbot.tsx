@@ -157,7 +157,16 @@ export default function LandingChatbot() {
                         <React.Fragment key={i}>
                           {textPart.split('\n').map((line, j) => (
                             <React.Fragment key={`t-${j}`}>
-                              {line}
+                              {line.split(/(?:\[.*?\]\(.*?\))/g).map((lPart, k) => {
+                                  const lMatches = line.match(/\[(.*?)\]\((.*?)\)/g);
+                                  const lHtml = lMatches && lMatches[k] ? lMatches[k].match(/\[(.*?)\]\((.*?)\)/) : null;
+                                  return (
+                                    <React.Fragment key={`l-${k}`}>
+                                        {lPart}
+                                        {lHtml && <a href={lHtml[2]} target="_blank" rel="noreferrer" className={msg.role === 'user' ? "text-sky-200 underline" : "text-blue-600 hover:underline font-medium"}>{lHtml[1]}</a>}
+                                    </React.Fragment>
+                                  )
+                              })}
                               {j !== textPart.split('\n').length - 1 && <br />}
                             </React.Fragment>
                           ))}

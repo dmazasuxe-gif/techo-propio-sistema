@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Verificar el código usando otpauth
-    let totp = new OTPAuth.TOTP({
+    const totp = new OTPAuth.TOTP({
       issuer: "TechoPropioSistema",
       label: "Admin",
       algorithm: "SHA1",

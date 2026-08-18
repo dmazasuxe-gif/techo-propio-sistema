@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -40,8 +40,10 @@ export default function PlanosIngenieria({ planos: initialPlanos, onSave }: Plan
   // Sync state if props change from outside (e.g. switching beneficiary)
   useEffect(() => {
     if (initialPlanos && initialPlanos.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlanos(initialPlanos);
     } else {
+       
       setPlanos(DEFAULT_PLANOS);
     }
   }, [initialPlanos]);

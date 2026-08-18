@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars , react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -20,6 +19,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
   const [form, setForm] = useState<Beneficiario>({ ...beneficiario });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({ ...beneficiario });
   }, [beneficiario]);
 

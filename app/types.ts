@@ -167,3 +167,16 @@ export interface Financiera {
   desembolsos: Desembolso[];
   expandida?: boolean;
 }
+
+export interface DocumentoContable {
+  id: string;
+  tipoDocumento: string;
+  fecha?: string;
+  monto?: number;
+  emisor?: string;
+  ruc?: string;
+  concepto?: string;
+  urlArchivo?: string;
+  estado?: string;
+  createdAt?: string;
+}

@@ -36,8 +36,10 @@ export default function CronogramaObra({ tareas: initialTareas, onSave }: Cronog
 
   React.useEffect(() => {
     if (initialTareas && initialTareas.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTareas(initialTareas);
     } else {
+       
       setTareas(TAREAS_GANTT_INICIALES);
     }
   }, [initialTareas]);
