@@ -17,7 +17,7 @@ import {
   LogOut
 } from "lucide-react";
 
-export type NavView = "resumen" | "ficha_registro" | "registros" | "expedientes" | "documentos" | "pagos" | "maestros" | "consulta_dni" | "landing_config";
+export type NavView = "resumen" | "ficha_registro" | "registros" | "expedientes" | "documentos" | "pagos" | "maestros" | "consulta_dni" | "landing_config" | "contabilidad";
 
 interface SidebarProps {
   activeView: NavView;
@@ -41,6 +41,7 @@ export default function Sidebar({
     { id: "expedientes" as NavView, label: "Expediente Técnico", subtitle: "APU, Metrados y Planos", icon: Wrench },
     { id: "documentos" as NavView, label: "DOCUMENTOS", subtitle: "Archivos PDF e imágenes", icon: FileText },
     { id: "pagos" as NavView, label: "Pagos", subtitle: "Cronograma de Pagos", icon: CreditCard },
+    { id: "contabilidad" as NavView, label: "Contabilidad", subtitle: "Facturas y Recibos", icon: FileText },
     { id: "maestros" as NavView, label: "Maestros", subtitle: "Planificación de Maestros", icon: Hammer },
     { id: "consulta_dni" as NavView, label: "Consulta DNI", subtitle: "Búsqueda informativa", icon: Sparkles },
     { id: "landing_config" as NavView, label: "Config Landing", subtitle: "Personalizar página web", icon: Map },

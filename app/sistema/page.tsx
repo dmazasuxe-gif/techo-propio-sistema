@@ -27,6 +27,7 @@ import CronogramaMaestros from "../components/CronogramaMaestros";
 import ConsultaDniView from "../components/ConsultaDniView";
 import LoginScreen from "../components/LoginScreen";
 import { LandingCMS } from "./components/LandingCMS";
+import DocumentosContables from "../components/DocumentosContables";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -496,6 +497,11 @@ export default function Home() {
             <CronogramaPagos beneficiarios={beneficiarios} />
           )}
 
+          {/* Module 6.5: Contabilidad */}
+          {activeNavView === "contabilidad" && (
+            <DocumentosContables />
+          )}
+
           {/* Module 7: Maestros de Obra */}
           {activeNavView === "maestros" && (
             <CronogramaMaestros beneficiarios={beneficiarios} />
@@ -521,6 +527,7 @@ export default function Home() {
             { id: "expedientes",   label: "Expediente",emoji: "📁" },
             { id: "documentos",    label: "Docs",      emoji: "📄" },
             { id: "pagos",         label: "Pagos",     emoji: "💳" },
+            { id: "contabilidad",  label: "Contabilidad",emoji: "🧾" },
             { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
             { id: "landing_config",label: "Landing",   emoji: "🖥️" },
           ] as { id: import("../components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
