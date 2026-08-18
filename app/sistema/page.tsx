@@ -28,6 +28,7 @@ import ConsultaDniView from "../components/ConsultaDniView";
 import LoginScreen from "../components/LoginScreen";
 import { LandingCMS } from "./components/LandingCMS";
 import DocumentosContables from "../components/DocumentosContables";
+import AnalyticsView from "../components/AnalyticsView";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -497,11 +498,6 @@ export default function Home() {
             <CronogramaPagos beneficiarios={beneficiarios} />
           )}
 
-          {/* Module 6.5: Contabilidad */}
-          {activeNavView === "contabilidad" && (
-            <DocumentosContables />
-          )}
-
           {/* Module 7: Maestros de Obra */}
           {activeNavView === "maestros" && (
             <CronogramaMaestros beneficiarios={beneficiarios} />
@@ -510,6 +506,16 @@ export default function Home() {
           {/* Module 8: Consulta DNI */}
           {activeNavView === "consulta_dni" && (
             <ConsultaDniView />
+          )}
+
+          {/* Module 8.5: Contabilidad */}
+          {activeNavView === "contabilidad" && (
+            <DocumentosContables />
+          )}
+
+          {/* Module 8.6: Analytics */}
+          {activeNavView === "analytics" && (
+            <AnalyticsView />
           )}
 
           {/* Module 9: Configuración Landing */}
@@ -527,8 +533,10 @@ export default function Home() {
             { id: "expedientes",   label: "Expediente",emoji: "📁" },
             { id: "documentos",    label: "Docs",      emoji: "📄" },
             { id: "pagos",         label: "Pagos",     emoji: "💳" },
-            { id: "contabilidad",  label: "Contabilidad",emoji: "🧾" },
+            { id: "maestros",      label: "Maestros",  emoji: "👷" },
             { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
+            { id: "contabilidad",  label: "Contabilidad",emoji: "🧾" },
+            { id: "analytics",     label: "Tráfico",   emoji: "📈" },
             { id: "landing_config",label: "Landing",   emoji: "🖥️" },
           ] as { id: import("../components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
             <button

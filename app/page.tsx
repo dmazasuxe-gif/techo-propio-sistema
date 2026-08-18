@@ -23,6 +23,13 @@ function ProjectCarousel({ images }: { images: string[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    // Tracking Page View
+    fetch('/api/track-visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: window.location.pathname, eventType: 'pageview' })
+    }).catch(console.error);
+
     if (!images || images.length <= 1) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
@@ -398,8 +405,8 @@ export default function LandingPage() {
               <h2 className="text-3xl font-extrabold font-[family-name:var(--font-montserrat)] text-slate-900 mb-8 flex gap-2" style={{ fontFamily: config.fonts?.['statusSearch.sectionTitle'], color: config.colors?.['statusSearch.sectionTitle'] }}>{config.statusSearch.sectionTitle || "Consulta tu DNI"}</h2>
               
               <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 flex-1 flex flex-col relative z-10">
-                <h3 className="text-xl font-bold text-slate-900 mb-2 font-[family-name:var(--font-montserrat)]" style={{ fontFamily: config.fonts?.['statusSearch.title'], color: config.colors?.['statusSearch.title'] }}>{config.statusSearch.title}</h3>
-                <p className="text-slate-500 text-[14px] mb-6 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap" style={{ fontFamily: config.fonts?.['statusSearch.subtitle'], color: config.colors?.['statusSearch.subtitle'] }}>{config.statusSearch.subtitle}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2 font-[family-name:var(--font-montserrat)]" style={{ fontFamily: config.fonts?.['statusSearch.title'], color: config.colors?.[`statusSearch.title`] }}>{config.statusSearch.title}</h3>
+                <p className="text-slate-500 text-[14px] mb-6 font-[family-name:var(--font-work-sans)] whitespace-pre-wrap" style={{ fontFamily: config.fonts?.[`statusSearch.subtitle`], color: config.colors?.[`statusSearch.subtitle`] }}>{config.statusSearch.subtitle}</p>
                 
                 <div className="flex flex-row items-center gap-3">
                   <input 
@@ -416,7 +423,7 @@ export default function LandingPage() {
                     disabled={searchLoading || searchDni.length !== 8}
                     className="bg-[#2563eb] hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-[1rem] disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 whitespace-nowrap text-[15px]"
                   >
-                    <span style={{ fontFamily: config.fonts?.['statusSearch.buttonText'], color: config.colors?.['statusSearch.buttonText'] }}>{searchLoading ? '...' : config.statusSearch.buttonText}</span>
+                    <span style={{ fontFamily: config.fonts?.[`statusSearch.buttonText`], color: config.colors?.[`statusSearch.buttonText`] }}>{searchLoading ? '...' : config.statusSearch.buttonText}</span>
                   </button>
                 </div>
                 {searchError && (

@@ -164,3 +164,16 @@ CREATE TABLE documentos_contables (
 
 ALTER TABLE documentos_contables ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Permitir todo a anon (Desarrollo) - Documentos Contables" ON documentos_contables FOR ALL USING (true);
+
+-- 9. Tabla de Tráfico / Analytics Landing
+CREATE TABLE landing_traffic (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  path TEXT,
+  user_agent TEXT,
+  session_id TEXT,
+  event_type TEXT DEFAULT 'pageview',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+ALTER TABLE landing_traffic ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir todo a anon (Desarrollo) - Trafico" ON landing_traffic FOR ALL USING (true);
