@@ -23,13 +23,6 @@ function ProjectCarousel({ images }: { images: string[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    // Tracking Page View
-    fetch('/api/track-visit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: window.location.pathname, eventType: 'pageview' })
-    }).catch(console.error);
-
     if (!images || images.length <= 1) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
@@ -75,8 +68,25 @@ export default function LandingPage() {
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [viewingGalleryIndex, setViewingGalleryIndex] = useState<number | null>(null);
   const [galleryImageIndex, setGalleryImageIndex] = useState(0);
+  const tracked = React.useRef(false);
+
+  const trackInteraction = useCallback((btnName: string) => {
+    fetch('/api/track-visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: `boton_${btnName}`, eventType: 'click' })
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
+    if (!tracked.current) {
+      tracked.current = true;
+      fetch('/api/track-visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: window.location.pathname, eventType: 'pageview' })
+      }).catch(console.error);
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     fetch(`/api/landing-config?t=${Date.now()}`)
@@ -164,6 +174,7 @@ export default function LandingPage() {
   }, [config.announcement?.images, showAnnouncement]);
 
   const handleStatusSearch = async () => {
+    trackInteraction('consulta_dni');
     setSearchError(null);
     setSearchResult(null);
     
@@ -323,7 +334,14 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <a href={wppLink} target="_blank" rel="noopener noreferrer" className="px-8 py-3 rounded-full bg-[#1c2331] text-white hover:bg-slate-800 text-[15px] font-medium transition-all hover:shadow-lg shadow-md whitespace-nowrap inline-block" style={{ fontFamily: config.fonts?.['nav.ctaText'], color: config.colors?.['nav.ctaText'] }}>
+            <a 
+              href={wppLink} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              onClick={() => trackInteraction('whatsapp_nav')}
+              className="px-8 py-3 rounded-full bg-[#1c2331] text-white hover:bg-slate-800 text-[15px] font-medium transition-all hover:shadow-lg shadow-md whitespace-nowrap inline-block" 
+              style={{ fontFamily: config.fonts?.['nav.ctaText'], color: config.colors?.['nav.ctaText'] }}
+            >
               {config.nav.ctaText}
             </a>
           </div>
@@ -492,7 +510,9 @@ export default function LandingPage() {
             
             <div className="flex gap-3">
               {config.footer.socialLinks.map((social, i) => (
-                <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-slate-700 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-colors text-xs font-bold text-slate-300">
+                <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" 
+                  onClick={() => trackInteraction(social.platform)}
+                  className="w-8 h-8 rounded-full border border-slate-700 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-colors text-xs font-bold text-slate-300">
                   {social.platform === 'facebook' && 'f'}
                   {social.platform === 'instagram' && 'ig'}
                   {social.platform === 'linkedin' && 'in'}
