@@ -10,6 +10,7 @@ export interface LandingContent {
   hero: {
     badgeText: string;
     phone: string;
+    whatsappMessage?: string;
     images: string[];
     bgOpacity: number;
   };
@@ -86,6 +87,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   hero: {
     badgeText: "Ingeniería de Precisión",
     phone: "+51999999999",
+    whatsappMessage: "Hola, quisiera cotizar un proyecto",
     images: [
       "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
     ],
@@ -189,7 +191,11 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
     ...DEFAULT_LANDING_CONTENT,
     ...data.content,
     nav: { ...DEFAULT_LANDING_CONTENT.nav, ...(data.content.nav || {}) },
-    hero: { ...DEFAULT_LANDING_CONTENT.hero, ...(data.content.hero || {}) },
+    hero: { 
+      ...DEFAULT_LANDING_CONTENT.hero, 
+      ...(data.content.hero || {}),
+      whatsappMessage: data.content.hero?.whatsappMessage || DEFAULT_LANDING_CONTENT.hero.whatsappMessage
+    },
     services: { ...DEFAULT_LANDING_CONTENT.services, ...(data.content.services || {}) },
     statusSearch: { ...DEFAULT_LANDING_CONTENT.statusSearch, ...(data.content.statusSearch || {}) },
     projects: { ...DEFAULT_LANDING_CONTENT.projects, ...(data.content.projects || {}) },

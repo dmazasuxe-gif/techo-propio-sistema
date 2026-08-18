@@ -377,9 +377,15 @@ export function LandingCMS() {
                   onFontChange={(v) => updateNestedConfig(['fonts', 'nav.ctaText'], v)} color={config.colors?.['nav.ctaText']} onColorChange={(v) => updateNestedConfig(['colors', 'nav.ctaText'], v)}
                 />
               </div>
-              <div className="flex items-center text-xs text-slate-500 bg-white px-2 py-1 rounded shadow-sm border border-slate-200">
-                <span className="mr-1">WhatsApp:</span>
-                <EditableText value={config.hero.phone} onChange={(v) => updateNestedConfig(['hero', 'phone'], v)} fontFamily={config.fonts?.['hero.phone']} onFontChange={(v) => updateNestedConfig(['fonts', 'hero.phone'], v)} color={config.colors?.['hero.phone']} onColorChange={(v) => updateNestedConfig(['colors', 'hero.phone'], v)} />
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center text-xs text-slate-500 bg-white px-2 py-1 rounded shadow-sm border border-slate-200">
+                  <span className="mr-1">WhatsApp:</span>
+                  <EditableText value={config.hero.phone} onChange={(v) => updateNestedConfig(['hero', 'phone'], v)} fontFamily={config.fonts?.['hero.phone']} onFontChange={(v) => updateNestedConfig(['fonts', 'hero.phone'], v)} color={config.colors?.['hero.phone']} onColorChange={(v) => updateNestedConfig(['colors', 'hero.phone'], v)} />
+                </div>
+                <div className="flex items-center text-xs text-slate-500 bg-white px-2 py-1 rounded shadow-sm border border-slate-200 max-w-[200px]">
+                  <span className="mr-1">Msj:</span>
+                  <EditableText value={config.hero.whatsappMessage || "Hola, quisiera cotizar un proyecto"} onChange={(v) => updateNestedConfig(['hero', 'whatsappMessage'], v)} />
+                </div>
               </div>
             </div>
           </div>

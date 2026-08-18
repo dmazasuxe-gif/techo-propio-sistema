@@ -156,7 +156,8 @@ export default function LandingPage() {
   };
 
   const formattedPhone = config.hero.phone.replace(/\D/g,'');
-  const wppLink = `https://wa.me/${formattedPhone}?text=Hola,%20quisiera%20cotizar%20un%20proyecto`;
+  const wppText = config.hero.whatsappMessage || "Hola, quisiera cotizar un proyecto";
+  const wppLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(wppText)}`;
 
   const images = config.hero.images.length ? config.hero.images : [
     "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
