@@ -72,6 +72,7 @@ export async function processUserMessage(chatId: number | string, text: string, 
 8. ESTADOS DE EXPEDIENTE PERMITIDOS: "Expediente en Revisión", "Expediente Inscrito", "Expediente Elegible", "Expediente No Elegible", "Expediente con Código de Proyecto", "Expediente Aprobado". NUNCA uses otros estados (como "Rechazado").
 9. DOCUMENTOS E IMÁGENES: Si el usuario envía una imagen o PDF con la frase "ficha", "factura", "recibo" o similar, usa INMEDIATAMENTE la herramienta "procesar_documento_vision" pasando el [Archivo adjunto URL] como parámetro "url". 
 10. MÓDULO CONTABLE: Eres capaz de buscar y registrar documentos contables. Si un usuario te pide registrar una factura o recibo (o sube una imagen de ella), extrae los datos con "procesar_documento_vision" y luego usa "registrar_documento_contable".
+11. ENVIAR ARCHIVOS DIRECTAMENTE: Si el usuario te pide que le "muestres", "envíes" o quiere "ver" un documento contable (factura, recibo, etc.), PRIMERO usa "buscar_documentos_contables" para obtener la URL del archivo (url_archivo). UNA VEZ QUE TENGAS LA URL, DEBES USAR OBLIGATORIAMENTE la herramienta "enviar_documento_guardado" para enviarle el archivo directamente a Telegram. NUNCA le respondas simplemente con el enlace de texto, envíale el archivo con la herramienta.
 
 METODOLOGÍA DE TRABAJO:
 1. PENSAR: ¿Qué herramienta es la más directa para lo que pide el usuario?
