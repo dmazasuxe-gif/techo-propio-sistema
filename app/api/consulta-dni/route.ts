@@ -13,8 +13,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const token = process.env.DNI_API_TOKEN || "22777|XS67OpKKVWMkyhG6Ssv80ikuHCUSKTpcd5rZFxQS38614e56";
-    const apiUrl = process.env.DNI_API_URL || "https://apiperu.dev/api/dni/";
+    const token = process.env.DNI_API_TOKEN;
+    const apiUrl = process.env.DNI_API_URL;
+
+    if (!token || !apiUrl) {
+      console.error("Faltan configurar las variables de entorno DNI_API_TOKEN y/o DNI_API_URL.");
+      return NextResponse.json({ error: "Error de configuración del servidor. Contacte al administrador." }, { status: 500 });
+    }
     
     const response = await fetch(`${apiUrl}${dni}`, {
       method: 'GET',
