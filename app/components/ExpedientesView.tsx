@@ -18,7 +18,8 @@ import {
   Eye,
   AlertTriangle,
   X,
-  Save
+  Save,
+  Globe
 } from "lucide-react";
 
 interface ExpedientesViewProps {
@@ -343,9 +344,21 @@ export default function ExpedientesView({
                         })()}
                       </td>
 
-                      {/* Action Buttons: Ver, Editar, Eliminar */}
+                      {/* Action Buttons: Mapa, Ver, Editar, Eliminar */}
                       <td className="py-4 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => {
+                              if (b.coordenadaX && b.coordenadaY) {
+                                window.open(`https://www.google.com/maps/search/?api=1&query=${b.coordenadaX},${b.coordenadaY}`, '_blank');
+                              }
+                            }}
+                            className={`p-1.5 rounded-lg border transition active:scale-95 transition-transform duration-150 ${b.coordenadaX && b.coordenadaY ? 'bg-slate-900 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border-slate-800' : 'bg-slate-900/50 text-slate-600 border-slate-800/50 cursor-not-allowed'}`}
+                            title={b.coordenadaX && b.coordenadaY ? "Ver en Google Maps" : "No tiene coordenadas registradas"}
+                            disabled={!b.coordenadaX || !b.coordenadaY}
+                          >
+                            <Globe className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             onClick={() => onSelectBeneficiary(b.id)}
                             className="p-1.5 bg-slate-900 hover:bg-sky-600/20 text-sky-400 hover:text-sky-300 rounded-lg border border-slate-800 transition active:scale-95 transition-transform duration-150"

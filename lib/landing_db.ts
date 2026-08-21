@@ -119,11 +119,8 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     copyright: "Constructora Maza Quiroz. Todos los derechos reservados.",
     email: "mail@sistematecho.com",
     links: [
-      { label: "Contáctanos", href: "#contacto" },
       { label: "Aviso Legal", href: "/privacidad" },
-      { label: "Soporte", href: "#" },
-      { label: "FAQs", href: "#" },
-      { label: "Trabaja con Nosotros", href: "#" }
+      { label: "Trabaja con nosotros", href: "#" }
     ],
     socialLinks: [
       { platform: "facebook", url: "#" },

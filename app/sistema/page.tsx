@@ -28,7 +28,6 @@ import ConsultaDniView from "../components/ConsultaDniView";
 import LoginScreen from "../components/LoginScreen";
 import { LandingCMS } from "./components/LandingCMS";
 import DocumentosContables from "../components/DocumentosContables";
-import AnalyticsView from "../components/AnalyticsView";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -513,11 +512,6 @@ export default function Home() {
             <DocumentosContables />
           )}
 
-          {/* Module 8.6: Analytics */}
-          {activeNavView === "analytics" && (
-            <AnalyticsView />
-          )}
-
           {/* Module 9: Configuración Landing */}
           {activeNavView === "landing_config" && (
             <LandingCMS />
@@ -536,7 +530,6 @@ export default function Home() {
             { id: "maestros",      label: "Maestros",  emoji: "👷" },
             { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
             { id: "contabilidad",  label: "Contabilidad",emoji: "🧾" },
-            { id: "analytics",     label: "Tráfico",   emoji: "📈" },
             { id: "landing_config",label: "Landing",   emoji: "🖥️" },
           ] as { id: import("../components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
             <button

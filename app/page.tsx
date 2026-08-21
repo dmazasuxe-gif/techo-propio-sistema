@@ -497,9 +497,14 @@ export default function LandingPage() {
           <div className="flex flex-col gap-2 items-center md:items-start w-full md:w-auto">
             <h2 className="font-extrabold text-xl font-[family-name:var(--font-montserrat)]" style={{ fontFamily: config.fonts?.['footer.companyName'], color: config.colors?.['footer.companyName'] }}>{config.footer.companyName}</h2>
             <div className="flex flex-wrap justify-center gap-4 mt-2">
-              {config.footer.links.map((link, i) => (
-                <a key={i} href={link.href} className="text-slate-400 text-sm hover:text-white transition-colors">{link.label}</a>
-              ))}
+              {config.footer.links
+                .filter(link => !['soporte', 'faqs', 'contáctanos', 'contactanos'].includes(link.label.toLowerCase()))
+                .map((link, i) => {
+                  const isTrabaja = link.label.toLowerCase().includes('trabaja');
+                  return (
+                    <a key={i} href={isTrabaja ? wppLink : link.href} className="text-slate-400 text-sm hover:text-white transition-colors">{link.label}</a>
+                  );
+              })}
             </div>
           </div>
 

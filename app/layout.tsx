@@ -27,6 +27,21 @@ export const metadata: Metadata = {
     icon: "/logo.png",
     apple: "/logo.png",
   },
+  openGraph: {
+    title: "Constructora Maza Quiroz - Techo Propio",
+    description: "Construimos tu hogar con el programa Techo Propio. Conoce más sobre nuestros proyectos y beneficios.",
+    siteName: "Constructora Maza Quiroz",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 600,
+        alt: "Constructora Maza Quiroz Logo",
+      },
+    ],
+    locale: "es_PE",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -45,7 +45,6 @@ export default function Sidebar({
     { id: "maestros" as NavView, label: "Maestros", subtitle: "Planificación de Maestros", icon: Hammer },
     { id: "consulta_dni" as NavView, label: "Consulta DNI", subtitle: "Búsqueda informativa", icon: Sparkles },
     { id: "contabilidad" as NavView, label: "Contabilidad", subtitle: "Facturas y Recibos", icon: FileText },
-    { id: "analytics" as NavView, label: "Tráfico Web", subtitle: "Analíticas de la Landing", icon: Activity },
     { id: "landing_config" as NavView, label: "Config Landing", subtitle: "Personalizar página web", icon: Map },
   ];
 
