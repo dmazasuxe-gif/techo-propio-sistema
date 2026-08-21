@@ -1,9 +1,12 @@
 # Estado del Proyecto y Memoria (Actualizado: Agosto 2026)
 
-## Resumen de la Última Sesión
-Durante la última sesión se realizaron actualizaciones integrales al sistema, incluyendo la adición del módulo de Contabilidad con lectura de PDFs, un módulo de Analíticas Web propio y mejoras directas en el Visual Builder (Landing CMS). El sistema mantuvo todas sus funcionalidades previas intactas.
+## Resumen de la Última Sesión (Agosto 2026 - Seguridad y Documentación)
+Durante la última sesión nos enfocamos en endurecer la seguridad de la aplicación y documentar la arquitectura de datos:
+1. **Rate Limiting:** Implementado a través de `proxy.ts` (previamente `middleware.ts`, adaptado para Next.js 16.2.6) para interceptar rutas `/api/*`. Limita a 60 peticiones por IP por minuto en memoria para evitar ataques y abusos.
+2. **Seguridad de Llaves (Secretos):** Eliminación de tokens estáticos/harcodeados (ej. `DNI_API_TOKEN`) del código fuente. Se migraron a `.env.local` con validaciones de existencia en las rutas para evitar exposición.
+3. **Documentación del Sistema:** Se redactó un manual exhaustivo (`documentacion_sistema.md`) sobre qué datos guarda el sistema para Beneficiarios, Maestros, Archivos de Supabase Storage (`documentos_beneficiarios` y `pdfs_generados`) y control contable.
 
-### Nuevas Funcionalidades Añadidas
+### Funcionalidades Añadidas Anteriormente
 1. **Módulo Contable (Facturas y Recibos):**
    - Se añadió la vista de `DocumentosContables.tsx` para listar, ver y eliminar (CRUD) documentos subidos.
    - Estos archivos se gestionan mediante el bucket `documentos_contables` y la tabla `documentos_contables` en Supabase.
