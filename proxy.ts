@@ -8,11 +8,11 @@ const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 60;
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Solo aplicar rate limiting a las rutas de API
   if (request.nextUrl.pathname.startsWith('/api/')) {
     // Intentar obtener la IP del usuario
-    let ip = request.ip ?? request.headers.get('x-real-ip') ?? request.headers.get('x-forwarded-for') ?? 'unknown-ip';
+    let ip = request.headers.get('x-real-ip') ?? request.headers.get('x-forwarded-for') ?? 'unknown-ip';
     
     // Si la IP viene como lista (x-forwarded-for puede ser una lista), tomar la primera
     if (ip.includes(',')) {
