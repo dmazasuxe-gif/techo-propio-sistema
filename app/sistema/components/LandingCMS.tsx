@@ -111,7 +111,10 @@ export function LandingCMS() {
             },
             about: {
               ...DEFAULT_LANDING_CONTENT.about,
-              ...data.content.about
+              ...data.content.about,
+              images: data.content.about?.images && data.content.about.images.length > 0 
+                ? data.content.about.images 
+                : (data.content.about?.image ? [data.content.about.image] : DEFAULT_LANDING_CONTENT.about.images)
             },
             chatbot: {
               systemPrompt: data.content.chatbot?.systemPrompt || DEFAULT_LANDING_CONTENT.chatbot!.systemPrompt,
@@ -719,14 +722,56 @@ export function LandingCMS() {
                     <EditableText value={config.about.content} onChange={(v) => updateNestedConfig(['about', 'content'], v)} fontFamily={config.fonts?.['about.content']} onFontChange={(v) => updateNestedConfig(['fonts', 'about.content'], v)} color={config.colors?.['about.content']} onColorChange={(v) => updateNestedConfig(['colors', 'about.content'], v)} multiline />
                   </p>
                 </div>
-                <div className="w-full md:w-1/2 rounded-[2rem] overflow-hidden shadow-lg h-[400px]">
-                  <EditableImage 
-                    src={config.about.image}
-                    onUpload={(url) => updateNestedConfig(['about', 'image'], url)}
-                    className="w-full h-full"
-                  >
-                    <img src={config.about.image} alt="Nosotros" className="w-full h-full object-cover" />
-                  </EditableImage>
+                <div className="w-full md:w-1/2 flex flex-col gap-4">
+                  <div className="rounded-[2rem] overflow-hidden shadow-lg h-[400px] relative bg-slate-100">
+                    <AnimatePresence initial={false}>
+                      {(config.about.images || []).length > 0 ? (
+                        <motion.img
+                          key={config.about.images![0]}
+                          src={config.about.images![0]}
+                          initial={{ opacity: 0, x: 100 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -100 }}
+                          transition={{ duration: 1.5, ease: "easeInOut" }}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          alt="Nosotros"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">Sin imágenes</div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  
+                  {/* Administrador de miniaturas para Sobre Nosotros */}
+                  <div className="bg-white p-4 rounded-xl border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                      Imágenes del Carrusel ({config.about.images?.length || 0})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {(config.about.images || []).map((img, imgIdx) => (
+                        <div key={imgIdx} className="w-12 h-12 rounded border border-slate-200 overflow-hidden relative group">
+                          <img src={img} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" 
+                                onClick={() => {
+                                  updateNestedConfig(['about', 'images'], (old: string[]) => old.filter((_, idx) => idx !== imgIdx));
+                                }}>
+                            <span className="text-white text-xs font-bold">X</span>
+                          </div>
+                        </div>
+                      ))}
+                      <EditableImage 
+                        src="" 
+                        onUpload={(url) => {
+                          updateNestedConfig(['about', 'images'], (old: string[] = []) => [...old, url]);
+                        }}
+                      >
+                        <div className="w-12 h-12 rounded border border-dashed border-slate-300 flex items-center justify-center text-slate-400 hover:bg-slate-50 cursor-pointer transition-colors text-xl font-bold">
+                          +
+                        </div>
+                      </EditableImage>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">Nota: La primera imagen mostrada arriba es solo una vista previa. El carrusel con animaciones se verá en la página pública.</p>
+                  </div>
                 </div>
               </div>
             </section>

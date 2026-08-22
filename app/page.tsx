@@ -482,7 +482,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="w-full md:w-1/2 rounded-[2rem] overflow-hidden shadow-lg h-64 md:h-[400px]">
-                <img src={config.about.image} alt="Nosotros" className="w-full h-full object-cover" />
+                <AboutCarousel images={config.about.images || (config.about.image ? [config.about.image] : [])} />
               </div>
             </div>
           </section>

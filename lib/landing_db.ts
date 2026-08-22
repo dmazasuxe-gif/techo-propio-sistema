@@ -57,6 +57,7 @@ export interface LandingContent {
     subtitle: string;
     content: string;
     image: string;
+    images?: string[];
   };
   fonts: Record<string, string>;
   colors: Record<string, string>;
@@ -154,7 +155,8 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     title: "Sobre Nosotros",
     subtitle: "Construyendo el futuro con bases sólidas",
     content: "Somos una empresa líder en el desarrollo de proyectos inmobiliarios bajo el programa Techo Propio, comprometidos con mejorar la calidad de vida de las familias peruanas mediante la construcción de viviendas dignas, seguras y modernas.",
-    image: "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop",
+    images: ["https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"]
   },
   chatbot: {
     systemPrompt: "Eres el asistente virtual oficial y vendedor estrella de la empresa de construcción. Tu objetivo es ser extremadamente amable, resolver dudas y animarlos a contactarnos para iniciar su proyecto. Responde SIEMPRE de manera breve, clara y conversacional.",
@@ -196,7 +198,13 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
     services: { ...DEFAULT_LANDING_CONTENT.services, ...(data.content.services || {}) },
     statusSearch: { ...DEFAULT_LANDING_CONTENT.statusSearch, ...(data.content.statusSearch || {}) },
     projects: { ...DEFAULT_LANDING_CONTENT.projects, ...(data.content.projects || {}) },
-    about: { ...DEFAULT_LANDING_CONTENT.about, ...(data.content.about || {}) },
+    about: { 
+      ...DEFAULT_LANDING_CONTENT.about, 
+      ...(data.content.about || {}),
+      images: data.content.about?.images && data.content.about.images.length > 0 
+        ? data.content.about.images 
+        : (data.content.about?.image ? [data.content.about.image] : DEFAULT_LANDING_CONTENT.about.images)
+    },
     footer: { ...DEFAULT_LANDING_CONTENT.footer, ...(data.content.footer || {}) },
     chatbot: {
       systemPrompt: data.content.chatbot?.systemPrompt || DEFAULT_LANDING_CONTENT.chatbot!.systemPrompt,
