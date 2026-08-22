@@ -50,7 +50,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`relative flex flex-col bg-slate-900 border-r border-slate-800 transition-all duration-300 z-30 select-none ${isCollapsed ? "w-20" : "w-64"
+      className={`relative flex flex-col h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 z-30 select-none ${isCollapsed ? "w-20" : "w-64"
         }`}
     >
       {/* Sidebar Header / Branding */}

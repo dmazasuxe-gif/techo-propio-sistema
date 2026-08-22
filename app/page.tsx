@@ -355,8 +355,8 @@ export default function LandingPage() {
                 <Building2 className="text-slate-900 w-8 h-8" />
               )}
             </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-extrabold text-xl md:text-2xl font-[family-name:var(--font-montserrat)] text-slate-900 tracking-tight whitespace-pre-line" style={{ fontFamily: config.fonts?.['nav.logoText'], color: config.colors?.['nav.logoText'] }}>{config.nav.logoText}</span>
+            <div className="flex flex-col leading-none overflow-hidden">
+              <span className="font-extrabold text-[15px] sm:text-xl md:text-2xl font-[family-name:var(--font-montserrat)] text-slate-900 tracking-tight whitespace-nowrap text-ellipsis" style={{ fontFamily: config.fonts?.['nav.logoText'], color: config.colors?.['nav.logoText'] }}>{config.nav.logoText}</span>
             </div>
           </div>
 
