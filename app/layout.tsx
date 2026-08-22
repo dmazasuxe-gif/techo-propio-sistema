@@ -27,13 +27,14 @@ export const metadata: Metadata = {
     icon: "/logo.png",
     apple: "/logo.png",
   },
+  metadataBase: new URL("https://techo-propio-sistema.vercel.app"),
   openGraph: {
     title: "Constructora Maza Quiroz - Techo Propio",
     description: "Construimos tu hogar con el programa Techo Propio. Conoce más sobre nuestros proyectos y beneficios.",
     siteName: "Constructora Maza Quiroz",
     images: [
       {
-        url: "/portada.png",
+        url: "https://techo-propio-sistema.vercel.app/portada.png",
         width: 1200,
         height: 630,
         alt: "Constructora Maza Quiroz Portada",
