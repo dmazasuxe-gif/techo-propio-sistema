@@ -33,10 +33,10 @@ export const metadata: Metadata = {
     siteName: "Constructora Maza Quiroz",
     images: [
       {
-        url: "/logo.png",
-        width: 800,
-        height: 600,
-        alt: "Constructora Maza Quiroz Logo",
+        url: "/portada.png",
+        width: 1200,
+        height: 630,
+        alt: "Constructora Maza Quiroz Portada",
       },
     ],
     locale: "es_PE",
