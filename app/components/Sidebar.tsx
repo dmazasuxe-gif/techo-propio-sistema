@@ -16,23 +16,20 @@ import {
   Hammer,
   LogOut,
   Activity
-} from "lucide-react";
+, Globe } from "lucide-react";
+import Link from "next/link";
 
 export type NavView = "resumen" | "ficha_registro" | "registros" | "expedientes" | "documentos" | "pagos" | "maestros" | "consulta_dni" | "contabilidad" | "analytics" | "landing_config";
 
 interface SidebarProps {
   activeView: NavView;
   onSelectView: (view: NavView) => void;
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
   onLogout?: () => void;
 }
 
 export default function Sidebar({
   activeView,
   onSelectView,
-  isCollapsed,
-  onToggleCollapse,
   onLogout
 }: SidebarProps) {
   const menuItems = [
@@ -50,8 +47,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`relative flex flex-col h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 z-30 select-none ${isCollapsed ? "w-20" : "w-64"
-        }`}
+      className={`relative flex flex-col h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 z-30 select-none w-64`}
     >
       {/* Sidebar Header / Branding */}
       <div className="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -62,26 +58,17 @@ export default function Sidebar({
             </div>
           </div>
 
-          {!isCollapsed && (
-            <div className="space-y-0.5 truncate">
-              <h2 className="text-base font-black text-white tracking-tight flex items-center gap-1">
-                Maza Quiroz
-              </h2>
-              <p className="text-[11px] text-slate-400 font-medium truncate">
-                Registro de beneficiarios
-              </p>
-            </div>
-          )}
+          <div className="space-y-0.5 truncate">
+            <h2 className="text-base font-black text-white tracking-tight flex items-center gap-1">
+              Maza Quiroz
+            </h2>
+            <p className="text-[11px] text-slate-400 font-medium truncate">
+              Registro de beneficiarios
+            </p>
+          </div>
         </div>
 
-        {/* Collapse / Expand Toggle Button */}
-        <button
-          onClick={onToggleCollapse}
-          className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors border border-slate-700/50"
-          title={isCollapsed ? "Desplegar menú" : "Contraer menú"}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
+        
       </div>
 
       {/* Navigation List */}
@@ -98,7 +85,7 @@ export default function Sidebar({
                   ? "bg-slate-950 text-white border border-sky-500/40 shadow-lg shadow-sky-500/10"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent"
                 }`}
-              title={isCollapsed ? item.label : undefined}
+              
             >
               {/* Left active line indicator */}
               {isActive && (
@@ -110,33 +97,34 @@ export default function Sidebar({
                 <Icon className="w-5 h-5" />
               </div>
 
-              {!isCollapsed && (
-                <div className="text-left truncate">
-                  <span className="block text-sm font-extrabold text-white leading-snug">
-                    {item.label}
-                  </span>
-                  <span className="block text-[11px] font-normal text-slate-400 truncate">
-                    {item.subtitle}
-                  </span>
-                </div>
-              )}
+              <div className="text-left truncate">
+                <span className="block text-sm font-extrabold text-white leading-snug">
+                  {item.label}
+                </span>
+                <span className="block text-[11px] font-normal text-slate-400 truncate">
+                  {item.subtitle}
+                </span>
+              </div>
             </button>
           );
         })}
       </nav>
 
       {/* Logout */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-slate-800 bg-slate-950/40">
-          <button 
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700/50 hover:border-rose-500/30 transition-all group"
-          >
-            <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="text-xs font-bold">Cerrar Sesión</span>
-          </button>
-        </div>
-      )}
+      <div className="p-4 border-t border-slate-800 bg-slate-950/40 space-y-2">
+        <Link href="/" className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-sky-500/10 text-slate-400 hover:text-sky-400 border border-slate-700/50 hover:border-sky-500/30 transition-all group">
+          <Globe className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-bold">Ir a la Landing Page</span>
+        </Link>
+        <button 
+          onClick={onLogout}
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700/50 hover:border-rose-500/30 transition-all group"
+        >
+          <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          <span className="text-xs font-bold">Cerrar Sesión</span>
+        </button>
+      </div>
     </aside>
   );
 }
+

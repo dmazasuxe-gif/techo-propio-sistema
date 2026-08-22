@@ -39,7 +39,6 @@ export default function Home() {
   
   // Navigation View State
   const [activeNavView, setActiveNavView] = useState<NavView>("resumen");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   // Dynamic engineering simulation states
@@ -238,8 +237,6 @@ export default function Home() {
         <Sidebar
           activeView={activeNavView}
           onSelectView={handleNavSelect}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onLogout={() => handleLoginStatus(false)}
         />
       </div>
@@ -261,8 +258,6 @@ export default function Home() {
         <Sidebar
           activeView={activeNavView}
           onSelectView={handleNavSelect}
-          isCollapsed={false}
-          onToggleCollapse={() => setMobileMenuOpen(false)}
           onLogout={() => { handleLoginStatus(false); setMobileMenuOpen(false); }}
         />
       </div>
