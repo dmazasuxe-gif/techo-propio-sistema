@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import * as OTPAuth from 'otpauth';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
@@ -47,13 +48,16 @@ export async function POST(request: Request) {
     }
 
     // Insertar el nuevo usuario en Supabase
-    // Nota: en producción, la contraseña debería ser hasheada usando bcrypt.
+    // Contraseña hasheada usando bcrypt.
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
     const { data, error } = await supabase
       .from('usuarios')
       .insert({
         username,
         email,
-        password
+        password: hashedPassword
       })
       .select()
       .single();

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
@@ -10,20 +11,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Faltan credenciales' }, { status: 400 });
     }
 
-    // Login maestro hardcodeado
-    if (username === "admin" && password === "admin123") {
-      return NextResponse.json({ success: true, user: { username: "admin", role: "admin" } });
-    }
-
-    // Buscar el usuario en Supabase
+    // Buscar el usuario en Supabase (solo por username)
     const { data: user, error } = await supabase
       .from('usuarios')
       .select('*')
       .eq('username', username)
-      .eq('password', password)
       .single();
 
     if (error || !user) {
+      return NextResponse.json({ success: false, message: 'Usuario o contraseña incorrectos' }, { status: 401 });
+    }
+
+    // Verificar la contraseña hasheada
+    const passwordMatch = bcrypt.compareSync(password, user.password);
+
+    if (!passwordMatch) {
       return NextResponse.json({ success: false, message: 'Usuario o contraseña incorrectos' }, { status: 401 });
     }
 
