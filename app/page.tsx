@@ -50,6 +50,38 @@ function ProjectCarousel({ images }: { images: string[] }) {
   );
 }
 
+function AboutCarousel({ images }: { images: string[] }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [images]);
+
+  if (!images || images.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="relative w-full h-full overflow-hidden bg-slate-100">
+      <AnimatePresence initial={false}>
+        <motion.img
+          key={index}
+          src={images[index]}
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -100 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+          className="absolute inset-0 w-full h-full object-cover"
+          alt="Nosotros"
+        />
+      </AnimatePresence>
+    </div>
+  );
+}
 export default function LandingPage() {
   const router = useRouter();
   
