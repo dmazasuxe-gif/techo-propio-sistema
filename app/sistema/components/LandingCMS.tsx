@@ -185,11 +185,11 @@ export function LandingCMS() {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-80px)] bg-[#2a3a55] border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+    <div className="relative w-full h-[calc(100vh-80px)] md:h-[calc(100vh-80px)] bg-[#2a3a55] md:border border-slate-800 md:rounded-xl overflow-hidden flex flex-col">
       
       {/* Editor Toolbar */}
-      <div className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-b border-sky-500/30 p-4 flex justify-between items-center z-[100] shadow-xl shadow-black/50 relative">
-        <div className="flex items-center gap-4">
+      <div className="flex-shrink-0 bg-slate-950/80 backdrop-blur-xl border-b border-sky-500/30 p-4 flex flex-col md:flex-row gap-4 justify-between items-center z-30 shadow-xl shadow-black/50 relative overflow-x-auto">
+        <div className="flex items-center justify-center md:justify-start gap-4 w-full md:w-auto">
           <div className="bg-sky-500/20 text-sky-400 p-2 rounded-lg">
             <Building2 className="w-5 h-5" />
           </div>
@@ -202,7 +202,7 @@ export function LandingCMS() {
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto">
           {/* Status Search Toggle */}
           <label className="flex items-center gap-2 cursor-pointer bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-sky-500 transition-colors">
             <input 
