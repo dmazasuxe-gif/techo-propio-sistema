@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { 
   Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award, 
@@ -12,6 +13,7 @@ import type { LandingContent, LandingConfig } from '@/lib/landing_db';
 import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
 import { getExpedienteStatusBadge } from '@/lib/status-helper';
 import LandingChatbot from '@/app/components/LandingChatbot';
+import ModelosViviendaSection from '@/app/components/3d/ModelosViviendaSection';
 
 const iconMap: Record<string, LucideIcon> = {
   Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award,
@@ -89,6 +91,7 @@ export default function LandingPage() {
   const [config, setConfig] = useState<LandingContent>(DEFAULT_LANDING_CONTENT);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   // Status Search State
   const [searchDni, setSearchDni] = useState("");
@@ -151,7 +154,8 @@ export default function LandingPage() {
           });
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setIsLoadingConfig(false));
   }, []);
 
   useEffect(() => {
@@ -187,13 +191,9 @@ export default function LandingPage() {
     visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
   };
 
-  const formattedPhone = config.hero.phone.replace(/\D/g,'');
-  const wppText = config.hero.whatsappMessage || "Hola, quisiera cotizar un proyecto";
-  const wppLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(wppText)}`;
-
-  const images = config.hero.images.length ? config.hero.images : [
-    "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
-  ];
+  const wppText = config?.hero?.whatsappMessage || "Hola, quisiera cotizar un proyecto";
+  const formattedPhone = (config?.hero?.phone || '').replace(/\D/g,'');
+  const wppLink = `https://wa.me/51${formattedPhone}?text=${encodeURIComponent(wppText)}`;
 
   // Announcement Carousel
   const [announcementImageIndex, setAnnouncementImageIndex] = useState(0);
@@ -205,6 +205,15 @@ export default function LandingPage() {
     }, 4000);
     return () => clearInterval(interval);
   }, [config.announcement?.images, showAnnouncement]);
+
+  if (isLoadingConfig) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#2563eb] mb-6 shadow-sm"></div>
+        <h2 className="text-xl font-bold text-slate-800 animate-pulse font-[family-name:var(--font-montserrat)]">Cargando Techo Propio...</h2>
+      </div>
+    );
+  }
 
   const handleStatusSearch = async () => {
     trackInteraction('consulta_dni');
@@ -361,7 +370,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-10 text-[15px] font-semibold text-slate-600 font-[family-name:var(--font-work-sans)]">
-            {config.nav.links.map((link, i) => (
+            {(config?.nav?.links || []).map((link, i) => (
               <a key={i} href={link.href} className="hover:text-slate-900 transition-colors">{link.label}</a>
             ))}
           </div>
@@ -389,16 +398,24 @@ export default function LandingPage() {
             
             <div className="absolute inset-0 z-0">
               <AnimatePresence>
-                <motion.img 
+                <motion.div
                   key={currentImageIndex}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
-                  src={config.hero.images[currentImageIndex] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"}
-                  alt="Hero Image" 
-                  className="w-full h-full object-cover absolute inset-0"
-                />
+                  className="absolute inset-0 w-full h-full"
+                >
+                  <Image 
+                    src={config?.hero?.images?.[currentImageIndex] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop"}
+                    alt="Hero Image" 
+                    fill
+                    priority
+                    unoptimized
+                    sizes="100vw"
+                    className="object-cover"
+                  />
+                </motion.div>
               </AnimatePresence>
               <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
             </div>
@@ -416,7 +433,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-extrabold font-[family-name:var(--font-montserrat)] text-slate-900 mb-8" style={{ fontFamily: config.fonts?.['services.title'], color: config.colors?.['services.title'] }}>{config.services.title}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
-                {config.services.items.map((service, i) => {
+                {(config?.services?.items || []).map((service, i) => {
                   const Icon = iconMap[service.iconType] || Hammer;
                   const hasImages = service.images && service.images.length > 0;
                   const statNum = service.statNum || "0";
@@ -486,12 +503,14 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* MODELOS 3D */}
+        <ModelosViviendaSection />
         
         {/* ULTIMOS PROYECTOS */}
         <section className="w-full mb-16" id="proyectos">
           <h2 className="text-3xl font-extrabold font-[family-name:var(--font-montserrat)] text-slate-900 mb-8" style={{ fontFamily: config.fonts?.['projects.title'], color: config.colors?.['projects.title'] }}>{config.projects.title}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {config.projects.items.map((item, idx) => (
+            {(config?.projects?.items || []).map((item, idx) => (
               <div key={idx} className="flex flex-col gap-4 group cursor-pointer">
                 <div className="w-full h-[280px] rounded-[2rem] overflow-hidden shadow-sm relative">
                   <ProjectCarousel images={item.images} />
@@ -501,6 +520,7 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
 
         {/* NOSOTROS */}
         {config.about?.enabled && (
@@ -529,7 +549,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-2 items-center md:items-start w-full md:w-auto">
             <h2 className="font-extrabold text-xl font-[family-name:var(--font-montserrat)]" style={{ fontFamily: config.fonts?.['footer.companyName'], color: config.colors?.['footer.companyName'] }}>{config.footer.companyName}</h2>
             <div className="flex flex-wrap justify-center gap-4 mt-2">
-              {config.footer.links
+              {(config?.footer?.links || [])
                 .filter(link => !['soporte', 'faqs', 'contáctanos', 'contactanos'].includes(link.label.toLowerCase()))
                 .map((link, i) => {
                   const isTrabaja = link.label.toLowerCase().includes('trabaja');
@@ -547,7 +567,7 @@ export default function LandingPage() {
             </div>
             
             <div className="flex gap-3">
-              {config.footer.socialLinks.map((social, i) => (
+              {(config?.footer?.socialLinks || []).map((social, i) => (
                 <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" 
                   onClick={() => trackInteraction(social.platform)}
                   className="w-8 h-8 rounded-full border border-slate-700 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-colors text-xs font-bold text-slate-300">

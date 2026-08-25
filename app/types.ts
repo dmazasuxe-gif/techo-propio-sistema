@@ -180,3 +180,27 @@ export interface DocumentoContable {
   estado?: string;
   createdAt?: string;
 }
+
+export interface ModeloVivienda {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  dimensiones?: string;
+  areaM2?: number;
+  tipoTecho?: string;
+  modelo3dUrl?: string;
+  imagenUrl?: string;
+  activo?: boolean;
+  orden?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'model-viewer': any;
+    }
+  }
+}
+

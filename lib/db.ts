@@ -1,5 +1,5 @@
-import { supabase } from './supabase';
-import { Beneficiario, MaestroObra, DocumentoAdjunto, Financiera, DocumentoContable } from '../app/types';
+import { supabaseAdmin as supabase } from './supabase-admin';
+import { Beneficiario, MaestroObra, DocumentoAdjunto, Financiera, DocumentoContable, ModeloVivienda } from '../app/types';
 
 
 
@@ -45,6 +45,7 @@ export interface DatabaseSchema {
   budget?: { productos: any[] };
   planosIngenieria?: any[];
   documentosContables?: DocumentoContable[];
+  modelosVivienda?: ModeloVivienda[];
 }
 
 
@@ -387,3 +388,85 @@ export const deleteDocumentoContable = async (id: string): Promise<boolean> => {
   }
   return true;
 };
+
+export async function getModelosVivienda(activosOnly: boolean = false): Promise<ModeloVivienda[]> {
+  let query = supabase.from('modelos_vivienda').select('*').order('orden', { ascending: true });
+  if (activosOnly) {
+    query = query.eq('activo', true);
+  }
+  const { data, error } = await query;
+  if (error) {
+    console.error("Error fetching modelos de vivienda:", error);
+    return [];
+  }
+  return data.map(d => {
+    const obj = convertKeysToCamelCase(d);
+    // Fix camelCase for 3d_url
+    if (obj.modelo_3dUrl !== undefined) {
+      obj.modelo3dUrl = obj.modelo_3dUrl;
+      delete obj.modelo_3dUrl;
+    }
+    return obj;
+  });
+}
+
+export async function addModeloVivienda(modelo: Partial<ModeloVivienda>): Promise<ModeloVivienda | null> {
+  if (!modelo.id) {
+    try {
+      modelo.id = crypto.randomUUID();
+    } catch (e) {
+      // Fallback
+    }
+  }
+  const payload = convertKeysToSnakeCase(modelo);
+  if (payload.modelo3d_url !== undefined) {
+    payload.modelo_3d_url = payload.modelo3d_url;
+    delete payload.modelo3d_url;
+  }
+  
+  const { data, error } = await supabase.from('modelos_vivienda').insert(payload).select().single();
+  if (error) {
+    console.error("Error adding modelo de vivienda:", error);
+    throw error;
+  }
+  const obj = convertKeysToCamelCase(data);
+  if (obj.modelo_3dUrl !== undefined) {
+    obj.modelo3dUrl = obj.modelo_3dUrl;
+    delete obj.modelo_3dUrl;
+  }
+  return obj;
+}
+
+export async function updateModeloVivienda(id: string, modelo: Partial<ModeloVivienda>): Promise<ModeloVivienda | null> {
+  const payload = convertKeysToSnakeCase(modelo);
+  if (payload.modelo3d_url !== undefined) {
+    payload.modelo_3d_url = payload.modelo3d_url;
+    delete payload.modelo3d_url;
+  }
+  
+  const { data, error } = await supabase
+    .from('modelos_vivienda')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) {
+    console.error("Error updating modelo de vivienda:", error);
+    throw error;
+  }
+  const obj = convertKeysToCamelCase(data);
+  if (obj.modelo_3dUrl !== undefined) {
+    obj.modelo3dUrl = obj.modelo_3dUrl;
+    delete obj.modelo_3dUrl;
+  }
+  return obj;
+}
+
+export async function deleteModeloVivienda(id: string): Promise<boolean> {
+  const { error } = await supabase.from('modelos_vivienda').delete().eq('id', id);
+  if (error) {
+    console.error("Error deleting modelo de vivienda:", error);
+    return false;
+  }
+  return true;
+}

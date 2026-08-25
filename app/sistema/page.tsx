@@ -28,6 +28,7 @@ import ConsultaDniView from "../components/ConsultaDniView";
 import LoginScreen from "../components/LoginScreen";
 import { LandingCMS } from "./components/LandingCMS";
 import DocumentosContables from "../components/DocumentosContables";
+import ModelosViviendaAdmin from "../components/admin/ModelosViviendaAdmin";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -510,6 +511,11 @@ export default function Home() {
           {/* Module 9: Configuración Landing */}
           {activeNavView === "landing_config" && (
             <LandingCMS />
+          )}
+
+          {/* Module 10: Modelos 3D Vivienda */}
+          {activeNavView === "modelos_3d" && (
+            <ModelosViviendaAdmin />
           )}
 
         </main>
