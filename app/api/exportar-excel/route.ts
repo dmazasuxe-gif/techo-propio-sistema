@@ -56,10 +56,10 @@ export async function GET(request: Request) {
     const csvTextBeneficiarios = csvLines.join('\n');
     
     // Convert carga_familiar to pipe-delimited CSV
-    const csvCarga = [];
+    const csvCarga: string[] = [];
     beneficiarios.forEach(b => {
       if (b.carga_familiar) {
-        let cargaArr = [];
+        let cargaArr: any[] = [];
         if (typeof b.carga_familiar === 'string') {
           try {
             cargaArr = JSON.parse(b.carga_familiar);
