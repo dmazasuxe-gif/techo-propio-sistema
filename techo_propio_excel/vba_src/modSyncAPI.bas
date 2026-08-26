@@ -56,8 +56,7 @@ Public Sub SincronizarConAPI()
     Dim colDep As Integer, colPro As Integer, colDis As Integer, colCen As Integer, colBar As Integer
     Dim colDir As Integer, colSync As Integer
     
-    ' Nuevas columnas
-    Dim colSex As Integer, colUbi As Integer, colCal As Integer, colMan As Integer
+    Dim colCal As Integer, colMan As Integer
     Dim colLot As Integer, colCooX As Integer, colCooY As Integer
     Dim colAreT As Integer, colPorF As Integer, colPorD As Integer, colPorI As Integer, colPorFnd As Integer
     
@@ -79,8 +78,6 @@ Public Sub SincronizarConAPI()
     colSync = tbl.ListColumns("Estado_Sincronizacion").Index
     
     ' Nuevas columnas
-    colSex = tbl.ListColumns("Sexo").Index
-    colUbi = tbl.ListColumns("Ubicacion").Index
     colCal = tbl.ListColumns("Calle / Jr. / Av.").Index
     If colCal = 0 Then colCal = tbl.ListColumns("Calle").Index
     colMan = tbl.ListColumns("Manzana").Index
@@ -125,8 +122,6 @@ Public Sub SincronizarConAPI()
             jsonString = jsonString & """Direccion"":""" & EscapeJSON(GetColValue(tbl, i, colDir)) & ""","
             
             ' Nuevos
-            jsonString = jsonString & """Sexo"":""" & EscapeJSON(GetColValue(tbl, i, colSex)) & ""","
-            jsonString = jsonString & """Ubicacion"":""" & EscapeJSON(GetColValue(tbl, i, colUbi)) & ""","
             jsonString = jsonString & """Calle"":""" & EscapeJSON(GetColValue(tbl, i, colCal)) & ""","
             jsonString = jsonString & """Manzana"":""" & EscapeJSON(GetColValue(tbl, i, colMan)) & ""","
             jsonString = jsonString & """Lote"":""" & EscapeJSON(GetColValue(tbl, i, colLot)) & ""","
