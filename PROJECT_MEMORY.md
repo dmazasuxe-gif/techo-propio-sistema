@@ -1,6 +1,14 @@
 # Estado del Proyecto y Memoria (Actualizado: Agosto 2026)
 
-## Resumen de la Última Sesión (Agosto 2026 - Seguridad y Documentación)
+## Resumen de la Última Sesión (Agosto 2026 - Extensión Escritorio en Excel)
+Iniciamos la **Primera Etapa** de la creación de una extensión de escritorio para el sistema utilizando Microsoft Excel con Macros (.xlsm). El objetivo es registrar, editar y administrar beneficiarios, predios, ubicaciones y cargas familiares offline. La arquitectura de tablas en Excel es idéntica a Supabase (`BD_BENEFICIARIOS`, `BD_CARGA_FAMILIAR`, etc.) para una futura integración.
+
+**Lo que construimos:**
+1. **Archivo Base (`Techo_Propio_Base.xlsx`)**: Creado vía un script de Node.js (`scripts/build_excel.mjs`) que incluye el dashboard (INICIO) y las bases de datos maestras con sus respectivos `ListObjects`.
+2. **Módulos VBA**: El código fue generado modularmente y guardado en `techo_propio_excel/vba_src/` (`modInicio.bas`, `modBeneficiarios.bas`, `modUbicaciones.bas`, `modExportacion.bas`, `modBaseDatos.bas` y el código del formulario `frmBeneficiario_Code.bas`).
+3. **Acuerdo de Fase 1**: Todo el Excel está diseñado de manera robusta pero offline. **Aún NO hay conexión API con el sistema web ni base de datos remota**; esto queda estrictamente para la Etapa 2, una vez validada la herramienta de Excel.
+
+## Sesión Anterior (Agosto 2026 - Seguridad y Documentación)
 Durante la última sesión nos enfocamos en endurecer la seguridad de la aplicación y documentar la arquitectura de datos:
 1. **Rate Limiting:** Implementado a través de `proxy.ts` (previamente `middleware.ts`, adaptado para Next.js 16.2.6) para interceptar rutas `/api/*`. Limita a 60 peticiones por IP por minuto en memoria para evitar ataques y abusos.
 2. **Seguridad de Llaves (Secretos):** Eliminación de tokens estáticos/harcodeados (ej. `DNI_API_TOKEN`) del código fuente. Se migraron a `.env.local` con validaciones de existencia en las rutas para evitar exposición.

@@ -12,6 +12,7 @@ import {
   ChevronDown, 
   FilterX, 
   UserCheck,
+  Download,
   FileSpreadsheet,
   Edit2,
   Trash2,
@@ -160,6 +161,43 @@ export default function ExpedientesView({
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              // Convert to CSV and download
+              const csvRows = [];
+              const headers = ["DNI", "Nombres", "Apellidos", "Estado", "Departamento", "Provincia", "Distrito", "Celular"];
+              csvRows.push(headers.join(","));
+              
+              beneficiarios.forEach(b => {
+                const row = [
+                  b.dniPostulante || "",
+                  b.nombres || "",
+                  `${b.apellidoPaterno || ""} ${b.apellidoMaterno || ""}`,
+                  b.estado || "",
+                  b.departamento || "",
+                  b.provincia || "",
+                  b.distrito || "",
+                  b.celular || ""
+                ];
+                csvRows.push(row.map(v => `"${v}"`).join(","));
+              });
+              
+              const csvString = csvRows.join("\n");
+              const blob = new Blob([csvString], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.setAttribute('hidden', '');
+              a.setAttribute('href', url);
+              a.setAttribute('download', `backup_beneficiarios_${new Date().toISOString().split('T')[0]}.csv`);
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }}
+            className="flex items-center gap-2 border border-emerald-700 hover:border-emerald-500 bg-emerald-900/80 hover:bg-emerald-800 active:scale-95 text-emerald-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow"
+          >
+            <Download className="w-4 h-4 text-emerald-400" /> Exportar Backup
+          </button>
+          
           <button
             onClick={onRefresh}
             className="flex items-center gap-2 border border-slate-700 hover:border-slate-500 bg-slate-800/80 hover:bg-slate-800 active:scale-95 text-slate-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow"
