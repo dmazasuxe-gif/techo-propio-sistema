@@ -36,7 +36,6 @@ export async function POST(request: Request) {
       sexo: b.Sexo,
       estado_civil: b.Estado_Civil,
       celular: b.Celular,
-      correo: b.Correo,
       departamento: b.Departamento,
       provincia: b.Provincia,
       distrito: b.Distrito,
