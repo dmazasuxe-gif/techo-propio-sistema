@@ -51,9 +51,41 @@ export async function GET(request: Request) {
       ].map(val => String(val).replace(/\|/g, '').replace(/\n/g, ' ')).join('|');
     });
 
-    const csvText = csvLines.join('\n');
+    const csvTextBeneficiarios = csvLines.join('\n');
+    
+    // Convert carga_familiar to pipe-delimited CSV
+    const csvCarga = [];
+    beneficiarios.forEach(b => {
+      if (b.carga_familiar) {
+        let cargaArr = [];
+        if (typeof b.carga_familiar === 'string') {
+          try {
+            cargaArr = JSON.parse(b.carga_familiar);
+          } catch(e) {}
+        } else if (Array.isArray(b.carga_familiar)) {
+          cargaArr = b.carga_familiar;
+        }
+        
+        cargaArr.forEach((fam: any) => {
+          const row = [
+            b.id || '',
+            fam.Parentesco || fam.parentesco || '',
+            fam.DNI || fam.dni || '',
+            fam.Nombres || fam.nombres || '',
+            fam.Apellidos || fam.apellidos || '',
+            fam.Fecha_Nacimiento || fam.fecha_nacimiento || ''
+          ].map(val => String(val).replace(/\|/g, '').replace(/\n/g, ' ')).join('|');
+          csvCarga.push(row);
+        });
+      }
+    });
+    
+    const csvTextCarga = csvCarga.join('\n');
+    
+    // Combine both with a separator
+    const finalOutput = csvTextBeneficiarios + '\n===CARGA_FAMILIAR===\n' + csvTextCarga;
 
-    return new NextResponse(csvText, {
+    return new NextResponse(finalOutput, {
       status: 200,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8'

@@ -356,9 +356,23 @@ Public Sub DescargarDesdeWeb()
         Exit Sub
     End If
     
-    ' Parsear CSV (separado por pipe |)
+    ' Separar Beneficiarios de Carga Familiar
+    Dim parts() As String
+    parts = Split(respText, vbLf & "===CARGA_FAMILIAR===" & vbLf)
+    
+    Dim textBeneficiarios As String
+    Dim textCarga As String
+    textBeneficiarios = parts(0)
+    If UBound(parts) > 0 Then textCarga = parts(1)
+    
+    Dim dictNewIDs As Object
+    Set dictNewIDs = CreateObject("Scripting.Dictionary")
+    
+    ' ----------------------------------------------------
+    ' 1. PROCESAR BENEFICIARIOS
+    ' ----------------------------------------------------
     Dim lines() As String
-    lines = Split(respText, vbLf)
+    lines = Split(textBeneficiarios, vbLf)
     
     Dim countAdded As Long
     countAdded = 0
@@ -372,7 +386,9 @@ Public Sub DescargarDesdeWeb()
             fields = Split(line, "|")
             
             If UBound(fields) >= 24 Then
+                Dim apiID As String
                 Dim apiDNI As String
+                apiID = Trim(fields(0))
                 apiDNI = Trim(fields(1))
                 
                 If apiDNI <> "" And Not dictDNI.exists(apiDNI) Then
@@ -381,8 +397,8 @@ Public Sub DescargarDesdeWeb()
                     Set newRow = tbl.ListRows.Add
                     
                     ' Función auxiliar para escribir seguro
-                    SetCol newRow, tbl, "ID_Beneficiario", fields(0)
-                    SetCol newRow, tbl, "DNI", fields(1)
+                    SetCol newRow, tbl, "ID_Beneficiario", apiID
+                    SetCol newRow, tbl, "DNI", apiDNI
                     SetCol newRow, tbl, "Nombres", fields(2)
                     SetCol newRow, tbl, "Apellido_Paterno", fields(3)
                     SetCol newRow, tbl, "Apellido_Materno", fields(4)
@@ -446,10 +462,38 @@ Public Sub DescargarDesdeWeb()
                     On Error GoTo 0
                     If colAreT > 0 Then newRow.Range(1, colAreT).Value = fields(19)
                     
-                    SetCol newRow, tbl, "Por el Frente", fields(20)
-                    SetCol newRow, tbl, "Por la Derecha", fields(21)
-                    SetCol newRow, tbl, "Por la Izquierda", fields(22)
-                    SetCol newRow, tbl, "Por el Fondo", fields(23)
+                    ' Fallbacks Linderos
+                    Dim colPorF As Integer
+                    On Error Resume Next
+                    colPorF = tbl.ListColumns("Por el Frente").Index
+                    If colPorF = 0 Then colPorF = tbl.ListColumns("Por_Frente").Index
+                    If colPorF = 0 Then colPorF = tbl.ListColumns("Por el Frente ").Index
+                    On Error GoTo 0
+                    If colPorF > 0 Then newRow.Range(1, colPorF).Value = fields(20)
+                    
+                    Dim colPorD As Integer
+                    On Error Resume Next
+                    colPorD = tbl.ListColumns("Por la Derecha").Index
+                    If colPorD = 0 Then colPorD = tbl.ListColumns("Por_Derecha").Index
+                    If colPorD = 0 Then colPorD = tbl.ListColumns("Por la Derecha ").Index
+                    On Error GoTo 0
+                    If colPorD > 0 Then newRow.Range(1, colPorD).Value = fields(21)
+                    
+                    Dim colPorI As Integer
+                    On Error Resume Next
+                    colPorI = tbl.ListColumns("Por la Izquierda").Index
+                    If colPorI = 0 Then colPorI = tbl.ListColumns("Por_Izquierda").Index
+                    If colPorI = 0 Then colPorI = tbl.ListColumns("Por la Izquierda ").Index
+                    On Error GoTo 0
+                    If colPorI > 0 Then newRow.Range(1, colPorI).Value = fields(22)
+                    
+                    Dim colPorFnd As Integer
+                    On Error Resume Next
+                    colPorFnd = tbl.ListColumns("Por el Fondo").Index
+                    If colPorFnd = 0 Then colPorFnd = tbl.ListColumns("Por_Fondo").Index
+                    If colPorFnd = 0 Then colPorFnd = tbl.ListColumns("Por el Fondo ").Index
+                    On Error GoTo 0
+                    If colPorFnd > 0 Then newRow.Range(1, colPorFnd).Value = fields(23)
                     
                     ' Expediente fallback
                     Dim colExp As Integer
@@ -462,14 +506,66 @@ Public Sub DescargarDesdeWeb()
                     SetCol newRow, tbl, "Estado_Sincronizacion", "DESCARGADO"
                     
                     dictDNI.Add apiDNI, True
+                    If apiID <> "" And Not dictNewIDs.exists(apiID) Then
+                        dictNewIDs.Add apiID, True
+                    End If
                     countAdded = countAdded + 1
                 End If
             End If
         End If
     Next i
     
+    ' ----------------------------------------------------
+    ' 2. PROCESAR CARGA FAMILIAR
+    ' ----------------------------------------------------
+    Dim countFam As Long
+    countFam = 0
+    If textCarga <> "" And dictNewIDs.Count > 0 Then
+        Dim wsFam As Worksheet
+        Dim tblFam As ListObject
+        
+        On Error Resume Next
+        Set wsFam = ThisWorkbook.Sheets("BD_CARGA_FAMILIAR")
+        Set tblFam = wsFam.ListObjects("TblCargaFamiliar")
+        On Error GoTo 0
+        
+        If Not tblFam Is Nothing Then
+            Dim linesFam() As String
+            linesFam = Split(textCarga, vbLf)
+            
+            For i = LBound(linesFam) To UBound(linesFam)
+                Dim lineF As String
+                lineF = Trim(Replace(linesFam(i), vbCr, ""))
+                If lineF <> "" Then
+                    Dim fFam() As String
+                    fFam = Split(lineF, "|")
+                    
+                    If UBound(fFam) >= 5 Then
+                        Dim famID As String
+                        famID = Trim(fFam(0))
+                        
+                        ' Solo insertamos si el ID fue descargado como NUEVO
+                        If dictNewIDs.exists(famID) Then
+                            Dim newRowFam As ListRow
+                            Set newRowFam = tblFam.ListRows.Add
+                            
+                            SetCol newRowFam, tblFam, "ID_Beneficiario", famID
+                            SetCol newRowFam, tblFam, "Parentesco", fFam(1)
+                            SetCol newRowFam, tblFam, "DNI", fFam(2)
+                            SetCol newRowFam, tblFam, "Nombres", fFam(3)
+                            SetCol newRowFam, tblFam, "Apellidos", fFam(4)
+                            SetCol newRowFam, tblFam, "Fecha_Nacimiento", fFam(5)
+                            
+                            countFam = countFam + 1
+                        End If
+                    End If
+                End If
+            Next i
+        End If
+    End If
+    
     Set http = Nothing
-    MsgBox "Descarga completada." & vbCrLf & countAdded & " beneficiarios nuevos agregados al Excel.", vbInformation, "Descarga Exitosa"
+    MsgBox "Descarga completada." & vbCrLf & countAdded & " beneficiarios nuevos agregados al Excel." & vbCrLf & countFam & " familiares agregados.", vbInformation, "Descarga Exitosa"
     Exit Sub
     
 ErrHTTP:
