@@ -36,8 +36,20 @@ export async function POST(request: Request) {
       centro_poblado: b.Centro_Poblado,
       barrio_sector: b.Barrio_Sector,
       direccion: b.Direccion,
+      sexo: b.Sexo,
+      ubicacion: b.Ubicacion,
+      calle: b.Calle,
+      manzana: b.Manzana,
+      lote: b.Lote,
+      coordenada_x: b.Coordenada_X,
+      coordenada_y: b.Coordenada_Y,
+      area_total: b.Area_Total,
+      por_frente: b.Por_Frente,
+      por_derecha: b.Por_Derecha,
+      por_izquierda: b.Por_Izquierda,
+      por_fondo: b.Por_Fondo,
+      carga_familiar: b.Carga_Familiar ? JSON.parse(b.Carga_Familiar) : [],
       estado: 'Activo', // Valor por defecto
-      // Si quieres mapear la carga familiar tendrías que enviarla en el JSON también
     }));
 
     // 4. Hacer Upsert a Supabase

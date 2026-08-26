@@ -27,7 +27,7 @@ Public Sub SincronizarConAPI()
     Set tbl = wsBD.ListObjects("TblBeneficiarios")
     If tbl Is Nothing Then
         If wsBD.ListObjects.Count > 0 Then
-            Set tbl = wsBD.ListObjects(1) ' Intentar usar la primera tabla disponible si le cambiaron el nombre
+            Set tbl = wsBD.ListObjects(1)
         End If
     End If
     On Error GoTo ErrGeneral
@@ -56,6 +56,11 @@ Public Sub SincronizarConAPI()
     Dim colDep As Integer, colPro As Integer, colDis As Integer, colCen As Integer, colBar As Integer
     Dim colDir As Integer, colSync As Integer
     
+    ' Nuevas columnas
+    Dim colSex As Integer, colUbi As Integer, colCal As Integer, colMan As Integer
+    Dim colLot As Integer, colCooX As Integer, colCooY As Integer
+    Dim colAreT As Integer, colPorF As Integer, colPorD As Integer, colPorI As Integer, colPorFnd As Integer
+    
     On Error Resume Next
     colID = tbl.ListColumns("ID_Beneficiario").Index
     colDNI = tbl.ListColumns("DNI").Index
@@ -72,6 +77,21 @@ Public Sub SincronizarConAPI()
     colBar = tbl.ListColumns("Barrio_Sector").Index
     colDir = tbl.ListColumns("Direccion").Index
     colSync = tbl.ListColumns("Estado_Sincronizacion").Index
+    
+    ' Nuevas columnas
+    colSex = tbl.ListColumns("Sexo").Index
+    colUbi = tbl.ListColumns("Ubicacion").Index
+    colCal = tbl.ListColumns("Calle / Jr. / Av.").Index
+    If colCal = 0 Then colCal = tbl.ListColumns("Calle").Index
+    colMan = tbl.ListColumns("Manzana").Index
+    colLot = tbl.ListColumns("Lote").Index
+    colCooX = tbl.ListColumns("Coordenada X").Index
+    colCooY = tbl.ListColumns("Coordenada Y").Index
+    colAreT = tbl.ListColumns("Area Total").Index
+    colPorF = tbl.ListColumns("Por el Frente").Index
+    colPorD = tbl.ListColumns("Por la Derecha").Index
+    colPorI = tbl.ListColumns("Por la Izquierda").Index
+    colPorFnd = tbl.ListColumns("Por el Fondo").Index
     On Error GoTo ErrGeneral
     
     If colSync = 0 Then
@@ -82,12 +102,14 @@ Public Sub SincronizarConAPI()
     For i = 1 To tbl.ListRows.Count
         Dim estadoSync As String
         estadoSync = GetColValue(tbl, i, colSync)
+        Dim currentID As String
+        currentID = GetColValue(tbl, i, colID)
         
         If estadoSync = "PENDIENTE" Then
             If countRows > 0 Then jsonString = jsonString & ","
             
             jsonString = jsonString & "{"
-            jsonString = jsonString & """ID_Beneficiario"":""" & EscapeJSON(GetColValue(tbl, i, colID)) & ""","
+            jsonString = jsonString & """ID_Beneficiario"":""" & EscapeJSON(currentID) & ""","
             jsonString = jsonString & """DNI"":""" & EscapeJSON(GetColValue(tbl, i, colDNI)) & ""","
             jsonString = jsonString & """Nombres"":""" & EscapeJSON(GetColValue(tbl, i, colNom)) & ""","
             jsonString = jsonString & """Apellido_Paterno"":""" & EscapeJSON(GetColValue(tbl, i, colApP)) & ""","
@@ -100,7 +122,25 @@ Public Sub SincronizarConAPI()
             jsonString = jsonString & """Distrito"":""" & EscapeJSON(GetColValue(tbl, i, colDis)) & ""","
             jsonString = jsonString & """Centro_Poblado"":""" & EscapeJSON(GetColValue(tbl, i, colCen)) & ""","
             jsonString = jsonString & """Barrio_Sector"":""" & EscapeJSON(GetColValue(tbl, i, colBar)) & ""","
-            jsonString = jsonString & """Direccion"":""" & EscapeJSON(GetColValue(tbl, i, colDir)) & """"
+            jsonString = jsonString & """Direccion"":""" & EscapeJSON(GetColValue(tbl, i, colDir)) & ""","
+            
+            ' Nuevos
+            jsonString = jsonString & """Sexo"":""" & EscapeJSON(GetColValue(tbl, i, colSex)) & ""","
+            jsonString = jsonString & """Ubicacion"":""" & EscapeJSON(GetColValue(tbl, i, colUbi)) & ""","
+            jsonString = jsonString & """Calle"":""" & EscapeJSON(GetColValue(tbl, i, colCal)) & ""","
+            jsonString = jsonString & """Manzana"":""" & EscapeJSON(GetColValue(tbl, i, colMan)) & ""","
+            jsonString = jsonString & """Lote"":""" & EscapeJSON(GetColValue(tbl, i, colLot)) & ""","
+            jsonString = jsonString & """Coordenada_X"":""" & EscapeJSON(GetColValue(tbl, i, colCooX)) & ""","
+            jsonString = jsonString & """Coordenada_Y"":""" & EscapeJSON(GetColValue(tbl, i, colCooY)) & ""","
+            jsonString = jsonString & """Area_Total"":""" & EscapeJSON(GetColValue(tbl, i, colAreT)) & ""","
+            jsonString = jsonString & """Por_Frente"":""" & EscapeJSON(GetColValue(tbl, i, colPorF)) & ""","
+            jsonString = jsonString & """Por_Derecha"":""" & EscapeJSON(GetColValue(tbl, i, colPorD)) & ""","
+            jsonString = jsonString & """Por_Izquierda"":""" & EscapeJSON(GetColValue(tbl, i, colPorI)) & ""","
+            jsonString = jsonString & """Por_Fondo"":""" & EscapeJSON(GetColValue(tbl, i, colPorFnd)) & ""","
+            
+            ' Carga Familiar JSON
+            jsonString = jsonString & """Carga_Familiar"":""" & EscapeJSON(GetCargaFamiliarJSON(currentID)) & """"
+            
             jsonString = jsonString & "}"
             
             countRows = countRows + 1
@@ -159,6 +199,64 @@ ErrHTTP:
 ErrGeneral:
     MsgBox "Ocurrio un error general en la macro (Linea: " & Erl & ")." & vbCrLf & "Error " & Err.Number & ": " & Err.Description, vbCritical, "Error de Codigo"
 End Sub
+
+Private Function GetCargaFamiliarJSON(idBeneficiario As String) As String
+    Dim wsFam As Worksheet
+    Dim tblFam As ListObject
+    
+    On Error Resume Next
+    Set wsFam = ThisWorkbook.Sheets("BD_CARGA_FAMILIAR")
+    Set tblFam = wsFam.ListObjects("TblCargaFamiliar")
+    On Error GoTo 0
+    
+    If tblFam Is Nothing Then
+        GetCargaFamiliarJSON = "[]"
+        Exit Function
+    End If
+    
+    If tblFam.DataBodyRange Is Nothing Then
+        GetCargaFamiliarJSON = "[]"
+        Exit Function
+    End If
+    
+    Dim colID As Integer, colPar As Integer, colDNI As Integer, colNom As Integer, colApe As Integer, colFec As Integer
+    On Error Resume Next
+    colID = tblFam.ListColumns("ID_Beneficiario").Index
+    colPar = tblFam.ListColumns("Parentesco").Index
+    colDNI = tblFam.ListColumns("DNI").Index
+    colNom = tblFam.ListColumns("Nombres").Index
+    colApe = tblFam.ListColumns("Apellidos").Index
+    colFec = tblFam.ListColumns("Fecha_Nacimiento").Index
+    On Error GoTo 0
+    
+    If colID = 0 Or colPar = 0 Then
+        GetCargaFamiliarJSON = "[]"
+        Exit Function
+    End If
+    
+    Dim jsonArray As String
+    jsonArray = "["
+    Dim countFam As Integer
+    countFam = 0
+    
+    Dim j As Long
+    For j = 1 To tblFam.ListRows.Count
+        If GetColValue(tblFam, j, colID) = idBeneficiario Then
+            If countFam > 0 Then jsonArray = jsonArray & ","
+            jsonArray = jsonArray & "{"
+            jsonArray = jsonArray & """parentesco"":""" & EscapeJSON(GetColValue(tblFam, j, colPar)) & ""","
+            jsonArray = jsonArray & """dni"":""" & EscapeJSON(GetColValue(tblFam, j, colDNI)) & ""","
+            jsonArray = jsonArray & """nombres"":""" & EscapeJSON(GetColValue(tblFam, j, colNom)) & ""","
+            jsonArray = jsonArray & """apellidos"":""" & EscapeJSON(GetColValue(tblFam, j, colApe)) & ""","
+            jsonArray = jsonArray & """fechaNacimiento"":""" & EscapeJSON(GetColValue(tblFam, j, colFec)) & """"
+            jsonArray = jsonArray & "}"
+            countFam = countFam + 1
+        End If
+    Next j
+    
+    jsonArray = jsonArray & "]"
+    GetCargaFamiliarJSON = jsonArray
+End Function
 
 Private Function EscapeJSON(ByVal txt As String) As String
     Dim res As String

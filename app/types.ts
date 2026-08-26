@@ -56,6 +56,7 @@ export interface Beneficiario {
   nombres?: string;
   dniPostulante: string;
   fechaNacimiento?: string;
+  sexo?: string;
   celular: string;
   estadoCivil?: string;
   tieneConyuge?: boolean;
@@ -72,6 +73,7 @@ export interface Beneficiario {
   cargaFamiliar?: IntegranteCargaFamiliar[];
 
   // Ubicación
+  ubicacion?: string;
   departamento: string;
   provincia: string;
   distrito: string;

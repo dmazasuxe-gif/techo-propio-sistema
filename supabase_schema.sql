@@ -22,6 +22,8 @@ CREATE TABLE beneficiarios (
   apellido_materno_conyuge TEXT,
   nombres_conyuge TEXT,
   fecha_nacimiento_conyuge TEXT,
+  carga_familiar JSONB DEFAULT '[]'::jsonb,
+  ubicacion TEXT,
   departamento TEXT,
   provincia TEXT,
   distrito TEXT,

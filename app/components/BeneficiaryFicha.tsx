@@ -142,7 +142,7 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           <value>${form.dniPostulante || "—"}</value>
         </div>
       </div>
-      <div class="grid-4">
+        <div class="grid-5" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 8px;">
         <div class="field">
           <label>Nombres</label>
           <value>${form.nombres || "—"}</value>
@@ -158,6 +158,10 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
         <div class="field mono">
           <label>Fecha de Nacimiento</label>
           <value>${form.fechaNacimiento || "—"}</value>
+        </div>
+        <div class="field">
+          <label>Sexo</label>
+          <value>${form.sexo || "—"}</value>
         </div>
       </div>
       <div class="grid-2">
@@ -218,7 +222,11 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           <value>${form.distrito || "—"}</value>
         </div>
       </div>
-      <div class="grid-4">
+      <div class="grid-5" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+        <div class="field">
+          <label>Ubicación</label>
+          <value>${form.ubicacion || "—"}</value>
+        </div>
         <div class="field">
           <label>Centro Poblado</label>
           <value>${(form as any).centroPoblado || "—"}</value>
@@ -503,15 +511,24 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2">
           <div>
-            <label className="text-xs font-semibold text-slate-400">Fecha de Nacimiento (DD/MM/AAAA)</label>
+            <label className="text-xs font-semibold text-slate-400">Fecha de Nacimiento</label>
             <input
               type="text"
               placeholder="DD/MM/AAAA"
               value={form.fechaNacimiento || ""}
               onChange={(e) => setForm({ ...form, fechaNacimiento: e.target.value })}
               className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-400">Sexo</label>
+            <input
+              type="text"
+              value={form.sexo || ""}
+              onChange={(e) => setForm({ ...form, sexo: e.target.value })}
+              className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white uppercase focus:outline-none transition"
             />
           </div>
           <div>
@@ -730,7 +747,16 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 pt-2">
+          <div>
+            <label className="text-xs font-semibold text-slate-400">Ubicación</label>
+            <input
+              type="text"
+              value={form.ubicacion || ""}
+              onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
+              className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none transition"
+            />
+          </div>
           <div>
             <label className="text-xs font-semibold text-slate-400">Centro Poblado</label>
             <input
