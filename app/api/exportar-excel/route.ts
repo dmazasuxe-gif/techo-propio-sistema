@@ -75,7 +75,7 @@ export async function GET(request: Request) {
             fam.DNI || fam.dni || '',
             fam.Nombres || fam.nombres || '',
             fam.Apellidos || fam.apellidos || '',
-            fam.Fecha_Nacimiento || fam.fecha_nacimiento || ''
+            fam.Fecha_Nacimiento || fam.fecha_nacimiento || fam.fechaNacimiento || ''
           ].map(val => String(val).replace(/\|/g, '').replace(/\n/g, ' ')).join('|');
           csvCarga.push(row);
         });
