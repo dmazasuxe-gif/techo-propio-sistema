@@ -284,6 +284,204 @@ Private Function GetColValue(tbl As ListObject, rowIdx As Long, colIdx As Intege
     If colIdx > 0 Then
         GetColValue = CStr(tbl.ListRows(rowIdx).Range(1, colIdx).Value)
     Else
-        GetColValue = ""
     End If
 End Function
+
+Public Sub DescargarDesdeWeb()
+    Dim wsBD As Worksheet
+    Dim tbl As ListObject
+    
+    On Error Resume Next
+    Set wsBD = ThisWorkbook.Sheets("BD_BENEFICIARIOS")
+    Set tbl = wsBD.ListObjects("TblBeneficiarios")
+    On Error GoTo 0
+    
+    If tbl Is Nothing Then
+        MsgBox "No se encontro la tabla TblBeneficiarios en la hoja BD_BENEFICIARIOS.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Obtener indice DNI
+    Dim colDNI As Integer
+    On Error Resume Next
+    colDNI = tbl.ListColumns("DNI").Index
+    On Error GoTo 0
+    
+    If colDNI = 0 Then
+        MsgBox "No se encontro la columna DNI en la tabla.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Crear diccionario de DNIs existentes
+    Dim dictDNI As Object
+    Set dictDNI = CreateObject("Scripting.Dictionary")
+    
+    Dim i As Long
+    For i = 1 To tbl.ListRows.Count
+        Dim valDNI As String
+        valDNI = Trim(CStr(tbl.ListRows(i).Range(1, colDNI).Value))
+        If valDNI <> "" Then
+            If Not dictDNI.exists(valDNI) Then
+                dictDNI.Add valDNI, True
+            End If
+        End If
+    Next i
+    
+    ' Conectar a la API
+    Dim http As Object
+    On Error Resume Next
+    Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    If http Is Nothing Then
+        Set http = CreateObject("MSXML2.XMLHTTP")
+    End If
+    On Error GoTo ErrHTTP
+    
+    Dim url As String
+    url = "https://mazaquiroz.com/api/exportar-excel"
+    
+    http.Open "GET", url, False
+    http.setRequestHeader "x-api-key", "excel_secret_key_2026"
+    http.send
+    
+    If http.Status <> 200 Then
+        MsgBox "Error del servidor web: " & http.Status & " - " & http.responseText, vbCritical
+        Exit Sub
+    End If
+    
+    Dim respText As String
+    respText = http.responseText
+    
+    If respText = "" Then
+        MsgBox "No hay datos en el servidor web.", vbInformation
+        Exit Sub
+    End If
+    
+    ' Parsear CSV (separado por pipe |)
+    Dim lines() As String
+    lines = Split(respText, vbLf)
+    
+    Dim countAdded As Long
+    countAdded = 0
+    
+    ' Columnas: ID|DNI|Nombres|ApPaterno|ApMaterno|FecNac|EstadoC|Celular|Dep|Prov|Dist|CenPob|Barrio|Calle|Mz|Lote|Partida|CoordX|CoordY|AreaT|PorF|PorD|PorI|PorFnd|Expediente
+    For i = LBound(lines) To UBound(lines)
+        Dim line As String
+        line = Trim(Replace(lines(i), vbCr, ""))
+        If line <> "" Then
+            Dim fields() As String
+            fields = Split(line, "|")
+            
+            If UBound(fields) >= 24 Then
+                Dim apiDNI As String
+                apiDNI = Trim(fields(1))
+                
+                If apiDNI <> "" And Not dictDNI.exists(apiDNI) Then
+                    ' Añadir nueva fila
+                    Dim newRow As ListRow
+                    Set newRow = tbl.ListRows.Add
+                    
+                    ' Función auxiliar para escribir seguro
+                    SetCol newRow, tbl, "ID_Beneficiario", fields(0)
+                    SetCol newRow, tbl, "DNI", fields(1)
+                    SetCol newRow, tbl, "Nombres", fields(2)
+                    SetCol newRow, tbl, "Apellido_Paterno", fields(3)
+                    SetCol newRow, tbl, "Apellido_Materno", fields(4)
+                    SetCol newRow, tbl, "Fecha_Nacimiento", fields(5)
+                    SetCol newRow, tbl, "Estado_Civil", fields(6)
+                    SetCol newRow, tbl, "Celular", fields(7)
+                    
+                    ' Fallback para Departamento
+                    Dim colDep As Integer
+                    On Error Resume Next
+                    colDep = tbl.ListColumns("Departamento").Index
+                    If colDep = 0 Then colDep = tbl.ListColumns("Departament").Index
+                    On Error GoTo 0
+                    If colDep > 0 Then newRow.Range(1, colDep).Value = fields(8)
+                    
+                    SetCol newRow, tbl, "Provincia", fields(9)
+                    SetCol newRow, tbl, "Distrito", fields(10)
+                    SetCol newRow, tbl, "Centro_Poblado", fields(11)
+                    SetCol newRow, tbl, "Barrio_Sector", fields(12)
+                    
+                    ' Fallback para Calle
+                    Dim colCal As Integer
+                    On Error Resume Next
+                    colCal = tbl.ListColumns("Calle").Index
+                    If colCal = 0 Then colCal = tbl.ListColumns("Calle / Jr. / Av.").Index
+                    On Error GoTo 0
+                    If colCal > 0 Then newRow.Range(1, colCal).Value = fields(13)
+                    
+                    SetCol newRow, tbl, "Manzana", fields(14)
+                    SetCol newRow, tbl, "Lote", fields(15)
+                    
+                    ' Fallback para Partida
+                    Dim colParR As Integer
+                    On Error Resume Next
+                    colParR = tbl.ListColumns("Partida Registral").Index
+                    If colParR = 0 Then colParR = tbl.ListColumns("Partida_Registral").Index
+                    If colParR = 0 Then colParR = tbl.ListColumns("Partida Regist").Index
+                    On Error GoTo 0
+                    If colParR > 0 Then newRow.Range(1, colParR).Value = fields(16)
+                    
+                    ' Fallbacks Coordenadas
+                    Dim colCooX As Integer
+                    On Error Resume Next
+                    colCooX = tbl.ListColumns("Coordenada X").Index
+                    If colCooX = 0 Then colCooX = tbl.ListColumns("Coordenada_X").Index
+                    On Error GoTo 0
+                    If colCooX > 0 Then newRow.Range(1, colCooX).Value = fields(17)
+                    
+                    Dim colCooY As Integer
+                    On Error Resume Next
+                    colCooY = tbl.ListColumns("Coordenada Y").Index
+                    If colCooY = 0 Then colCooY = tbl.ListColumns("Coordenada_Y").Index
+                    On Error GoTo 0
+                    If colCooY > 0 Then newRow.Range(1, colCooY).Value = fields(18)
+                    
+                    ' Fallback Area
+                    Dim colAreT As Integer
+                    On Error Resume Next
+                    colAreT = tbl.ListColumns("Area Total").Index
+                    If colAreT = 0 Then colAreT = tbl.ListColumns("Area_Total").Index
+                    On Error GoTo 0
+                    If colAreT > 0 Then newRow.Range(1, colAreT).Value = fields(19)
+                    
+                    SetCol newRow, tbl, "Por el Frente", fields(20)
+                    SetCol newRow, tbl, "Por la Derecha", fields(21)
+                    SetCol newRow, tbl, "Por la Izquierda", fields(22)
+                    SetCol newRow, tbl, "Por el Fondo", fields(23)
+                    
+                    ' Expediente fallback
+                    Dim colExp As Integer
+                    On Error Resume Next
+                    colExp = tbl.ListColumns("Expediente").Index
+                    If colExp = 0 Then colExp = tbl.ListColumns("Nombre de Grupo").Index
+                    On Error GoTo 0
+                    If colExp > 0 Then newRow.Range(1, colExp).Value = fields(24)
+                    
+                    SetCol newRow, tbl, "Estado_Sincronizacion", "DESCARGADO"
+                    
+                    dictDNI.Add apiDNI, True
+                    countAdded = countAdded + 1
+                End If
+            End If
+        End If
+    Next i
+    
+    Set http = Nothing
+    MsgBox "Descarga completada." & vbCrLf & countAdded & " beneficiarios nuevos agregados al Excel.", vbInformation, "Descarga Exitosa"
+    Exit Sub
+    
+ErrHTTP:
+    MsgBox "No se pudo descargar los datos de la web. Verifica tu conexion." & vbCrLf & Err.Description, vbCritical
+End Sub
+
+Private Sub SetCol(r As ListRow, t As ListObject, n As String, v As String)
+    On Error Resume Next
+    Dim c As Integer
+    c = t.ListColumns(n).Index
+    If c > 0 Then
+        r.Range(1, c).Value = v
+    End If
+    On Error GoTo 0
+End Sub
