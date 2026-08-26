@@ -23,6 +23,8 @@ export async function POST(request: Request) {
     // El Excel manda: ID_Beneficiario, DNI, Nombres, Apellido_Paterno, etc.
     const recordsToUpsert = beneficiarios.map((b: any) => ({
       id: b.ID_Beneficiario,
+      postulante: `${b.Nombres || ''} ${b.Apellido_Paterno || ''} ${b.Apellido_Materno || ''}`.trim(),
+      expediente: b.Expediente || 'EXCEL',
       dni_postulante: b.DNI,
       nombres: b.Nombres,
       apellido_paterno: b.Apellido_Paterno,
@@ -35,11 +37,11 @@ export async function POST(request: Request) {
       distrito: b.Distrito,
       centro_poblado: b.Centro_Poblado,
       barrio_sector: b.Barrio_Sector,
-      direccion: b.Direccion,
+      partida_electronica: b.Partida_Registral || null,
       calle: b.Calle,
       manzana: b.Manzana,
       lote: b.Lote,
-      coordenada_x: b.Coordenada_X,
+      coordenada_x: b.Coordenada_X || null,
       coordenada_y: b.Coordenada_Y || null,
       area_total: b.Area_Total || null,
       por_frente: b.Por_Frente || null,

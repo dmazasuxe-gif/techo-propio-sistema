@@ -51,10 +51,10 @@ Public Sub SincronizarConAPI()
     countRows = 0
     
     ' Obtener indices de columnas de forma segura
-    Dim colID As Integer, colDNI As Integer, colNom As Integer, colApP As Integer, colApM As Integer
+    Dim colID As Integer, colExp As Integer, colDNI As Integer, colNom As Integer, colApP As Integer, colApM As Integer
     Dim colFec As Integer, colEst As Integer, colCel As Integer
     Dim colDep As Integer, colPro As Integer, colDis As Integer, colCen As Integer, colBar As Integer
-    Dim colDir As Integer, colSync As Integer
+    Dim colParR As Integer, colSync As Integer
     
     Dim colCal As Integer, colMan As Integer
     Dim colLot As Integer, colCooX As Integer, colCooY As Integer
@@ -62,6 +62,8 @@ Public Sub SincronizarConAPI()
     
     On Error Resume Next
     colID = tbl.ListColumns("ID_Beneficiario").Index
+    colExp = tbl.ListColumns("Expediente").Index
+    If colExp = 0 Then colExp = tbl.ListColumns("Nombre de Grupo").Index
     colDNI = tbl.ListColumns("DNI").Index
     colNom = tbl.ListColumns("Nombres").Index
     colApP = tbl.ListColumns("Apellido_Paterno").Index
@@ -74,7 +76,10 @@ Public Sub SincronizarConAPI()
     colDis = tbl.ListColumns("Distrito").Index
     colCen = tbl.ListColumns("Centro_Poblado").Index
     colBar = tbl.ListColumns("Barrio_Sector").Index
-    colDir = tbl.ListColumns("Direccion").Index
+    
+    colParR = tbl.ListColumns("Partida Registral").Index
+    If colParR = 0 Then colParR = tbl.ListColumns("Partida_Registral").Index
+    
     colSync = tbl.ListColumns("Estado_Sincronizacion").Index
     
     ' Nuevas columnas
@@ -97,16 +102,16 @@ Public Sub SincronizarConAPI()
     End If
     
     For i = 1 To tbl.ListRows.Count
-        Dim estadoSync As String
-        estadoSync = GetColValue(tbl, i, colSync)
         Dim currentID As String
         currentID = GetColValue(tbl, i, colID)
         
-        If estadoSync = "PENDIENTE" Then
+        ' Removemos la condicion de "PENDIENTE" para enviar TODOS los registros siempre
+        If currentID <> "" Then
             If countRows > 0 Then jsonString = jsonString & ","
             
             jsonString = jsonString & "{"
             jsonString = jsonString & """ID_Beneficiario"":""" & EscapeJSON(currentID) & ""","
+            jsonString = jsonString & """Expediente"":""" & EscapeJSON(GetColValue(tbl, i, colExp)) & ""","
             jsonString = jsonString & """DNI"":""" & EscapeJSON(GetColValue(tbl, i, colDNI)) & ""","
             jsonString = jsonString & """Nombres"":""" & EscapeJSON(GetColValue(tbl, i, colNom)) & ""","
             jsonString = jsonString & """Apellido_Paterno"":""" & EscapeJSON(GetColValue(tbl, i, colApP)) & ""","
@@ -119,7 +124,7 @@ Public Sub SincronizarConAPI()
             jsonString = jsonString & """Distrito"":""" & EscapeJSON(GetColValue(tbl, i, colDis)) & ""","
             jsonString = jsonString & """Centro_Poblado"":""" & EscapeJSON(GetColValue(tbl, i, colCen)) & ""","
             jsonString = jsonString & """Barrio_Sector"":""" & EscapeJSON(GetColValue(tbl, i, colBar)) & ""","
-            jsonString = jsonString & """Direccion"":""" & EscapeJSON(GetColValue(tbl, i, colDir)) & ""","
+            jsonString = jsonString & """Partida_Registral"":""" & EscapeJSON(GetColValue(tbl, i, colParR)) & ""","
             
             ' Nuevos
             jsonString = jsonString & """Calle"":""" & EscapeJSON(GetColValue(tbl, i, colCal)) & ""","
@@ -145,7 +150,7 @@ Public Sub SincronizarConAPI()
     jsonString = jsonString & "]}"
     
     If countRows = 0 Then
-        MsgBox "Todos los registros ya estan sincronizados en la nube.", vbInformation, "Al dia"
+        MsgBox "La tabla esta completamente vacia. No hay nada que sincronizar.", vbInformation, "Vacio"
         Exit Sub
     End If
     
@@ -173,9 +178,7 @@ Public Sub SincronizarConAPI()
     If http.Status = 200 Then
         ' Marcar como sincronizados
         For i = 1 To tbl.ListRows.Count
-            If GetColValue(tbl, i, colSync) = "PENDIENTE" Then
-                tbl.ListRows(i).Range(1, colSync).Value = "SINCRONIZADO"
-            End If
+            tbl.ListRows(i).Range(1, colSync).Value = "SINCRONIZADO"
         Next i
         
         MsgBox "Sincronizacion completada con exito. (" & countRows & " registros enviados)", vbInformation, "Exito"
