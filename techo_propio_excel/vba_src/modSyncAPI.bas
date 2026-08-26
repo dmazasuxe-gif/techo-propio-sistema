@@ -62,8 +62,10 @@ Public Sub SincronizarConAPI()
     
     On Error Resume Next
     colID = tbl.ListColumns("ID_Beneficiario").Index
+    
     colExp = tbl.ListColumns("Expediente").Index
     If colExp = 0 Then colExp = tbl.ListColumns("Nombre de Grupo").Index
+    
     colDNI = tbl.ListColumns("DNI").Index
     colNom = tbl.ListColumns("Nombres").Index
     colApP = tbl.ListColumns("Apellido_Paterno").Index
@@ -71,7 +73,9 @@ Public Sub SincronizarConAPI()
     colFec = tbl.ListColumns("Fecha_Nacimiento").Index
     colEst = tbl.ListColumns("Estado_Civil").Index
     colCel = tbl.ListColumns("Celular").Index
+    
     colDep = tbl.ListColumns("Departamento").Index
+    If colDep = 0 Then colDep = tbl.ListColumns("Departament").Index
     colPro = tbl.ListColumns("Provincia").Index
     colDis = tbl.ListColumns("Distrito").Index
     colCen = tbl.ListColumns("Centro_Poblado").Index
@@ -79,17 +83,26 @@ Public Sub SincronizarConAPI()
     
     colParR = tbl.ListColumns("Partida Registral").Index
     If colParR = 0 Then colParR = tbl.ListColumns("Partida_Registral").Index
+    If colParR = 0 Then colParR = tbl.ListColumns("Partida Regist").Index
     
     colSync = tbl.ListColumns("Estado_Sincronizacion").Index
     
     ' Nuevas columnas
-    colCal = tbl.ListColumns("Calle / Jr. / Av.").Index
-    If colCal = 0 Then colCal = tbl.ListColumns("Calle").Index
+    colCal = tbl.ListColumns("Calle").Index
+    If colCal = 0 Then colCal = tbl.ListColumns("Calle / Jr. / Av.").Index
     colMan = tbl.ListColumns("Manzana").Index
     colLot = tbl.ListColumns("Lote").Index
+    
     colCooX = tbl.ListColumns("Coordenada X").Index
+    If colCooX = 0 Then colCooX = tbl.ListColumns("Coordenada_X").Index
+    If colCooX = 0 Then colCooX = 18 ' Fallback a numero de columna
+    
     colCooY = tbl.ListColumns("Coordenada Y").Index
+    If colCooY = 0 Then colCooY = tbl.ListColumns("Coordenada_Y").Index
+    If colCooY = 0 Then colCooY = 19
+    
     colAreT = tbl.ListColumns("Area Total").Index
+    If colAreT = 0 Then colAreT = tbl.ListColumns("Area_Total").Index
     colPorF = tbl.ListColumns("Por el Frente").Index
     colPorD = tbl.ListColumns("Por la Derecha").Index
     colPorI = tbl.ListColumns("Por la Izquierda").Index
