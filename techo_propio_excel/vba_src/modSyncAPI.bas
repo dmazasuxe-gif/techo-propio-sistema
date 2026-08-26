@@ -52,7 +52,7 @@ Public Sub SincronizarConAPI()
     
     ' Obtener indices de columnas de forma segura
     Dim colID As Integer, colDNI As Integer, colNom As Integer, colApP As Integer, colApM As Integer
-    Dim colFec As Integer, colSex As Integer, colEst As Integer, colCel As Integer, colCor As Integer
+    Dim colFec As Integer, colEst As Integer, colCel As Integer
     Dim colDep As Integer, colPro As Integer, colDis As Integer, colCen As Integer, colBar As Integer
     Dim colDir As Integer, colSync As Integer
     
@@ -63,10 +63,8 @@ Public Sub SincronizarConAPI()
     colApP = tbl.ListColumns("Apellido_Paterno").Index
     colApM = tbl.ListColumns("Apellido_Materno").Index
     colFec = tbl.ListColumns("Fecha_Nacimiento").Index
-    colSex = tbl.ListColumns("Sexo").Index
     colEst = tbl.ListColumns("Estado_Civil").Index
     colCel = tbl.ListColumns("Celular").Index
-    colCor = tbl.ListColumns("Correo").Index
     colDep = tbl.ListColumns("Departamento").Index
     colPro = tbl.ListColumns("Provincia").Index
     colDis = tbl.ListColumns("Distrito").Index
@@ -95,10 +93,8 @@ Public Sub SincronizarConAPI()
             jsonString = jsonString & """Apellido_Paterno"":""" & EscapeJSON(GetColValue(tbl, i, colApP)) & ""","
             jsonString = jsonString & """Apellido_Materno"":""" & EscapeJSON(GetColValue(tbl, i, colApM)) & ""","
             jsonString = jsonString & """Fecha_Nacimiento"":""" & EscapeJSON(GetColValue(tbl, i, colFec)) & ""","
-            jsonString = jsonString & """Sexo"":""" & EscapeJSON(GetColValue(tbl, i, colSex)) & ""","
             jsonString = jsonString & """Estado_Civil"":""" & EscapeJSON(GetColValue(tbl, i, colEst)) & ""","
             jsonString = jsonString & """Celular"":""" & EscapeJSON(GetColValue(tbl, i, colCel)) & ""","
-            jsonString = jsonString & """Correo"":""" & EscapeJSON(GetColValue(tbl, i, colCor)) & ""","
             jsonString = jsonString & """Departamento"":""" & EscapeJSON(GetColValue(tbl, i, colDep)) & ""","
             jsonString = jsonString & """Provincia"":""" & EscapeJSON(GetColValue(tbl, i, colPro)) & ""","
             jsonString = jsonString & """Distrito"":""" & EscapeJSON(GetColValue(tbl, i, colDis)) & ""","

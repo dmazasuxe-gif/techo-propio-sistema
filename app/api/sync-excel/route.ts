@@ -33,7 +33,6 @@ export async function POST(request: Request) {
       apellido_paterno: b.Apellido_Paterno,
       apellido_materno: b.Apellido_Materno,
       fecha_nacimiento: b.Fecha_Nacimiento,
-      sexo: b.Sexo,
       estado_civil: b.Estado_Civil,
       celular: b.Celular,
       departamento: b.Departamento,
