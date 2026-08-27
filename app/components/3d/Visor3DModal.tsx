@@ -43,11 +43,29 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
     if (viewer && viewer.model) {
       const toggleRoof = () => {
         if (!viewer.model) return;
-        const roofNode = viewer.model.getNodeByName('Techo_Interactivo');
-        if (roofNode) {
-          roofNode.scale = showRoof ? "1 1 1" : "0 0 0";
-        } else {
-          console.warn("No se encontró la pieza 'Techo_Interactivo' en el modelo.");
+        try {
+          if (typeof viewer.model.getNodeByName === 'function') {
+            const roofNode = viewer.model.getNodeByName('Techo_Interactivo');
+            if (roofNode) {
+              // Intentar ocultar la malla (mesh) subyacente de Three.js si existe
+              if (roofNode.mesh) {
+                roofNode.mesh.visible = showRoof;
+              } 
+              // Alternativa: Si existe set() para escala (Three.js Vector3)
+              else if (roofNode.scale && typeof roofNode.scale.set === 'function') {
+                if (showRoof) roofNode.scale.set(1, 1, 1);
+                else roofNode.scale.set(0, 0, 0);
+              } 
+              // Alternativa: Asignación directa si lo soporta el wrapper
+              else {
+                roofNode.scale = showRoof ? "1 1 1" : "0 0 0";
+              }
+            } else {
+              console.warn("No se encontró la pieza 'Techo_Interactivo' en el modelo.");
+            }
+          }
+        } catch (error) {
+          console.error("Error al manipular el modelo 3D:", error);
         }
       };
       
