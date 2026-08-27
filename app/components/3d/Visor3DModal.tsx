@@ -40,28 +40,27 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
   // Effect to toggle the roof scale when showRoof changes
   useEffect(() => {
     const viewer = viewerRef.current;
-    if (viewer && viewer.model) {
+    if (viewer) {
       const toggleRoof = () => {
-        if (!viewer.model) return;
         try {
-          if (typeof viewer.model.getNodeByName === 'function') {
-            const roofNode = viewer.model.getNodeByName('Techo_Interactivo');
-            if (roofNode) {
-              // Intentar ocultar la malla (mesh) subyacente de Three.js si existe
-              if (roofNode.mesh) {
-                roofNode.mesh.visible = showRoof;
-              } 
-              // Alternativa: Si existe set() para escala (Three.js Vector3)
-              else if (roofNode.scale && typeof roofNode.scale.set === 'function') {
-                if (showRoof) roofNode.scale.set(1, 1, 1);
-                else roofNode.scale.set(0, 0, 0);
-              } 
-              // Alternativa: Asignación directa si lo soporta el wrapper
-              else {
-                roofNode.scale = showRoof ? "1 1 1" : "0 0 0";
+          // Buscamos el símbolo secreto de Three.js Scene dentro del web component
+          const symbols = Object.getOwnPropertySymbols(viewer);
+          const sceneSymbol = symbols.find(s => s.description === 'scene');
+          
+          if (sceneSymbol && viewer[sceneSymbol]) {
+            const scene = viewer[sceneSymbol];
+            let found = false;
+            
+            // Recorremos todo el modelo 3D recursivamente
+            scene.traverse((child: any) => {
+              if (child.name && child.name.toLowerCase().includes('techo_interactivo')) {
+                child.visible = showRoof;
+                found = true;
               }
-            } else {
-              console.warn("No se encontró la pieza 'Techo_Interactivo' en el modelo.");
+            });
+            
+            if (!found) {
+              console.warn("No se encontró ninguna pieza que contenga 'Techo_Interactivo' en su nombre.");
             }
           }
         } catch (error) {
