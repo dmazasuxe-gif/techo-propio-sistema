@@ -8,14 +8,17 @@ export default function ModelViewerWrapper({
   src,
   alt,
   poster,
+  innerRef,
 }: {
   src: string;
   alt: string;
   poster?: string;
+  innerRef?: React.RefObject<any> | React.MutableRefObject<any>;
 }) {
   const [isMounted, setIsMounted] = useState(false);
   const [modelLoaded, setModelLoaded] = useState(false);
-  const viewerRef = useRef<any>(null);
+  const fallbackRef = useRef<any>(null);
+  const viewerRef = innerRef || fallbackRef;
 
   useEffect(() => {
     // Importar la librería de google model-viewer dinámicamente solo en cliente

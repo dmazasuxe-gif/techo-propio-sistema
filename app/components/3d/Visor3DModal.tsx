@@ -22,9 +22,13 @@ interface Visor3DModalProps {
 }
 
 export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, imagenUrl }: Visor3DModalProps) {
+  const [showRoof, setShowRoof] = useState(true);
+  const viewerRef = React.useRef<any>(null);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setShowRoof(true); // reset on open
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -33,13 +37,32 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
     };
   }, [isOpen]);
 
+  // Effect to toggle the roof scale when showRoof changes
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (viewer && viewer.model) {
+      const toggleRoof = () => {
+        if (!viewer.model) return;
+        const roofNode = viewer.model.getNodeByName('Techo_Interactivo');
+        if (roofNode) {
+          roofNode.scale = showRoof ? "1 1 1" : "0 0 0";
+        } else {
+          console.warn("No se encontró la pieza 'Techo_Interactivo' en el modelo.");
+        }
+      };
+      
+      toggleRoof();
+      
+      // Also attach to 'load' event in case the model is still loading
+      viewer.addEventListener('load', toggleRoof);
+      return () => viewer.removeEventListener('load', toggleRoof);
+    }
+  }, [showRoof, isOpen]);
+
   if (!isOpen) return null;
 
   const handleReset = () => {
-    // Model-viewer maneja internamente el reset haciendo click doble, pero podemos 
-    // forzar un render re-seteando el src o montando/desmontando.
-    // Por simplicidad, el web component tiene su propio control de cámara.
-    const viewer = document.querySelector('model-viewer') as any;
+    const viewer = viewerRef.current;
     if (viewer) {
       viewer.cameraOrbit = "auto auto auto";
       viewer.cameraTarget = "auto auto auto";
@@ -48,7 +71,7 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
   };
 
   const handleFullscreen = () => {
-    const viewer = document.querySelector('model-viewer') as any;
+    const viewer = viewerRef.current;
     if (viewer) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
@@ -83,10 +106,22 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
             src={modeloUrl} 
             alt={`Modelo 3D de ${nombre}`}
             poster={imagenUrl}
+            innerRef={viewerRef}
           />
           
+          {/* Top floating controls */}
+          <div className="absolute top-6 right-6 flex flex-col gap-3 z-10">
+            <button 
+              onClick={() => setShowRoof(!showRoof)}
+              className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-800 transition-all hover:scale-105 active:scale-95 font-semibold text-sm border border-gray-200"
+            >
+              <Box className="w-4 h-4 text-primary" />
+              {showRoof ? 'Ver Interior' : 'Poner Techo'}
+            </button>
+          </div>
+
           {/* Controles sobre el visor */}
-          <div className="absolute bottom-6 right-6 flex flex-col gap-3">
+          <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-10">
             <button 
               onClick={handleReset}
               className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-700 transition-all hover:scale-105 active:scale-95"
