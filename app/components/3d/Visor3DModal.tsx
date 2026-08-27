@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { X, Maximize, RotateCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Maximize, RotateCcw, Box } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const ModelViewer = dynamic(() => import('./ModelViewerWrapper'), {
