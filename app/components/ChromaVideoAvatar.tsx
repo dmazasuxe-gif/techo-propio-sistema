@@ -41,6 +41,13 @@ export default function ChromaVideoAvatar({
 
     const handleLoadedMetadata = () => {
       setIsVideoLoaded(true);
+      if (video.duration > 2) {
+        try {
+          video.currentTime = 0.55;
+        } catch {
+          // Ignored
+        }
+      }
       video.play().catch(() => {
         // Fallback for strict browser policies
       });
@@ -62,6 +69,15 @@ export default function ChromaVideoAvatar({
         if (isCancelled) return;
 
         if (video.readyState >= 2 && ctx) {
+          // Keep loop seamless between 0.55s and end, skipping the initial 0.5s glitch frame
+          if (video.duration > 2) {
+            if (video.currentTime < 0.48) {
+              video.currentTime = 0.55;
+            } else if (video.currentTime >= video.duration - 0.08) {
+              video.currentTime = 0.55;
+            }
+          }
+
           const vw = video.videoWidth || 1280;
           const vh = video.videoHeight || 720;
 
@@ -73,10 +89,15 @@ export default function ChromaVideoAvatar({
           let sh = vh;
 
           if (vw === 1280 && vh === 720) {
-            sx = 210; // generous safety margin before hand at 244
-            sw = 475; // reaches 685, cleanly containing character without empty space
-            sy = 30;  // above helmet
-            sh = 690; // reaches feet
+            // In the raw video, seconds 0.0-0.48 have the character at center 612 (80px to the right).
+            // From 0.55s onwards, the character is at center 532.
+            // By compensating sx = 290 during < 0.48s, the character is locked to the EXACT same
+            // canvas coordinate (322px) from frame 0, completely eliminating any jump or displacement!
+            const isInitialOffset = video.currentTime < 0.48;
+            sx = isInitialOffset ? 290 : 210;
+            sw = 475;
+            sy = 30;
+            sh = 690;
           } else if (vw > vh * 1.2) {
             // General landscape fallback
             sw = Math.round(vh * 0.7);
