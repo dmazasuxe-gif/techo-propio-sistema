@@ -85,13 +85,14 @@ export default function LandingChatbot({ config }: LandingChatbotProps) {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-2 right-2 sm:bottom-4 sm:right-6 z-50 flex items-end justify-center"
+            className="fixed bottom-2 left-2 sm:bottom-4 sm:left-6 z-50 flex items-end justify-center"
           >
             {activeChar.type === 'video' ? (
               <ChromaVideoAvatar
                 videoSrc={activeChar.url}
                 isGreenScreen={activeChar.isGreenScreen}
                 characterName={activeChar.name}
+                position="left"
                 onClick={() => setIsOpen(true)}
               />
             ) : (
@@ -129,7 +130,7 @@ export default function LandingChatbot({ config }: LandingChatbotProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[90vw] sm:w-[400px] h-[500px] max-h-[80vh] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border border-slate-200"
+            className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-50 w-[calc(100vw-32px)] sm:w-[400px] h-[500px] max-h-[80vh] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border border-slate-200"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-sky-900 to-indigo-900 text-white p-4 flex justify-between items-center shadow-md relative z-10 border-b border-white/10">

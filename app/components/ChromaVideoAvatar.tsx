@@ -11,6 +11,7 @@ interface ChromaVideoAvatarProps {
   speechText?: string;
   className?: string;
   heightClass?: string;
+  position?: 'left' | 'right';
 }
 
 export default function ChromaVideoAvatar({
@@ -21,6 +22,7 @@ export default function ChromaVideoAvatar({
   speechText = "¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋",
   className = "",
   heightClass = "h-[200px] sm:h-[250px]",
+  position = "left",
 }: ChromaVideoAvatarProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,13 +65,22 @@ export default function ChromaVideoAvatar({
           const vw = video.videoWidth || 360;
           const vh = video.videoHeight || 480;
 
-          if (canvas.width !== vw || canvas.height !== vh) {
-            canvas.width = vw;
+          // For landscape videos (like 16:9), crop the central strip tightly around character
+          // so there are no wide empty transparent margins pushing the avatar to the center!
+          const isLandscape = vw > vh * 1.2;
+          const targetW = isLandscape ? Math.round(vh * 0.68) : vw;
+          const sx = isLandscape ? Math.round((vw - targetW) / 2) : 0;
+          const sy = 0;
+          const sw = targetW;
+          const sh = vh;
+
+          if (canvas.width !== targetW || canvas.height !== vh) {
+            canvas.width = targetW;
             canvas.height = vh;
           }
 
-          ctx.drawImage(video, 0, 0, vw, vh);
-          const frame = ctx.getImageData(0, 0, vw, vh);
+          ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, vh);
+          const frame = ctx.getImageData(0, 0, targetW, vh);
           const d = frame.data;
           const len = d.length;
 
@@ -139,12 +150,18 @@ export default function ChromaVideoAvatar({
         initial={{ opacity: 0, y: 8, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.6, duration: 0.3 }}
-        className="absolute -top-10 sm:-top-11 right-0 sm:right-2 bg-white/95 backdrop-blur-md text-slate-800 text-[11px] sm:text-xs font-semibold py-1.5 px-3 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] border border-sky-200/80 flex items-center gap-2 whitespace-nowrap z-20 pointer-events-none group-hover:scale-105 transition-transform"
+        className={`absolute -top-10 sm:-top-11 ${
+          position === 'left' ? 'left-0 sm:left-2' : 'right-0 sm:right-2'
+        } bg-white/95 backdrop-blur-md text-slate-800 text-[11px] sm:text-xs font-semibold py-1.5 px-3 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] border border-sky-200/80 flex items-center gap-2 whitespace-nowrap z-20 pointer-events-none group-hover:scale-105 transition-transform`}
       >
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
         <span>{speechText}</span>
         {/* Dialogue arrow */}
-        <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white/95 border-r border-b border-sky-200/80 transform rotate-45" />
+        <div
+          className={`absolute -bottom-1.5 ${
+            position === 'left' ? 'left-8' : 'right-8'
+          } w-3 h-3 bg-white/95 border-r border-b border-sky-200/80 transform rotate-45`}
+        />
       </motion.div>
 
       {/* Character Display Container */}
