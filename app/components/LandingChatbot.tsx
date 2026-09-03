@@ -149,7 +149,7 @@ export default function LandingChatbot({ config }: LandingChatbotProps) {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg font-[family-name:var(--font-montserrat)] leading-tight">
-                    {activeChar.name || "Asistente Virtual"}
+                    ASISTENTE VIRTUAL
                   </h3>
                   <p className="text-xs text-sky-200 font-medium">En línea</p>
                 </div>

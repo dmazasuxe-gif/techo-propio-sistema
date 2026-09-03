@@ -178,7 +178,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     characters: [
       {
         id: "char-1",
-        name: "Personaje Principal (Video)",
+        name: "Asistente Virtual",
         url: "/personaje-bot.mp4",
         type: "video",
         isGreenScreen: true,
