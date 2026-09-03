@@ -586,7 +586,7 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <LandingChatbot />
+      <LandingChatbot config={config.chatbot} />
     </div>
   );
 }

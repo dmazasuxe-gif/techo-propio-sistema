@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   Save, Loader2, ArrowRight, ShieldCheck, Building2, Hammer, Ruler, 
   Clock, Award, HelpCircle, HardHat, Pickaxe, Shovel, Truck, Warehouse, 
-  Wrench, Paintbrush, X, Bot, Plus, ImageIcon
+  Wrench, Paintbrush, X, Bot, Plus, ImageIcon, Video, CheckCircle2, Trash2, UploadCloud, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { LandingContent, LandingConfig } from '@/lib/landing_db';
+import type { LandingContent, LandingConfig, BotCharacter } from '@/lib/landing_db';
 import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
 import { EditableText } from './VisualEditor/EditableText';
 import { EditableImage } from './VisualEditor/EditableImage';
+import ChromaVideoAvatar from '@/app/components/ChromaVideoAvatar';
 
 const iconMap: Record<string, any> = { 
   Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award, 
@@ -81,6 +82,13 @@ export function LandingCMS() {
   // For services gallery modal in CMS
   const [editingServiceIndex, setEditingServiceIndex] = useState<number | null>(null);
 
+  // For bot characters in CMS
+  const [isAddingChar, setIsAddingChar] = useState(false);
+  const [newCharName, setNewCharName] = useState('');
+  const [newCharUrl, setNewCharUrl] = useState('');
+  const [newCharGreenScreen, setNewCharGreenScreen] = useState(true);
+  const [uploadingCharFile, setUploadingCharFile] = useState(false);
+
   useEffect(() => {
     fetch(`/api/landing-config?t=${Date.now()}`)
       .then(r => r.json())
@@ -120,6 +128,10 @@ export function LandingCMS() {
               systemPrompt: data.content.chatbot?.systemPrompt || DEFAULT_LANDING_CONTENT.chatbot!.systemPrompt,
               companyInfo: data.content.chatbot?.companyInfo || DEFAULT_LANDING_CONTENT.chatbot!.companyInfo,
               images: data.content.chatbot?.images || DEFAULT_LANDING_CONTENT.chatbot!.images,
+              characters: (data.content.chatbot?.characters && data.content.chatbot.characters.length > 0)
+                ? data.content.chatbot.characters
+                : DEFAULT_LANDING_CONTENT.chatbot!.characters,
+              activeCharacterId: data.content.chatbot?.activeCharacterId || DEFAULT_LANDING_CONTENT.chatbot!.activeCharacterId,
             }
           });
         } else {
@@ -178,6 +190,84 @@ export function LandingCMS() {
       
       return newConfig;
     });
+  };
+
+  const handleActivateChar = (charId: string) => {
+    if (!config?.chatbot) return;
+    const chars = (config.chatbot.characters || []).map((c) => ({
+      ...c,
+      active: c.id === charId,
+    }));
+    updateNestedConfig(['chatbot', 'characters'], chars);
+    updateNestedConfig(['chatbot', 'activeCharacterId'], charId);
+  };
+
+  const handleToggleGreenScreen = (charId: string, isGreenScreen: boolean) => {
+    if (!config?.chatbot) return;
+    const chars = (config.chatbot.characters || []).map((c) =>
+      c.id === charId ? { ...c, isGreenScreen } : c
+    );
+    updateNestedConfig(['chatbot', 'characters'], chars);
+  };
+
+  const handleDeleteChar = (charId: string) => {
+    if (!config?.chatbot) return;
+    const chars = (config.chatbot.characters || []).filter((c) => c.id !== charId);
+    if (chars.length > 0 && !chars.some((c) => c.active)) {
+      chars[0].active = true;
+    }
+    updateNestedConfig(['chatbot', 'characters'], chars);
+  };
+
+  const handleCreateChar = () => {
+    if (!newCharUrl.trim()) {
+      alert("Por favor sube un archivo o ingresa una URL válida.");
+      return;
+    }
+    const isVideo = newCharUrl.endsWith('.mp4') || newCharUrl.endsWith('.webm') || newCharUrl.includes('video') || newCharUrl.includes('.mp4');
+    const newChar: BotCharacter = {
+      id: `char-${Date.now()}`,
+      name: newCharName.trim() || 'Nuevo Personaje',
+      url: newCharUrl.trim(),
+      type: isVideo ? 'video' : 'image',
+      isGreenScreen: newCharGreenScreen,
+      active: false,
+    };
+    const currentChars = config?.chatbot?.characters || [];
+    updateNestedConfig(['chatbot', 'characters'], [...currentChars, newChar]);
+    setIsAddingChar(false);
+    setNewCharName('');
+    setNewCharUrl('');
+    setNewCharGreenScreen(true);
+  };
+
+  const handleUploadCharFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCharFile(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('subfolder', 'chatbot');
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setNewCharUrl(data.url);
+        if (!newCharName) {
+          setNewCharName(file.name.replace(/\.[^/.]+$/, ""));
+        }
+      } else {
+        alert("Error al subir el archivo.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al conectar con el servidor de subida.");
+    } finally {
+      setUploadingCharFile(false);
+    }
   };
 
   if (loading || !config) {
@@ -858,7 +948,7 @@ export function LandingCMS() {
         </footer>
 
         {/* CHATBOT IA CONFIGURATION */}
-        <section id="chatbot-config" className="w-full px-4 md:px-8 mb-12">
+        <section id="chatbot-config" className="w-full px-4 md:px-8 mb-12 scroll-mt-28">
           <div className="max-w-[1400px] mx-auto bg-white rounded-3xl p-6 md:p-10 shadow-xl border-2 border-indigo-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
             
@@ -869,6 +959,202 @@ export function LandingCMS() {
               <div>
                 <h2 className="text-2xl font-bold font-[family-name:var(--font-montserrat)] text-slate-800">Cerebro del Chatbot IA</h2>
                 <p className="text-slate-500 text-sm">Entrena a tu asistente virtual con información clave y galería de imágenes.</p>
+              </div>
+            </div>
+
+            {/* SECCIÓN DE PERSONAJES / AVATAR DE CUERPO COMPLETO */}
+            <div className="mb-10 p-6 bg-gradient-to-br from-indigo-50/50 via-slate-50 to-purple-50/30 rounded-2xl border-2 border-indigo-100">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <Video className="w-5 h-5 text-indigo-600" /> Personajes y Avatar del Bot (Cuerpo Completo)
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Gestiona el personaje que sale flotando en la web. Puedes usar videos MP4 en bucle con pantalla verde, videos WebM o imágenes.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingChar(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all hover:scale-105"
+                >
+                  <Plus className="w-4 h-4" /> Nuevo Personaje
+                </button>
+              </div>
+
+              {/* Formulario desplegable para agregar nuevo personaje */}
+              {isAddingChar && (
+                <div className="mb-6 p-5 bg-white rounded-xl border-2 border-indigo-200 shadow-sm">
+                  <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-500" /> Añadir Nuevo Personaje
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre del Personaje</label>
+                      <input
+                        type="text"
+                        value={newCharName}
+                        onChange={(e) => setNewCharName(e.target.value)}
+                        placeholder="Ej. Asesora Virtual, Ingeniero Carlos"
+                        className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Archivo de Video o Imagen</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newCharUrl}
+                          onChange={(e) => setNewCharUrl(e.target.value)}
+                          placeholder="Ruta local (ej. /personaje-bot.mp4) o URL"
+                          className="flex-1 p-2 text-xs border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
+                        />
+                        <label className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1 transition-colors border border-slate-200">
+                          {uploadingCharFile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5" />}
+                          <span>{uploadingCharFile ? "Subiendo..." : "Subir"}</span>
+                          <input
+                            type="file"
+                            accept="video/mp4,video/webm,image/*"
+                            onChange={handleUploadCharFile}
+                            className="hidden"
+                            disabled={uploadingCharFile}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newCharGreenScreen}
+                        onChange={(e) => setNewCharGreenScreen(e.target.checked)}
+                        className="w-4 h-4 accent-indigo-600 rounded"
+                      />
+                      <span className="text-xs font-semibold text-slate-700">Tiene pantalla verde (remover fondo en vivo con Chroma Key)</span>
+                    </label>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAddingChar(false);
+                          setNewCharName('');
+                          setNewCharUrl('');
+                        }}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCreateChar}
+                        className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow transition-colors"
+                      >
+                        Guardar Personaje
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Grid de Personajes Configurados */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(config.chatbot?.characters || []).map((char, idx) => {
+                  const isActive = char.active;
+                  return (
+                    <div
+                      key={char.id || idx}
+                      className={`relative rounded-xl p-4 transition-all flex flex-col justify-between ${
+                        isActive
+                          ? 'bg-white border-2 border-indigo-500 shadow-lg ring-2 ring-indigo-500/10'
+                          : 'bg-white/80 border border-slate-200 hover:border-indigo-200 shadow-sm'
+                      }`}
+                    >
+                      {/* Badge de Activo */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="text-xs font-bold text-slate-700 truncate max-w-[150px]">
+                          {char.name}
+                        </span>
+                        {isActive ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-[11px] font-bold">
+                            <CheckCircle2 className="w-3 h-3" /> Activo
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleActivateChar(char.id)}
+                            className="px-2.5 py-0.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200 rounded-full text-[11px] font-bold transition-colors"
+                          >
+                            Activar
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Vista previa en loop */}
+                      <div className="h-44 w-full bg-slate-900/5 rounded-lg flex items-center justify-center overflow-hidden relative border border-slate-100 my-2">
+                        {char.type === 'video' ? (
+                          char.isGreenScreen ? (
+                            <ChromaVideoAvatar
+                              videoSrc={char.url}
+                              isGreenScreen={true}
+                              characterName={char.name}
+                              heightClass="h-36"
+                              className="pointer-events-none"
+                            />
+                          ) : (
+                            <video
+                              src={char.url}
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              className="h-36 w-auto object-contain rounded drop-shadow-md"
+                            />
+                          )
+                        ) : (
+                          <img
+                            src={char.url}
+                            alt={char.name}
+                            className="h-36 w-auto object-contain drop-shadow-md"
+                          />
+                        )}
+                      </div>
+
+                      {/* Controles del personaje */}
+                      <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={char.isGreenScreen}
+                              onChange={(e) => handleToggleGreenScreen(char.id, e.target.checked)}
+                              className="w-3.5 h-3.5 accent-indigo-600 rounded"
+                            />
+                            <span className="text-[11px] text-slate-600 font-medium">Fondo Verde</span>
+                          </label>
+
+                          {(config.chatbot?.characters || []).length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteChar(char.id)}
+                              className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors text-xs flex items-center gap-1"
+                              title="Eliminar personaje"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Eliminar</span>
+                            </button>
+                          )}
+                        </div>
+
+                        <p className="text-[10px] text-slate-400 truncate" title={char.url}>
+                          {char.url}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

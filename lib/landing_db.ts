@@ -1,5 +1,14 @@
 import { supabase } from './supabase';
 
+export interface BotCharacter {
+  id: string;
+  name: string;
+  url: string;
+  type: 'video' | 'image';
+  isGreenScreen: boolean;
+  active: boolean;
+}
+
 export interface LandingContent {
   nav: {
     logoImage: string;
@@ -65,6 +74,8 @@ export interface LandingContent {
     systemPrompt: string;
     companyInfo: string;
     images: { title: string; url: string; category: string }[];
+    characters?: BotCharacter[];
+    activeCharacterId?: string;
   };
 }
 
@@ -161,7 +172,18 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   chatbot: {
     systemPrompt: "Eres el asistente virtual oficial y vendedor estrella de la empresa de construcción. Tu objetivo es ser extremadamente amable, resolver dudas y animarlos a contactarnos para iniciar su proyecto. Responde SIEMPRE de manera breve, clara y conversacional.",
     companyInfo: "Construimos casas bajo el programa Techo Propio. Nuestras casas tienen 2 habitaciones, sala, comedor, cocina y baño.",
-    images: []
+    images: [],
+    characters: [
+      {
+        id: "char-1",
+        name: "Personaje Principal (Video)",
+        url: "/personaje-bot.mp4",
+        type: "video",
+        isGreenScreen: true,
+        active: true
+      }
+    ],
+    activeCharacterId: "char-1"
   },
   fonts: {},
   colors: {}
@@ -210,6 +232,10 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
       systemPrompt: data.content.chatbot?.systemPrompt || DEFAULT_LANDING_CONTENT.chatbot!.systemPrompt,
       companyInfo: data.content.chatbot?.companyInfo || DEFAULT_LANDING_CONTENT.chatbot!.companyInfo,
       images: data.content.chatbot?.images || DEFAULT_LANDING_CONTENT.chatbot!.images,
+      characters: (data.content.chatbot?.characters && data.content.chatbot.characters.length > 0)
+        ? data.content.chatbot.characters
+        : DEFAULT_LANDING_CONTENT.chatbot!.characters,
+      activeCharacterId: data.content.chatbot?.activeCharacterId || DEFAULT_LANDING_CONTENT.chatbot!.activeCharacterId,
     },
   };
 

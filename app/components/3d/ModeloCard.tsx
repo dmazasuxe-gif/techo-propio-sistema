@@ -10,6 +10,8 @@ interface ModeloCardProps {
 }
 
 export default function ModeloCard({ modelo, onOpenVisor }: ModeloCardProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
   return (
     <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
       {/* Imagen de portada */}
@@ -44,9 +46,19 @@ export default function ModeloCard({ modelo, onOpenVisor }: ModeloCardProps) {
         <h4 className="text-xl font-bold text-gray-900 mb-2">{modelo.nombre}</h4>
         
         {modelo.descripcion && (
-          <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-            {modelo.descripcion}
-          </p>
+          <div className="mb-4">
+            <p className={`text-gray-500 text-sm transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
+              {modelo.descripcion}
+            </p>
+            {modelo.descripcion.length > 90 && (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-600 hover:text-blue-700 text-xs font-semibold mt-1 transition-colors"
+              >
+                {isExpanded ? 'Leer menos' : 'Leer más...'}
+              </button>
+            )}
+          </div>
         )}
         
         <div className="mt-auto pt-4 border-t border-gray-100 grid grid-cols-2 gap-4">

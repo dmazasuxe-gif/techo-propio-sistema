@@ -3,13 +3,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
+import ChromaVideoAvatar from './ChromaVideoAvatar';
+import type { LandingContent, BotCharacter } from '@/lib/landing_db';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export default function LandingChatbot() {
+interface LandingChatbotProps {
+  config?: LandingContent['chatbot'];
+}
+
+export default function LandingChatbot({ config }: LandingChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: '¡Hola! 👋 Soy el asistente virtual de la empresa. ¿En qué te puedo ayudar hoy con tu proyecto de vivienda?' }
@@ -17,6 +23,16 @@ export default function LandingChatbot() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const characters = config?.characters || [];
+  const activeChar: BotCharacter = characters.find(c => c.active) || characters[0] || {
+    id: 'char-1',
+    name: 'Personaje Principal',
+    url: '/personaje-bot.mp4',
+    type: 'video',
+    isGreenScreen: true,
+    active: true
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -62,43 +78,45 @@ export default function LandingChatbot() {
 
   return (
     <>
-      {/* Botón flotante */}
+      {/* Botón / Personaje flotante de cuerpo completo */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1, y: [0, -8, 0] }}
+            animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            transition={{ y: { repeat: Infinity, duration: 2.5, ease: "easeInOut" } }}
-            className="fixed bottom-6 right-6 z-50 flex items-center justify-center"
+            className="fixed bottom-2 right-2 sm:bottom-4 sm:right-6 z-50 flex items-end justify-center"
           >
-            {/* Glowing effect behind the avatar */}
-            <motion.div
-              animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="absolute inset-0 bg-sky-400 rounded-full blur-xl z-0"
-            />
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: [0, -5, 5, -5, 0] }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsOpen(true)}
-              className="relative z-10 w-20 h-20 rounded-full shadow-[0_0_20px_rgba(56,189,248,0.5)] flex items-center justify-center transition-all overflow-hidden border-[3px] border-white bg-white hover:border-sky-300"
-            >
-            <img 
-              src="/chatbot-avatar.png" 
-              alt="Chatbot" 
-              className="w-full h-full object-cover" 
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                if (e.currentTarget.nextElementSibling) {
-                  (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block';
-                }
-              }} 
-            />
-            <div className="hidden bg-blue-600 w-full h-full flex items-center justify-center">
-              <Bot className="w-8 h-8 text-white" />
-            </div>
-            </motion.button>
+            {activeChar.type === 'video' ? (
+              <ChromaVideoAvatar
+                videoSrc={activeChar.url}
+                isGreenScreen={activeChar.isGreenScreen}
+                characterName={activeChar.name}
+                onClick={() => setIsOpen(true)}
+              />
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsOpen(true)}
+                className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-[0_0_20px_rgba(56,189,248,0.5)] flex items-center justify-center transition-all overflow-hidden border-[3px] border-white bg-white hover:border-sky-300"
+              >
+                <img 
+                  src={activeChar.url || "/chatbot-avatar.png"} 
+                  alt={activeChar.name} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.nextElementSibling) {
+                      (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block';
+                    }
+                  }} 
+                />
+                <div className="hidden bg-blue-600 w-full h-full flex items-center justify-center">
+                  <Bot className="w-8 h-8 text-white" />
+                </div>
+              </motion.button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -120,7 +138,9 @@ export default function LandingChatbot() {
                   <img src="/chatbot-avatar.png" alt="Bot" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg font-[family-name:var(--font-montserrat)] leading-tight">Asistente Virtual</h3>
+                  <h3 className="font-bold text-lg font-[family-name:var(--font-montserrat)] leading-tight">
+                    {activeChar.name || "Asistente Virtual"}
+                  </h3>
                   <p className="text-xs text-sky-200 font-medium">En línea</p>
                 </div>
               </div>
