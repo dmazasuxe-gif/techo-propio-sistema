@@ -7,6 +7,7 @@ export interface BotCharacter {
   type: 'video' | 'image';
   isGreenScreen: boolean;
   active: boolean;
+  speechText?: string;
 }
 
 export interface LandingContent {
@@ -76,6 +77,7 @@ export interface LandingContent {
     images: { title: string; url: string; category: string }[];
     characters?: BotCharacter[];
     activeCharacterId?: string;
+    speechText?: string;
   };
 }
 
@@ -180,10 +182,12 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
         url: "/personaje-bot.mp4",
         type: "video",
         isGreenScreen: true,
-        active: true
+        active: true,
+        speechText: "¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋"
       }
     ],
-    activeCharacterId: "char-1"
+    activeCharacterId: "char-1",
+    speechText: "¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋"
   },
   fonts: {},
   colors: {}
@@ -236,6 +240,7 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
         ? data.content.chatbot.characters
         : DEFAULT_LANDING_CONTENT.chatbot!.characters,
       activeCharacterId: data.content.chatbot?.activeCharacterId || DEFAULT_LANDING_CONTENT.chatbot!.activeCharacterId,
+      speechText: data.content.chatbot?.speechText || DEFAULT_LANDING_CONTENT.chatbot!.speechText,
     },
   };
 

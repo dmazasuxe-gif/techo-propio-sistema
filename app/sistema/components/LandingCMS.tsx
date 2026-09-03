@@ -87,6 +87,7 @@ export function LandingCMS() {
   const [newCharName, setNewCharName] = useState('');
   const [newCharUrl, setNewCharUrl] = useState('');
   const [newCharGreenScreen, setNewCharGreenScreen] = useState(true);
+  const [newCharSpeechText, setNewCharSpeechText] = useState('¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋');
   const [uploadingCharFile, setUploadingCharFile] = useState(false);
 
   useEffect(() => {
@@ -210,6 +211,14 @@ export function LandingCMS() {
     updateNestedConfig(['chatbot', 'characters'], chars);
   };
 
+  const handleUpdateCharSpeechText = (charId: string, speechText: string) => {
+    if (!config?.chatbot) return;
+    const chars = (config.chatbot.characters || []).map((c) =>
+      c.id === charId ? { ...c, speechText } : c
+    );
+    updateNestedConfig(['chatbot', 'characters'], chars);
+  };
+
   const handleDeleteChar = (charId: string) => {
     if (!config?.chatbot) return;
     const chars = (config.chatbot.characters || []).filter((c) => c.id !== charId);
@@ -231,6 +240,7 @@ export function LandingCMS() {
       url: newCharUrl.trim(),
       type: isVideo ? 'video' : 'image',
       isGreenScreen: newCharGreenScreen,
+      speechText: newCharSpeechText.trim() || '¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋',
       active: false,
     };
     const currentChars = config?.chatbot?.characters || [];
@@ -239,6 +249,7 @@ export function LandingCMS() {
     setNewCharName('');
     setNewCharUrl('');
     setNewCharGreenScreen(true);
+    setNewCharSpeechText('¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋');
   };
 
   const handleUploadCharFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1022,6 +1033,31 @@ export function LandingCMS() {
                         </label>
                       </div>
                     </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                        Texto del Bocadillo (Globito de saludo sobre el personaje):
+                      </label>
+                      <input
+                        type="text"
+                        value={newCharSpeechText}
+                        onChange={(e) => setNewCharSpeechText(e.target.value)}
+                        placeholder="¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋"
+                        className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:border-indigo-500"
+                      />
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span className="text-[10px] text-slate-400 font-medium">Insertar emojis:</span>
+                        {['👋', '🏠', '💬', '👷', '🏗️', '✨', '🇵🇪', '📞', '💡'].map((em) => (
+                          <button
+                            key={em}
+                            type="button"
+                            onClick={() => setNewCharSpeechText((prev) => `${prev} ${em}`)}
+                            className="hover:scale-125 transition-transform text-xs px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200"
+                          >
+                            {em}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100">
@@ -1100,6 +1136,7 @@ export function LandingCMS() {
                               videoSrc={char.url}
                               isGreenScreen={true}
                               characterName={char.name}
+                              speechText={char.speechText || '¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋'}
                               heightClass="h-36"
                               className="pointer-events-none"
                             />
@@ -1120,6 +1157,37 @@ export function LandingCMS() {
                             className="h-36 w-auto object-contain drop-shadow-md"
                           />
                         )}
+                      </div>
+
+                      {/* Bocadillo / Mensaje flotante editable con emojis */}
+                      <div className="mt-2 pt-2 border-t border-slate-100">
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Texto del Bocadillo (Globito):
+                        </label>
+                        <input
+                          type="text"
+                          value={char.speechText || '¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋'}
+                          onChange={(e) => handleUpdateCharSpeechText(char.id, e.target.value)}
+                          placeholder="¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋"
+                          className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:border-indigo-500 bg-white"
+                        />
+                        <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                          <span className="text-[10px] text-slate-400 font-medium">Emojis:</span>
+                          {['👋', '🏠', '💬', '👷', '🏗️', '✨', '🇵🇪', '📞', '💡'].map((em) => (
+                            <button
+                              key={em}
+                              type="button"
+                              onClick={() => {
+                                const current = char.speechText || '¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋';
+                                handleUpdateCharSpeechText(char.id, `${current} ${em}`);
+                              }}
+                              className="hover:scale-125 transition-transform text-xs p-0.5 rounded hover:bg-slate-100"
+                              title={`Agregar ${em}`}
+                            >
+                              {em}
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Controles del personaje */}

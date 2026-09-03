@@ -31,8 +31,11 @@ export default function LandingChatbot({ config }: LandingChatbotProps) {
     url: '/personaje-bot.mp4',
     type: 'video',
     isGreenScreen: true,
-    active: true
+    active: true,
+    speechText: '¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋'
   };
+
+  const bubbleText = activeChar.speechText || config?.speechText || '¡Hola! ¿Dudas sobre tu casa? Haz clic aquí 👋';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,7 +61,11 @@ export default function LandingChatbot({ config }: LandingChatbotProps) {
       const res = await fetch('/api/landing-bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages })
+        body: JSON.stringify({ 
+          messages: newMessages,
+          companyInfo: config?.companyInfo,
+          systemPrompt: config?.systemPrompt
+        })
       });
 
       const data = await res.json();
@@ -82,16 +89,18 @@ export default function LandingChatbot({ config }: LandingChatbotProps) {
       <AnimatePresence>
         {!isOpen && (
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-2 right-1 sm:bottom-4 sm:right-4 z-50 flex items-end justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-2 right-1 sm:bottom-4 sm:right-3 z-50 flex items-end justify-center"
           >
             {activeChar.type === 'video' ? (
               <ChromaVideoAvatar
                 videoSrc={activeChar.url}
                 isGreenScreen={activeChar.isGreenScreen}
                 characterName={activeChar.name}
+                speechText={bubbleText}
                 position="right"
                 onClick={() => setIsOpen(true)}
               />

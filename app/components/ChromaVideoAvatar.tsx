@@ -62,25 +62,36 @@ export default function ChromaVideoAvatar({
         if (isCancelled) return;
 
         if (video.readyState >= 2 && ctx) {
-          const vw = video.videoWidth || 360;
-          const vh = video.videoHeight || 480;
+          const vw = video.videoWidth || 1280;
+          const vh = video.videoHeight || 720;
 
-          // For landscape videos (like 16:9), crop the central strip tightly around character
-          // so there are no wide empty transparent margins pushing the avatar to the center!
-          const isLandscape = vw > vh * 1.2;
-          const targetW = isLandscape ? Math.round(vh * 0.68) : vw;
-          const sx = isLandscape ? Math.round((vw - targetW) / 2) : 0;
-          const sy = 0;
-          const sw = targetW;
-          const sh = vh;
+          // Precise bounding box for the character (including waving hand)
+          // Detected bounds: minX: 244, maxX: 660, minY: 44, maxY: 712
+          let sx = 0;
+          let sy = 0;
+          let sw = vw;
+          let sh = vh;
 
-          if (canvas.width !== targetW || canvas.height !== vh) {
-            canvas.width = targetW;
-            canvas.height = vh;
+          if (vw === 1280 && vh === 720) {
+            sx = 210; // generous safety margin before hand at 244
+            sw = 475; // reaches 685, cleanly containing character without empty space
+            sy = 30;  // above helmet
+            sh = 690; // reaches feet
+          } else if (vw > vh * 1.2) {
+            // General landscape fallback
+            sw = Math.round(vh * 0.7);
+            sx = Math.max(0, Math.round(vw * 0.18));
+            sy = 0;
+            sh = vh;
           }
 
-          ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, vh);
-          const frame = ctx.getImageData(0, 0, targetW, vh);
+          if (canvas.width !== sw || canvas.height !== sh) {
+            canvas.width = sw;
+            canvas.height = sh;
+          }
+
+          ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+          const frame = ctx.getImageData(0, 0, sw, sh);
           const d = frame.data;
           const len = d.length;
 
@@ -147,11 +158,11 @@ export default function ChromaVideoAvatar({
 
       {/* Floating speech bubble */}
       <motion.div
-        initial={{ opacity: 0, y: 8, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ delay: 0.6, duration: 0.3 }}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.3 }}
         className={`absolute -top-10 sm:-top-11 ${
-          position === 'left' ? 'left-0 sm:left-2' : 'right-0 sm:right-2'
+          position === 'left' ? 'left-0 sm:left-2' : 'right-0 sm:right-1'
         } bg-white/95 backdrop-blur-md text-slate-800 text-[11px] sm:text-xs font-semibold py-1.5 px-3 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] border border-sky-200/80 flex items-center gap-2 whitespace-nowrap z-20 pointer-events-none group-hover:scale-105 transition-transform`}
       >
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
@@ -166,18 +177,20 @@ export default function ChromaVideoAvatar({
 
       {/* Character Display Container */}
       <motion.div
-        whileHover={{ scale: 1.04, y: -4 }}
+        whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 350, damping: 25 }}
         className="relative z-10 flex flex-col items-center"
       >
         {isGreenScreen ? (
           <canvas
             ref={canvasRef}
+            width={475}
+            height={690}
             className={`w-auto ${heightClass} object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.25)] filter`}
             style={{
               imageRendering: "auto",
               maxWidth: "100%",
+              aspectRatio: "475 / 690",
             }}
           />
         ) : null}
