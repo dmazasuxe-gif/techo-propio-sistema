@@ -13,7 +13,6 @@ import {
   FileText,
   CheckCircle2,
   Menu,
-  Plus,
   RotateCw,
   Sparkles,
   Map,
@@ -293,19 +292,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Quick Action: Nueva Postulación */}
-            <button
-              onClick={() => {
-                setEditingBeneficiaryForForm(null);
-                handleNavSelect("ficha_registro");
-              }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-bold text-xs px-3 sm:px-4 py-2 rounded-2xl shadow-md shadow-sky-500/20 transition-all"
-              title="Registrar nueva postulación"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Nuevo</span>
-            </button>
-
             {/* Refresh Data button */}
             <button
               onClick={() => {
