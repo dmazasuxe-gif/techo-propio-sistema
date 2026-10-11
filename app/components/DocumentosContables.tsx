@@ -150,6 +150,9 @@ export default function DocumentosContables() {
   const [replacingDocId, setReplacingDocId] = useState<string | null>(null);
   const replaceFileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Compartir documento directo a WhatsApp
+  const [sharingDocId, setSharingDocId] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -437,11 +440,75 @@ export default function DocumentosContables() {
     }
   };
 
-  // Compartir datos de la factura con el contador por WhatsApp
-  const shareWhatsAppContador = (doc: DocumentoContable) => {
-    const info = getFechaEntregaContador(doc);
-    const mensaje = `Hola estimado Contador, le adjunto la información de la factura para la contabilidad:\n\n📄 *Tipo:* ${doc.tipoDocumento}\n🏢 *Emisor / Proveedor:* ${doc.emisor}\n🔢 *RUC:* ${doc.ruc || "N/A"}\n📅 *Fecha de Emisión:* ${doc.fecha || "N/A"}\n⏰ *Fecha Límite (25 días):* ${info.fechaLimite}\n💰 *Monto Total:* S/ ${Number(doc.monto).toFixed(2)}\n📦 *Detalle / Productos:* ${cleanConcepto(doc.concepto)}\n${doc.urlArchivo && !doc.urlArchivo.includes("api.telegram.org") ? `🔗 *Ver Comprobante:* ${doc.urlArchivo}\n` : ""}\nSaludos.`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`, "_blank");
+  // Compartir factura (archivo + nombre y descripción) directamente a WhatsApp
+  const compartirDocumentoWhatsApp = async (doc: DocumentoContable) => {
+    const emisorTexto = doc.emisor ? `${doc.tipoDocumento} - ${doc.emisor}` : (doc.tipoDocumento || "Comprobante");
+    const descripcionFactura = `${emisorTexto}: ${cleanConcepto(doc.concepto)}`;
+
+    // Si no tiene archivo o es link temporal expirado de Telegram
+    if (!doc.urlArchivo || doc.urlArchivo.includes("api.telegram.org")) {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(descripcionFactura)}`, "_blank");
+      return;
+    }
+
+    setSharingDocId(doc.id);
+
+    try {
+      // Descargamos el archivo como blob para enviarlo nativamente
+      const res = await fetch(doc.urlArchivo);
+      if (!res.ok) throw new Error("No se pudo obtener el archivo");
+      const blob = await res.blob();
+
+      // Detectar tipo MIME y extensión adecuada
+      let mimeType = blob.type || "application/pdf";
+      let ext = ".pdf";
+      const urlLower = doc.urlArchivo.toLowerCase();
+
+      if (mimeType.includes("jpeg") || mimeType.includes("jpg") || urlLower.includes(".jpg") || urlLower.includes(".jpeg")) {
+        ext = ".jpg";
+        mimeType = "image/jpeg";
+      } else if (mimeType.includes("png") || urlLower.includes(".png")) {
+        ext = ".png";
+        mimeType = "image/png";
+      } else if (mimeType.includes("webp") || urlLower.includes(".webp")) {
+        ext = ".webp";
+        mimeType = "image/webp";
+      } else if (mimeType.includes("pdf") || urlLower.includes(".pdf")) {
+        ext = ".pdf";
+        mimeType = "application/pdf";
+      }
+
+      const safeName = (doc.emisor || "Factura").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
+      const fileName = `${doc.tipoDocumento || "Comprobante"}_${safeName}${ext}`;
+      const file = new File([blob], fileName, { type: mimeType });
+
+      // Si el navegador soporta compartir archivos nativos (iOS Safari / Android Chrome / PWA)
+      if (
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function" &&
+        (navigator as any).canShare &&
+        (navigator as any).canShare({ files: [file] })
+      ) {
+        await navigator.share({
+          files: [file],
+          title: fileName,
+          text: descripcionFactura,
+        });
+        return;
+      }
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        // El usuario canceló la acción de compartir voluntariamente
+        return;
+      }
+      console.warn("No se pudo compartir el archivo directamente:", err);
+    } finally {
+      setSharingDocId(null);
+    }
+
+    // Fallback para navegadores de escritorio sin Web Share de archivos:
+    const fallbackText = `${descripcionFactura}\n${doc.urlArchivo}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(fallbackText)}`, "_blank");
   };
 
   // Filtrado y estadísticas
@@ -793,11 +860,16 @@ export default function DocumentosContables() {
 
                     {/* Botón WhatsApp al Contador */}
                     <button
-                      onClick={() => shareWhatsAppContador(doc)}
-                      className="p-1.5 text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 rounded-xl border border-emerald-500/20"
-                      title="Enviar datos al contador por WhatsApp"
+                      onClick={() => compartirDocumentoWhatsApp(doc)}
+                      disabled={sharingDocId === doc.id}
+                      className="p-1.5 text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 rounded-xl border border-emerald-500/20 disabled:opacity-50 transition-all"
+                      title="Enviar archivo y descripción por WhatsApp"
                     >
-                      <Send className="w-3.5 h-3.5" />
+                      {sharingDocId === doc.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   </div>
 
@@ -951,11 +1023,16 @@ export default function DocumentosContables() {
                       <td className="px-5 py-4 text-right whitespace-nowrap space-x-1.5">
                         {/* Botón WhatsApp */}
                         <button
-                          onClick={() => shareWhatsAppContador(doc)}
-                          className="p-1.5 bg-slate-800/60 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 rounded-xl transition-colors"
-                          title="Enviar detalles al contador por WhatsApp"
+                          onClick={() => compartirDocumentoWhatsApp(doc)}
+                          disabled={sharingDocId === doc.id}
+                          className="p-1.5 bg-slate-800/60 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 rounded-xl transition-colors disabled:opacity-50"
+                          title="Enviar archivo y descripción por WhatsApp"
                         >
-                          <Send className="w-4 h-4" />
+                          {sharingDocId === doc.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
                         </button>
 
                         {/* Botón Cambiar Estado Entrega */}

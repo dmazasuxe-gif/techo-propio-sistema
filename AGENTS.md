@@ -43,4 +43,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - **Alerta de Entrega al Contador (Plazo 25 Días)**:
     - Cálculo automático de fecha límite sumando 25 días a la fecha de la factura (`[ENTREGA_CONTADOR: YYYY-MM-DD]`).
     - Semáforo de plazos: Al día (verde), Próximo a vencer en ≤ 5 días (amarillo), Vencido / Vence hoy (rojo parpadeante) y Entregado (púrpura con check).
-    - Botones de acción rápida: "Marcar Entregado" (actualiza estado vía `PATCH /api/documentos-contables`), "WhatsApp al Contador" (mensaje preformateado con datos y link) y "🔔 Activar Alertas en el Celular" (Web Push Notifications para iPhone y Android).
+    - Botones de acción rápida: "Marcar Entregado" (actualiza estado vía `PATCH /api/documentos-contables`), "Enviar por WhatsApp" (descarga el archivo en memoria y lo comparte directamente adjunto en WhatsApp con el nombre y descripción de la factura vía Web Share API en iOS/Android, eliminando texto adicional y plantillas extensas) y "🔔 Activar Alertas en el Celular" (Web Push Notifications para iPhone y Android).
