@@ -15,6 +15,18 @@
    - Cada factura calcula automáticamente su fecha límite de entrega al contador (fecha de emisión + 25 días).
    - Semáforo de estados: Al día (verde), Por vencer en ≤ 5 días (amarillo), Vence hoy / Vencido (rojo parpadeante) y Entregado (púrpura).
    - Botón directo para marcar entregado (`PATCH /api/documentos-contables`), compartir al contador por WhatsApp en 1 clic, y botón de notificaciones push web para el celular (`Notification.requestPermission()`).
+8. **Rediseño Visual de Alta Gama de la Landing Page (Stitch "Structural Integrity"):**
+   - Estética arquitectónica de máxima autoridad con paleta Deep Slate Navy (`#162839`), Terracota (`#e67e22`) y Warm Stone (`#fcf9f6`), con bordes técnicos `.arch-border` y tipografía Montserrat + Work Sans.
+   - Cinta superior institucional con acreditación Fondo MIVIVIENDA / Techo Propio.
+   - Portada Hero con titulares de gran impacto, llamados a la acción duales (DNI y WhatsApp) y Bento Grid de métricas clave (15+ Años, 500+ Viviendas, S/ 0 Cuota Inicial, 100% Antisísmico).
+   - Portal oficial de Consulta DNI en tiempo real con validación y modal detallado de avance.
+   - Sección de 2 columnas "El Estándar Maza Quiroz" con pilares de supervisión colegiada CIP/CAP, materiales certificados y fotografía técnica de planos.
+   - Cronograma visual "Paso a Paso" de 4 fases para postular al subsidio Techo Propio.
+9. **100% de Control y Edición en el Administrador (Visual Builder V4 PRO - `LandingCMS.tsx`):**
+   - Control absoluto sobre la visibilidad de todas las secciones mediante el panel "Secciones Visibles" (Activar/Desactivar: Barra Superior, Portada Hero, Consulta DNI, Servicios, El Estándar, Modelos 3D, Proceso Paso a Paso, Obras Entregadas, Sobre Nosotros, Popup Comunicado y Bot Asistente).
+   - Edición WYSIWYG de textos, fuentes (Montserrat, Work Sans, Outfit, Inter, etc.), colores predeterminados y HEX personalizado en cada elemento.
+   - Gestión dinámica de tarjetas: agregar, reordenar y eliminar tarjetas de estadísticas Bento, servicios, pilares del Estándar, pasos del cronograma, y proyectos con carruseles de fotos.
+   - Sincronización inmutable mediante `lib/landing_db.ts` y persistencia en Supabase.
 
 ## Resumen de la Sesión Previa (Agosto 2026 - Extensión Escritorio en Excel)
 Iniciamos la **Primera Etapa** de la creación de una extensión de escritorio para el sistema utilizando Microsoft Excel con Macros (.xlsm). El objetivo es registrar, editar y administrar beneficiarios, predios, ubicaciones y cargas familiares offline. La arquitectura de tablas en Excel es idéntica a Supabase (`BD_BENEFICIARIOS`, `BD_CARGA_FAMILIAR`, etc.) para una futura integración.
