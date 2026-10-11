@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDocumentosContables, addDocumentoContable, deleteDocumentoContable } from '@/lib/db';
+import { getDocumentosContables, addDocumentoContable, updateDocumentoContable, deleteDocumentoContable } from '@/lib/db';
 import { DocumentoContable } from '@/app/types';
 
 export async function GET() {
@@ -24,6 +24,25 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error adding documento contable:", error);
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const { id, ...updates } = await req.json();
+    if (!id) {
+      return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    }
+
+    const updated = await updateDocumentoContable(id, updates);
+    if (updated) {
+      return NextResponse.json(updated);
+    } else {
+      return NextResponse.json({ error: "No se pudo actualizar" }, { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error en PATCH documento contable:", error);
+    return NextResponse.json({ error: "Error en servidor" }, { status: 500 });
   }
 }
 

@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     'node-fetch',
     'ws',
     'pdfkit',
+    'pdf-parse',
   ],
   outputFileTracingExcludes: {
     '/api/presupuesto/pdf': ['./scripts/**'],

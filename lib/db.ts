@@ -280,6 +280,20 @@ export async function getDocumentosContables(): Promise<DocumentoContable[]> {
   return data.map(convertKeysToCamelCase);
 };
 
+export async function updateDocumentoContable(id: string, updates: Partial<DocumentoContable>): Promise<DocumentoContable | null> {
+  const { data, error } = await supabase
+    .from('documentos_contables')
+    .update(convertKeysToSnakeCase(updates))
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) {
+    console.error("Error updating documento_contable:", error);
+    return null;
+  }
+  return convertKeysToCamelCase(data);
+}
+
 export const deleteDocumentoContable = async (id: string): Promise<boolean> => {
   const { error } = await supabase.from('documentos_contables').delete().eq('id', id);
   if (error) {

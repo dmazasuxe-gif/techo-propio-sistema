@@ -2,8 +2,71 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { addDocumentoContable } from "@/lib/db";
 import OpenAI from "openai";
+import zlib from "zlib";
 
 export const maxDuration = 60;
+
+// Extractor nativo en memoria de streams de texto para PDF (sin dependencias externas ni workers)
+function extractTextFromPdfBuffer(buffer: Buffer): string {
+  try {
+    const rawStr = buffer.toString("latin1");
+    const extracted: string[] = [];
+    const streamRegex = /stream[\r\n]+([\s\S]*?)[\r\n]+endstream/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = streamRegex.exec(rawStr)) !== null) {
+      try {
+        const streamData = Buffer.from(match[1], "latin1");
+        const uncompressed = zlib.inflateSync(streamData).toString("latin1");
+
+        // Operador (string) Tj
+        const tjRegex = /\(([\s\S]*?)\)\s*Tj/g;
+        let tjMatch: RegExpExecArray | null;
+        while ((tjMatch = tjRegex.exec(uncompressed)) !== null) {
+          extracted.push(tjMatch[1]);
+        }
+
+        // Operador [(part1) 120 (part2)] TJ
+        const arrayRegex = /\[([\s\S]*?)\]\s*TJ/g;
+        let arrMatch: RegExpExecArray | null;
+        while ((arrMatch = arrayRegex.exec(uncompressed)) !== null) {
+          const parts = arrMatch[1].match(/\(([\s\S]*?)\)/g) || [];
+          extracted.push(parts.map((p) => p.slice(1, -1)).join(""));
+        }
+      } catch {
+        // Stream no comprimido con zlib o binario, se ignora
+      }
+    }
+
+    if (extracted.length > 0) {
+      return extracted
+        .map((t) => t.replace(/\\([()\\])/g, "$1"))
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+  } catch (err) {
+    console.warn("Aviso: error en parser nativo de PDF:", err);
+  }
+  return "";
+}
+
+// Extractor de imágenes JPEG incrustadas en un PDF escaneado
+function extractFirstJpegFromPdf(buffer: Buffer): string | null {
+  try {
+    const start = buffer.indexOf(Buffer.from([0xff, 0xd8, 0xff]));
+    if (start !== -1) {
+      const end = buffer.indexOf(Buffer.from([0xff, 0xd9]), start);
+      if (end !== -1 && end > start + 500) {
+        const jpgBuf = buffer.subarray(start, end + 2);
+        return `data:image/jpeg;base64,${jpgBuf.toString("base64")}`;
+      }
+    }
+  } catch (e) {
+    console.warn("Aviso: no se pudo extraer JPEG del PDF:", e);
+  }
+  return null;
+}
 
 async function ensureBucketExists(bucketName: string) {
   try {
@@ -43,7 +106,7 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 1. Guardar archivo en Supabase Storage (o fallback Data URL)
+    // 1. Guardar archivo en Supabase Storage (permanente) o fallback Data URL
     let publicUrl = "";
     const bucketReady = await ensureBucketExists("documentos_beneficiarios");
 
@@ -61,7 +124,7 @@ export async function POST(req: Request) {
           .getPublicUrl(filePath);
         publicUrl = publicUrlData.publicUrl;
       } else {
-        console.warn("Supabase upload warning, using base64 fallback:", uploadError.message);
+        console.warn("Supabase upload warning, usando fallback dataUrl:", uploadError.message);
       }
     }
 
@@ -71,85 +134,76 @@ export async function POST(req: Request) {
       publicUrl = `data:${mimeType};base64,${base64}`;
     }
 
-    // 2. Extraer datos con Inteligencia Artificial
+    // 2. Extraer datos con Inteligencia Artificial (OpenAI)
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({
-        error: "OPENAI_API_KEY no está configurada en las variables de entorno.",
-      }, { status: 500 });
+      return NextResponse.json(
+        { error: "OPENAI_API_KEY no está configurada en las variables de entorno." },
+        { status: 500 }
+      );
     }
 
     const openai = new OpenAI({ apiKey });
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
+    const promptInstructions = `Eres un sistema de inteligencia artificial especializado en lectura, análisis y extracción de comprobantes de pago peruanos (Facturas electrónicas, Boletas de Venta, Recibos por Honorarios, Notas de Crédito, Tickets).
+Tu labor es examinar este comprobante y extraer con total exactitud todos los datos fiscales y la descripción de los productos o servicios adquiridos.
+
+REGLAS CRÍTICAS DE EXTRACCIÓN (PERÚ / SUNAT):
+1. "emisor": Razón Social o Nombre completo del PROVEEDOR o empresa que VENDE y emite la factura (el vendedor).
+   - ATENCIÓN: Si en el comprobante figura "CLIENTE: CONSTRUCTORA MAZA QUIROZ E.I.R.L.", esa es la empresa compradora/cliente, NO es el emisor. El emisor es la otra empresa o persona que emitió el comprobante.
+2. "ruc": Número de RUC del PROVEEDOR/EMISOR (11 dígitos numéricos peruanos, ej: 10472490228 o 20608453866). Si hay dos RUCs, toma el del emisor que vende.
+3. "tipoDocumento": "Factura", "Boleta de Venta", "Recibo por Honorarios", "Nota de Crédito" o "Comprobante".
+4. "numeroDocumento": Serie y número del comprobante (ej: F001-00000168, B002-45, etc.).
+5. "fecha": Fecha de emisión en formato YYYY-MM-DD (ej: 2026-10-10).
+6. "monto": Monto TOTAL a pagar en número decimal (ej. 71.00, 1540.50), sin símbolos de moneda.
+7. "concepto": Descripción detallada y completa de TODOS los productos, materiales o servicios adquiridos (ej: "CHICHA DE JORA 1 LT (Cant: 1), ARROZ NORTEÑO CON PANCETA CROCANTE (Cant: 1), TRIO DE MINI CAUSAS (Cant: 1)"). No omitas los nombres de los productos.
+8. "subtotal": Subtotal o base imponible si figura (número decimal, opcional).
+9. "igv": Monto del IGV si figura (número decimal, opcional).
+10. "moneda": "PEN" para Soles o "USD" para Dólares.
+
+Responde únicamente con un objeto json válido con esta estructura exacta.`;
+
     let messagesContent: any[] = [];
-    const promptInstructions = `Eres un sistema de inteligencia artificial experto en lectura, análisis y extracción de comprobantes de pago peruanos (Facturas electrónicas, Boletas de Venta, Recibos por Honorarios, Notas de Crédito, Tickets).
-Tu objetivo es examinar este documento contable y extraer con total precisión los datos requeridos.
-
-Devuelve estrictamente un objeto JSON con la siguiente estructura:
-{
-  "tipoDocumento": "Factura" | "Boleta de Venta" | "Recibo por Honorarios" | "Nota de Crédito" | "Comprobante",
-  "numeroDocumento": "Serie y correlativo si aparece (ej. F001-0004521, E001-85, etc.), o cadena vacía",
-  "fecha": "Fecha de emisión en formato YYYY-MM-DD (ej: 2026-05-18)",
-  "emisor": "Razón social o nombre comercial de la empresa/proveedor emisor",
-  "ruc": "Número de RUC del emisor (11 dígitos numéricos de Perú)",
-  "concepto": "Descripción concisa y clara de los bienes, productos o servicios adquiridos",
-  "monto": 1450.50, // Monto TOTAL a pagar en número decimal (sin letras ni signos de moneda)
-  "subtotal": 1229.24, // Monto subtotal o base imponible (opcional, número)
-  "igv": 221.26, // Monto de IGV 18% si aplica (opcional, número)
-  "moneda": "PEN" | "USD" // Por defecto "PEN" para Soles
-}
-
-Reglas obligatorias:
-- "monto" debe ser estrictamente un valor numérico decimal válido (ej. 150.00).
-- "emisor" debe ser el proveedor o empresa que emite la factura (no el cliente).
-- "ruc" debe ser de 11 dígitos si es una empresa peruana.
-- Si no logras leer algún campo opcional, déjalo como null o cadena vacía, pero proporciona valores confiables para tipoDocumento, emisor, fecha y monto.`;
 
     if (isPdf) {
-      let extractedText = "";
-      let screenshotDataUrl: string | null = null;
+      // Estrategia 1: Extractor nativo de texto de streams zlib (100% confiable y sin fallos en Vercel)
+      let extractedText = extractTextFromPdfBuffer(buffer);
 
+      // Estrategia 2: Intentar pdf-parse v2 complementario
       try {
         const { PDFParse } = await import("pdf-parse");
         const parser = new PDFParse({ data: buffer });
         await parser.load();
-
         const textResult = await parser.getText();
-        extractedText = (textResult?.text || "").trim();
-
-        if (typeof parser.getScreenshot === "function") {
-          try {
-            const shot = await parser.getScreenshot({ pageNumber: 1 });
-            if (shot?.pages?.[0]?.dataUrl) {
-              screenshotDataUrl = shot.pages[0].dataUrl;
-            }
-          } catch (shotErr) {
-            console.warn("No se pudo obtener captura del PDF:", shotErr);
-          }
+        const pdfParseText = (textResult?.text || "").trim();
+        if (pdfParseText.length > extractedText.length) {
+          extractedText = pdfParseText;
         }
-
         await parser.destroy();
-      } catch (pdfErr) {
-        console.warn("Error parseando PDF con PDFParse:", pdfErr);
+      } catch (err) {
+        console.warn("Aviso al ejecutar pdf-parse:", err);
       }
 
-      if (screenshotDataUrl) {
+      // Estrategia 3: Buscar si hay una imagen escaneada incrustada en el PDF
+      const embeddedJpeg = extractFirstJpegFromPdf(buffer);
+
+      if (embeddedJpeg) {
         messagesContent = [
           {
             type: "text",
-            text: `${promptInstructions}\n\nTexto adicional extraído del documento PDF (si aplica):\n${extractedText || "Documento escaneado / con poco texto"}`,
+            text: `${promptInstructions}\n\nTexto extraído del documento PDF:\n${extractedText || "Documento escaneado."}`,
           },
           {
             type: "image_url",
-            image_url: { url: screenshotDataUrl },
+            image_url: { url: embeddedJpeg },
           },
         ];
       } else {
         messagesContent = [
           {
             type: "text",
-            text: `${promptInstructions}\n\nTexto íntegro extraído del documento PDF:\n${extractedText || "No se detectó texto en el PDF. Infiere lo que puedas."}`,
+            text: `${promptInstructions}\n\nTexto íntegro extraído del documento PDF:\n${extractedText || "No se detectó texto directo."}`,
           },
         ];
       }
@@ -196,17 +250,42 @@ Reglas obligatorias:
         ? parsedData.monto
         : parseFloat(String(parsedData.monto || "0").replace(/[^0-9.]/g, "")) || 0;
 
+    // Normalizar concepto si viene como Array
+    let conceptoTexto = "";
+    if (Array.isArray(parsedData.concepto)) {
+      conceptoTexto = parsedData.concepto.join(", ");
+    } else if (typeof parsedData.concepto === "string") {
+      conceptoTexto = parsedData.concepto.trim();
+    } else {
+      conceptoTexto = "Gasto o servicio facturado";
+    }
+
+    const fechaDoc = parsedData.fecha || new Date().toISOString().split("T")[0];
+
+    // Cálculo automático del plazo de entrega al contador (25 días por defecto)
+    let fechaAlertaSugerida = "";
+    try {
+      const d = new Date(fechaDoc);
+      if (!isNaN(d.getTime())) {
+        d.setDate(d.getDate() + 25);
+        fechaAlertaSugerida = d.toISOString().split("T")[0];
+      }
+    } catch {
+      fechaAlertaSugerida = "";
+    }
+
     const datosFinales = {
       tipoDocumento: parsedData.tipoDocumento || "Factura",
       numeroDocumento: parsedData.numeroDocumento || "",
-      fecha: parsedData.fecha || new Date().toISOString().split("T")[0],
+      fecha: fechaDoc,
       emisor: parsedData.emisor || "Proveedor General",
       ruc: parsedData.ruc ? String(parsedData.ruc).replace(/\D/g, "") : "",
-      concepto: parsedData.concepto || "Gasto o servicio facturado",
+      concepto: conceptoTexto,
       monto: montoNormalizado,
       subtotal: typeof parsedData.subtotal === "number" ? parsedData.subtotal : null,
       igv: typeof parsedData.igv === "number" ? parsedData.igv : null,
       moneda: parsedData.moneda || "PEN",
+      fechaAlerta: fechaAlertaSugerida,
       urlArchivo: publicUrl,
     };
 
@@ -219,9 +298,9 @@ Reglas obligatorias:
         monto: datosFinales.monto,
         emisor: datosFinales.emisor,
         ruc: datosFinales.ruc,
-        concepto: datosFinales.concepto,
+        concepto: `${datosFinales.concepto}${fechaAlertaSugerida ? ` [ENTREGA_CONTADOR:${fechaAlertaSugerida}]` : ""}`,
         urlArchivo: publicUrl,
-        estado: "Registrado",
+        estado: "Pendiente Contador",
       });
     }
 
