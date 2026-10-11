@@ -24,6 +24,26 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Stitch "Structural Integrity" Architectural Styling */
+.arch-border {
+  border: 1px solid #c4c6cd;
+}
+.arch-border-subtle {
+  border: 1px solid rgba(196, 198, 205, 0.5);
+}
+.arch-border-accent {
+  border: 1px solid rgba(230, 126, 34, 0.4);
+}
+.bg-stone-surface {
+  background-color: #fcf9f6;
+}
+.bg-stone-container {
+  background-color: #f6f3f0;
+}
+.text-navy-primary {
+  color: #162839;
+}
+
 .glass-panel-hover {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
