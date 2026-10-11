@@ -23,3 +23,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - Peso recomendado: 1 a 5 MB para optimizar el consumo de datos y velocidad en smartphones.
   - En el panel `/sistema`, mantener marcada la casilla "Tiene pantalla verde".
 - **Objetivo General**: Mantener la estabilidad de estas implementaciones sin sobreescribir la barra de progreso del visor 3D, el anclaje lateral del bot, ni las fórmulas de compensación de coordenadas en futuras actualizaciones.
+- **Experiencia Móvil y Panel Administrador (Octubre 2026)**:
+  - Interfaz nativa estilo iOS/iPadOS con barra superior de vidrio translúcido (`backdrop-blur-2xl`), soporte de safe-areas (`env(safe-area-inset-top)` y `env(safe-area-inset-bottom)`), y eliminación definitiva de la barra inferior de navegación para maximizar el área de trabajo en smartphones.
+  - Drawer lateral deslizable con secciones agrupadas y microinteracciones táctiles hápticas.
+  - Vista adaptativa de tarjetas en móvil para el listado de expedientes/beneficiarios en `ExpedientesView.tsx` evitando scroll horizontal en teléfonos.
+- **Mejoras UX/UI de Registro**: Formularios con formato automático de fecha (auto-slashes) y consultas directas de DNI (sin modales secundarios) para un flujo de registro ininterrumpido.

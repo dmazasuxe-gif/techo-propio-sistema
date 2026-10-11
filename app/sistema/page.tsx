@@ -1,24 +1,36 @@
-
 "use client";
-
-
 
 import React, { useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
 import { Beneficiario, Dimensiones, Insumo, PartidaAPU } from "../types";
-import { BENEFICIARIOS_INICIALES, INSUMOS_INICIALES, PARTIDAS_APU_INICIALES } from "../constants/initialData";
-import { ArrowLeft, User, Ruler, Wrench, Hourglass, FileText, CheckCircle2, Menu, X } from "lucide-react";
+import { BENEFICIARIOS_INICIALES } from "../constants/initialData";
+import {
+  ArrowLeft,
+  User,
+  Ruler,
+  Wrench,
+  Hourglass,
+  FileText,
+  CheckCircle2,
+  Menu,
+  Plus,
+  RotateCw,
+  Sparkles,
+  Map,
+  ClipboardList,
+  Users,
+  CreditCard,
+  Hammer,
+  Globe
+} from "lucide-react";
 
 import Sidebar, { NavView } from "../components/Sidebar";
 import PeruMap from "../components/PeruMap";
-import Dashboard from "../components/Dashboard";
 import BeneficiaryFicha from "../components/BeneficiaryFicha";
 import DocumentManager from "../components/DocumentManager";
 import ExpedientesView from "../components/ExpedientesView";
 import FullRegistrationForm from "../components/FullRegistrationForm";
 import InteractivePlano from "../components/InteractivePlano";
-import MetradosSheet from "../components/MetradosSheet";
-import ApuLibrary from "../components/ApuLibrary";
 import PresupuestoSheet from "../components/PresupuestoSheet";
 import CronogramaObra from "../components/CronogramaObra";
 import PlanosIngenieria from "../components/PlanosIngenieria";
@@ -30,28 +42,51 @@ import { LandingCMS } from "./components/LandingCMS";
 import DocumentosContables from "../components/DocumentosContables";
 import ModelosViviendaAdmin from "../components/admin/ModelosViviendaAdmin";
 
+const VIEW_META: Record<
+  NavView,
+  { label: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  resumen: { label: "Resumen General", icon: Map },
+  ficha_registro: { label: "Ficha de Registro", icon: ClipboardList },
+  registros: { label: "Beneficiarios", icon: Users },
+  expedientes: { label: "Expediente Técnico", icon: Wrench },
+  documentos: { label: "Documentos", icon: FileText },
+  pagos: { label: "Cronograma de Pagos", icon: CreditCard },
+  maestros: { label: "Maestros de Obra", icon: Hammer },
+  consulta_dni: { label: "Consulta DNI", icon: Sparkles },
+  contabilidad: { label: "Contabilidad", icon: FileText },
+  modelos_3d: { label: "Modelos 3D", icon: Sparkles },
+  landing_config: { label: "Config Landing", icon: Globe },
+  analytics: { label: "Analíticas", icon: Globe },
+};
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [beneficiarios, setBeneficiarios] = useState<Beneficiario[]>(BENEFICIARIOS_INICIALES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingBeneficiaryForForm, setEditingBeneficiaryForForm] = useState<Beneficiario | null>(null);
   const [activeTab, setActiveTab] = useState<string>("ficha");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   
   // Navigation View State
   const [activeNavView, setActiveNavView] = useState<NavView>("resumen");
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   // Dynamic engineering simulation states
-  const [dimensiones, setDimensiones] = useState<Dimensiones>({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
+  const [dimensiones, setDimensiones] = useState<Dimensiones>({
+    largo: 6.5,
+    ancho: 5.5,
+    altura: 2.8,
+    espesorMuro: 0.15,
+    habitaciones: 2,
+  });
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [partidasApu, setPartidasApu] = useState<PartidaAPU[]>([]);
 
-  // Add fetch for Presupuesto Master
+  // Fetch Presupuesto Master
   useEffect(() => {
     const fetchPresupuestoMaster = async () => {
       try {
-        const res = await fetch('/api/presupuesto-master');
+        const res = await fetch("/api/presupuesto-master");
         if (res.ok) {
           const data = await res.json();
           setInsumos(data.insumos || []);
@@ -66,10 +101,10 @@ export default function Home() {
 
   const handleSavePresupuestoMaster = async (newPartidas: PartidaAPU[]) => {
     try {
-      const res = await fetch('/api/presupuesto-master', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ insumos, partidas: newPartidas })
+      const res = await fetch("/api/presupuesto-master", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ insumos, partidas: newPartidas }),
       });
       if (res.ok) {
         setPartidasApu(newPartidas);
@@ -79,17 +114,7 @@ export default function Home() {
     }
   };
 
-  const selectedBeneficiary = beneficiarios.find(b => b.id === selectedId);
-
-  const handleSelectExpediente = (id: string) => {
-    setSelectedId(id);
-    setActiveTab("ficha");
-    setActiveNavView("expedientes");
-  };
-
-  const handleOpenNewModal = () => {
-    setIsModalOpen(true);
-  };
+  const selectedBeneficiary = beneficiarios.find((b) => b.id === selectedId);
 
   const handleNavSelect = (view: NavView) => {
     setActiveNavView(view);
@@ -105,20 +130,21 @@ export default function Home() {
       try {
         const parsed = JSON.parse(selectedBeneficiary.notas);
         if (parsed.dimensiones) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setDimensiones(parsed.dimensiones);
           return;
         }
-      } catch(e) {}
+      } catch {}
     }
-    setDimensiones({ largo: 6.5, ancho: 5.5, altura: 2.80, espesorMuro: 0.15, habitaciones: 2 });
+    setDimensiones({ largo: 6.5, ancho: 5.5, altura: 2.8, espesorMuro: 0.15, habitaciones: 2 });
   }, [selectedId, beneficiarios]);
 
   const handleSaveExpedienteData = (key: string, data: any) => {
     if (!selectedBeneficiary) return;
     let notasObj: any = {};
     if (selectedBeneficiary.notas) {
-      try { notasObj = JSON.parse(selectedBeneficiary.notas); } catch (e) {}
+      try {
+        notasObj = JSON.parse(selectedBeneficiary.notas);
+      } catch {}
     }
     notasObj[key] = data;
     const updatedBeneficiario = { ...selectedBeneficiary, notas: JSON.stringify(notasObj) };
@@ -140,11 +166,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBeneficiarios();
     const storedLogin = localStorage.getItem("techo-propio-logged-in");
     if (storedLogin === "true") {
-       
       setIsLoggedIn(true);
     }
   }, [loadBeneficiarios]);
@@ -159,16 +183,16 @@ export default function Home() {
   };
 
   const handleSaveBeneficiary = async (updated: Beneficiario) => {
-    const exists = beneficiarios.some(b => b.id === updated.id);
+    const exists = beneficiarios.some((b) => b.id === updated.id);
     if (exists) {
-      setBeneficiarios(prev => prev.map(b => b.id === updated.id ? updated : b));
+      setBeneficiarios((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
       fetch("/api/beneficiarios", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
       }).catch(console.error);
     } else {
-      setBeneficiarios(prev => [updated, ...prev]);
+      setBeneficiarios((prev) => [updated, ...prev]);
       setSelectedId(updated.id);
       setActiveTab("ficha");
       setActiveNavView("expedientes");
@@ -182,13 +206,13 @@ export default function Home() {
   };
 
   const handleDeleteBeneficiary = async (id: string) => {
-    setBeneficiarios(prev => prev.filter(b => b.id !== id));
+    setBeneficiarios((prev) => prev.filter((b) => b.id !== id));
     if (selectedId === id) setSelectedId(null);
     fetch(`/api/beneficiarios?id=${id}`, { method: "DELETE" }).catch(console.error);
   };
 
   const handleEditBeneficiary = async (updated: Beneficiario) => {
-    setBeneficiarios(prev => prev.map(b => b.id === updated.id ? updated : b));
+    setBeneficiarios((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
     fetch("/api/beneficiarios", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -196,45 +220,18 @@ export default function Home() {
     }).catch(console.error);
   };
 
-  const handleUpdateInsumoPrice = (id: string, newPrice: number) => {
-    setInsumos(prev => prev.map(ins => ins.id === id ? { ...ins, precioUnitario: newPrice } : ins));
-  };
-
-  const calculateTotalBudget = (): number => {
-    const area = dimensiones.largo * dimensiones.ancho;
-    const longMuros = (2 * (dimensiones.largo + dimensiones.ancho)) + (dimensiones.habitaciones >= 1 ? dimensiones.ancho : 0) + (dimensiones.habitaciones >= 2 ? (dimensiones.largo * 0.5) : 0);
-    const getQty = (item: string) => {
-      if (["01.01", "01.02", "06.01"].includes(item)) return area;
-      if (item === "02.01") return longMuros * 0.4 * 1;
-      if (item === "03.01") return longMuros * 0.4 * 0.8;
-      if (item === "04.01") return Math.max(0, (longMuros * dimensiones.altura) - 6.5);
-      if (item === "05.01") return 12 * 0.15 * 0.25 * dimensiones.altura;
-      if (item === "07.01" || item === "07.02") return Math.max(0, (longMuros * dimensiones.altura) - 6.5) * 2;
-      return 1;
-    };
-    let totalDirecto = 0;
-    partidasApu.forEach(p => {
-      let unitCost = 0;
-      [...p.manoDeObra, ...p.materiales, ...p.equipos].forEach(d => {
-        const ins = insumos.find(i => i.id === d.insumoId);
-        if (ins) unitCost += d.coeficiente * ins.precioUnitario;
-      });
-      totalDirecto += getQty(p.item) * unitCost;
-    });
-    return (totalDirecto * 1.15) * 1.18;
-  };
-
   const nextAutoId = `REG-${String(beneficiarios.length + 1).padStart(4, "0")}`;
+  const currentViewMeta = VIEW_META[activeNavView] || { label: "Panel", icon: Sparkles };
+  const CurrentViewIcon = currentViewMeta.icon;
 
   if (!isLoggedIn) {
     return <LoginScreen onLogin={() => handleLoginStatus(true)} />;
   }
 
   return (
-    <div className="flex h-[100svh] w-full bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
-      
-      {/* ── DESKTOP Sidebar (hidden on mobile) ── */}
-      <div className="hidden md:flex md:flex-shrink-0">
+    <div className="flex h-[100svh] w-full bg-slate-950 text-slate-100 font-sans selection:bg-sky-500 selection:text-white overflow-hidden">
+      {/* ── DESKTOP Sidebar (hidden on mobile/tablet) ── */}
+      <div className="hidden lg:flex lg:flex-shrink-0">
         <Sidebar
           activeView={activeNavView}
           onSelectView={handleNavSelect}
@@ -242,57 +239,89 @@ export default function Home() {
         />
       </div>
 
-      {/* ── MOBILE Drawer overlay ── */}
+      {/* ── MOBILE Drawer overlay (iOS Sheet) ── */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md lg:hidden animate-in fade-in duration-200"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* ── MOBILE Drawer panel ── */}
+      {/* ── MOBILE Drawer panel (Slide-over) ── */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col md:hidden transition-transform duration-300 ${
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col lg:hidden transition-transform duration-300 ease-out ${
+          mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         <Sidebar
           activeView={activeNavView}
           onSelectView={handleNavSelect}
-          onLogout={() => { handleLoginStatus(false); setMobileMenuOpen(false); }}
+          onLogout={() => {
+            handleLoginStatus(false);
+            setMobileMenuOpen(false);
+          }}
+          onClose={() => setMobileMenuOpen(false)}
         />
       </div>
 
       {/* ── Main App Content Area ── */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        
-        {/* Top App Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow-md flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {/* Mobile hamburger */}
+        {/* Top App Header (iOS Translucent Navigation Bar) */}
+        <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/85 backdrop-blur-2xl px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between shadow-lg flex-shrink-0 pt-[calc(env(safe-area-inset-top,0px)+0.6rem)]">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {/* Mobile iOS Menu Trigger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-xl bg-slate-800/80 border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
-              aria-label="Abrir menú"
+              className="lg:hidden flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/[0.08] hover:bg-white/[0.14] active:bg-white/[0.2] border border-white/10 text-white shadow-sm backdrop-blur-md active:scale-95 transition-all shrink-0"
+              aria-label="Abrir menú de navegación"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4 text-sky-400" />
+              <span className="text-xs font-bold text-slate-200">Menú</span>
             </button>
-            <h1 className="text-sm md:text-base font-extrabold tracking-tight text-white flex items-center gap-2">
-              Techo Propio
-              <span className="hidden sm:inline text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 font-bold border border-sky-500/20">Maza Quiroz</span>
-            </h1>
+
+            {/* iOS Pill showing current active screen */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 shadow-sm backdrop-blur-md truncate">
+              <CurrentViewIcon className="w-4 h-4 text-sky-400 shrink-0" />
+              <span className="text-xs font-black tracking-tight text-white truncate max-w-[140px] sm:max-w-none">
+                {currentViewMeta.label}
+              </span>
+            </div>
+
+            <span className="hidden xl:inline text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 font-bold border border-sky-500/20">
+              Maza Quiroz
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-xs text-slate-400 font-semibold border border-slate-800 bg-slate-900 px-3 py-1.5 rounded-xl">
-              Sistema de Gestión
-            </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Quick Action: Nueva Postulación */}
+            <button
+              onClick={() => {
+                setEditingBeneficiaryForForm(null);
+                handleNavSelect("ficha_registro");
+              }}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-bold text-xs px-3 sm:px-4 py-2 rounded-2xl shadow-md shadow-sky-500/20 transition-all"
+              title="Registrar nueva postulación"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Nuevo</span>
+            </button>
+
+            {/* Refresh Data button */}
+            <button
+              onClick={() => {
+                loadBeneficiarios();
+                confetti({ particleCount: 30, spread: 50, origin: { y: 0.2 } });
+              }}
+              className="p-2 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] text-slate-300 hover:text-white border border-white/10 active:scale-95 transition-all shadow-sm"
+              title="Actualizar datos"
+            >
+              <RotateCw className="w-4 h-4 text-slate-300" />
+            </button>
           </div>
         </header>
 
-        {/* View Router */}
-        <main className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6">
-          
+        {/* View Router (Edge-to-edge Native Scrolling) */}
+        <main className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5 md:p-6 space-y-4 md:space-y-6 pb-[max(2rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))]">
           {/* Module 1: Resumen (Mapa Interactivo del Perú) */}
           {activeNavView === "resumen" && (
             <PeruMap
@@ -345,14 +374,17 @@ export default function Home() {
             />
           )}
 
-          {/* Module 4: Expediente Técnico e Ingeniería (Imagen 1: Ficha, Plano, Metrados, APU, Presupuesto, Cronograma, DWG) */}
-          {activeNavView === "expedientes" && (
-            !selectedId ? (
+          {/* Module 4: Expediente Técnico e Ingeniería */}
+          {activeNavView === "expedientes" &&
+            (!selectedId ? (
               <div className="w-full max-w-7xl mx-auto p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 shadow-2xl">
                 <Wrench className="w-12 h-12 mx-auto text-sky-400" />
-                <h2 className="text-xl font-black text-white">Selecciona un Beneficiario para el Expediente Técnico</h2>
+                <h2 className="text-xl font-black text-white">
+                  Selecciona un Beneficiario para el Expediente Técnico
+                </h2>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Por favor selecciona un expediente de la lista en el menú Registros para visualizar la Ficha Familiar, Planos, Metrados, APU y Presupuesto de obra.
+                  Por favor selecciona un expediente de la lista en el menú Registros para
+                  visualizar la Ficha Familiar, Planos, Metrados, APU y Presupuesto de obra.
                 </p>
                 <div className="pt-2">
                   <button
@@ -360,7 +392,7 @@ export default function Home() {
                       if (beneficiarios.length > 0) setSelectedId(beneficiarios[0].id);
                       else setActiveNavView("registros");
                     }}
-                    className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 active:scale-95 transition-transform duration-150"
+                    className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 active:scale-95"
                   >
                     Ver Expediente de {beneficiarios[0]?.postulante || "Ejemplo"}
                   </button>
@@ -368,40 +400,47 @@ export default function Home() {
               </div>
             ) : (
               <div className="w-full max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200">
-                
                 {/* Header for Selected Beneficiary */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900/80 border border-slate-800 border-l-4 border-l-sky-500 shadow-xl">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-slate-900/90 border border-slate-800 border-l-4 border-l-sky-500 shadow-xl">
                   <div className="space-y-1">
-                    <button 
+                    <button
                       onClick={() => {
                         setActiveNavView("registros");
-                      }} 
+                      }}
                       className="inline-flex items-center gap-1.5 text-xs text-sky-400 font-bold hover:text-sky-300 transition-colors"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Volver a Lista de Beneficiarios
                     </button>
-                    <h2 className="text-2xl font-black text-white">{selectedBeneficiary?.postulante}</h2>
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      {selectedBeneficiary?.postulante}
+                    </h2>
                     <p className="text-xs text-slate-400">
-                      Expediente: <span className="font-bold font-mono text-sky-400">{selectedBeneficiary?.id}</span> — {selectedBeneficiary?.distrito}, {selectedBeneficiary?.departamento}
+                      Expediente:{" "}
+                      <span className="font-bold font-mono text-sky-400">
+                        {selectedBeneficiary?.id}
+                      </span>{" "}
+                      — {selectedBeneficiary?.distrito}, {selectedBeneficiary?.departamento}
                     </p>
                   </div>
-                  
                 </div>
 
-
                 {/* Navigation Tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800/80 no-print">
+                <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800/80 no-print overscroll-contain">
                   {[
                     { id: "ficha", label: "Ficha Familiar", icon: User },
                     { id: "plano", label: "Plano Interactivo", icon: Ruler },
                     { id: "presupuesto", label: "Presupuesto", icon: FileText },
                     { id: "gantt", label: "Cronograma de Obra", icon: Hourglass },
-                    { id: "planos", label: "DWG e Ingeniería", icon: CheckCircle2 }
-                  ].map(tab => (
+                    { id: "planos", label: "DWG e Ingeniería", icon: CheckCircle2 },
+                  ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition duration-150 ${activeTab === tab.id ? "bg-sky-600 text-white shadow-lg shadow-sky-600/20" : "text-slate-400 hover:text-white hover:bg-slate-800/50"}`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition duration-150 ${
+                        activeTab === tab.id
+                          ? "bg-sky-600 text-white shadow-lg shadow-sky-600/20"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      }`}
                     >
                       <tab.icon className="w-4 h-4" /> {tab.label}
                     </button>
@@ -431,7 +470,7 @@ export default function Home() {
                             handleSaveExpedienteData("dimensiones", dimensiones);
                             confetti({ particleCount: 50, spread: 60 });
                           }}
-                          className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2 rounded-xl transition active:scale-95 transition-transform duration-150"
+                          className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-2xl transition active:scale-95 shadow-lg shadow-sky-600/20"
                         >
                           Guardar Dimensiones
                         </button>
@@ -447,109 +486,60 @@ export default function Home() {
                     />
                   )}
                   {activeTab === "gantt" && (
-                    <CronogramaObra 
-                      tareas={
-                        (() => {
-                          if (selectedBeneficiary?.notas) {
-                            try {
-                              const parsed = JSON.parse(selectedBeneficiary.notas);
-                              if (parsed.cronogramaObra) return parsed.cronogramaObra;
-                            } catch(e) {}
-                          }
-                          return [];
-                        })()
-                      }
+                    <CronogramaObra
+                      tareas={(() => {
+                        if (selectedBeneficiary?.notas) {
+                          try {
+                            const parsed = JSON.parse(selectedBeneficiary.notas);
+                            if (parsed.cronogramaObra) return parsed.cronogramaObra;
+                          } catch {}
+                        }
+                        return [];
+                      })()}
                       onSave={(tareas) => handleSaveExpedienteData("cronogramaObra", tareas)}
                     />
                   )}
                   {activeTab === "planos" && (
-                    <PlanosIngenieria 
-                      planos={
-                        (() => {
-                          if (selectedBeneficiary?.notas) {
-                            try {
-                              const parsed = JSON.parse(selectedBeneficiary.notas);
-                              if (parsed.planosIngenieria) return parsed.planosIngenieria;
-                            } catch(e) {}
-                          }
-                          return [];
-                        })()
-                      }
+                    <PlanosIngenieria
+                      planos={(() => {
+                        if (selectedBeneficiary?.notas) {
+                          try {
+                            const parsed = JSON.parse(selectedBeneficiary.notas);
+                            if (parsed.planosIngenieria) return parsed.planosIngenieria;
+                          } catch {}
+                        }
+                        return [];
+                      })()}
                       onSave={(planos) => handleSaveExpedienteData("planosIngenieria", planos)}
                     />
                   )}
                 </div>
               </div>
-            )
-          )}
+            ))}
 
-          {/* Module 5: Documentos (Gestor de Documentos) */}
+          {/* Module 5: Documentos */}
           {activeNavView === "documentos" && (
             <DocumentManager beneficiarios={beneficiarios} onRefresh={loadBeneficiarios} />
           )}
 
-          {/* Module 6: Cronograma de Pagos (Financieras + Desembolsos) */}
-          {activeNavView === "pagos" && (
-            <CronogramaPagos beneficiarios={beneficiarios} />
-          )}
+          {/* Module 6: Cronograma de Pagos */}
+          {activeNavView === "pagos" && <CronogramaPagos beneficiarios={beneficiarios} />}
 
           {/* Module 7: Maestros de Obra */}
-          {activeNavView === "maestros" && (
-            <CronogramaMaestros beneficiarios={beneficiarios} />
-          )}
+          {activeNavView === "maestros" && <CronogramaMaestros beneficiarios={beneficiarios} />}
 
           {/* Module 8: Consulta DNI */}
-          {activeNavView === "consulta_dni" && (
-            <ConsultaDniView />
-          )}
+          {activeNavView === "consulta_dni" && <ConsultaDniView />}
 
           {/* Module 8.5: Contabilidad */}
-          {activeNavView === "contabilidad" && (
-            <DocumentosContables />
-          )}
+          {activeNavView === "contabilidad" && <DocumentosContables />}
 
           {/* Module 9: Configuración Landing */}
-          {activeNavView === "landing_config" && (
-            <LandingCMS />
-          )}
+          {activeNavView === "landing_config" && <LandingCMS />}
 
           {/* Module 10: Modelos 3D Vivienda */}
-          {activeNavView === "modelos_3d" && (
-            <ModelosViviendaAdmin />
-          )}
-
+          {activeNavView === "modelos_3d" && <ModelosViviendaAdmin />}
         </main>
-
-        {/* ── MOBILE Bottom Navigation Bar ── */}
-        <nav className="md:hidden flex-shrink-0 flex items-stretch border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl safe-bottom">
-          {([
-            { id: "resumen",       label: "Inicio",    emoji: "🗺️" },
-            { id: "registros",     label: "Lista",     emoji: "👥" },
-            { id: "expedientes",   label: "Expediente",emoji: "📁" },
-            { id: "documentos",    label: "Docs",      emoji: "📄" },
-            { id: "pagos",         label: "Pagos",     emoji: "💳" },
-            { id: "maestros",      label: "Maestros",  emoji: "👷" },
-            { id: "consulta_dni",  label: "DNI",       emoji: "🔍" },
-            { id: "contabilidad",  label: "Contabilidad",emoji: "🧾" },
-            { id: "landing_config",label: "Landing",   emoji: "🖥️" },
-          ] as { id: import("../components/Sidebar").NavView; label: string; emoji: string }[]).map(item => (
-            <button
-              key={item.id}
-              onClick={() => handleNavSelect(item.id)}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
-                activeNavView === item.id
-                  ? "text-sky-400"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              <span className="text-base leading-none">{item.emoji}</span>
-              <span className="text-[9px] font-bold tracking-wide">{item.label}</span>
-              {activeNavView === item.id && (
-                <span className="absolute bottom-0 w-8 h-0.5 bg-sky-500 rounded-full" />
-              )}
-            </button>
-          ))}
-        </nav>
       </div>
     </div>
   );

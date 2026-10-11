@@ -274,7 +274,7 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
             </span>
           </div>
 
-          <div className="space-y-3 overflow-y-auto flex-1 max-h-[600px] pr-2 custom-scrollbar">
+          <div className="space-y-3 overflow-y-auto flex-1 max-h-56 lg:max-h-[600px] pr-2 custom-scrollbar">
             {beneficiarios.length === 0 ? (
               <div className="p-8 text-center text-slate-500 space-y-3 border border-dashed border-slate-800 rounded-2xl">
                 <FileText className="w-10 h-10 mx-auto text-slate-600 opacity-50" />

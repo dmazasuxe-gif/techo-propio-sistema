@@ -147,20 +147,21 @@ export default function ExpedientesView({
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in duration-300">
       
       {/* Top Banner Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
+      {/* Top Banner Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-md">
+          <div className="p-3 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-md shrink-0">
             <Folder className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Expedientes de Beneficiarios</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Expedientes de Beneficiarios</h1>
             <p className="text-xs text-slate-400">
-              Listado completo de beneficiarios registrados, acciones de edición/eliminación y exportación a Excel.
+              Listado completo de beneficiarios registrados, acciones y exportación.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
             onClick={() => {
               // Convert to CSV and download
@@ -193,14 +194,14 @@ export default function ExpedientesView({
               a.click();
               document.body.removeChild(a);
             }}
-            className="flex items-center gap-2 border border-emerald-700 hover:border-emerald-500 bg-emerald-900/80 hover:bg-emerald-800 active:scale-95 text-emerald-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-emerald-700/60 hover:border-emerald-500 bg-emerald-900/60 hover:bg-emerald-800 active:scale-95 text-emerald-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition duration-150 shadow"
           >
             <Download className="w-4 h-4 text-emerald-400" /> Exportar Backup
           </button>
           
           <button
             onClick={onRefresh}
-            className="flex items-center gap-2 border border-slate-700 hover:border-slate-500 bg-slate-800/80 hover:bg-slate-800 active:scale-95 text-slate-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-500 bg-slate-800/80 hover:bg-slate-800 active:scale-95 text-slate-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition duration-150 shadow"
           >
             <RefreshCw className="w-4 h-4 text-sky-400" /> Actualizar
           </button>
@@ -318,8 +319,99 @@ export default function ExpedientesView({
           </span>
         </div>
 
-        {/* Table Container */}
-        <div className="overflow-x-auto border border-slate-800 rounded-2xl bg-slate-950/50">
+        {/* Mobile iOS Cards View (Phones / Small screens) */}
+        <div className="md:hidden space-y-3">
+          {filteredBeneficiarios.length > 0 ? (
+            filteredBeneficiarios.map((b) => {
+              const badge = getExpedienteStatusBadge(b.estado);
+              const hasCoords = Boolean(b.coordenadaX && b.coordenadaY);
+
+              return (
+                <div
+                  key={b.id}
+                  className="bg-slate-950/70 border border-white/10 rounded-3xl p-4 shadow-lg space-y-3 active:scale-[0.99] transition-all"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-bold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-full text-xs">
+                      {b.id}
+                    </span>
+                    <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${badge.colorClass}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  <div 
+                    onClick={() => onSelectBeneficiary(b.id)}
+                    className="cursor-pointer space-y-1"
+                  >
+                    <h3 className="text-sm font-black text-white hover:text-sky-300 transition-colors leading-snug">
+                      {b.postulante}
+                    </h3>
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <span>DNI: <strong className="font-mono text-slate-300">{b.dniPostulante || "Sin DNI"}</strong></span>
+                      {b.celular && (
+                        <>
+                          <span>•</span>
+                          <span>Cel: <strong className="font-mono text-slate-300">{b.celular}</strong></span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/[0.03] p-2.5 rounded-2xl border border-white/5">
+                    <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    <span className="truncate">
+                      {b.distrito || "-"}, {b.provincia || "-"} — <strong className="text-slate-300">{b.departamento || "-"}</strong>
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                    <button
+                      onClick={() => onSelectBeneficiary(b.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-bold text-xs py-2.5 px-3 rounded-2xl shadow-md shadow-sky-600/20 active:scale-95 transition-all"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Ver Expediente</span>
+                    </button>
+
+                    {hasCoords && (
+                      <button
+                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${b.coordenadaX},${b.coordenadaY}`, '_blank')}
+                        className="p-2.5 rounded-2xl bg-white/[0.06] text-emerald-400 border border-white/10 active:scale-95 transition-all"
+                        title="Ver en Google Maps"
+                      >
+                        <Globe className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => onOpenEditForm ? onOpenEditForm(b) : setEditingBeneficiary({ ...b })}
+                      className="p-2.5 rounded-2xl bg-white/[0.06] text-amber-400 border border-white/10 active:scale-95 transition-all"
+                      title="Editar beneficiario"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => setDeletingId(b.id)}
+                      className="p-2.5 rounded-2xl bg-white/[0.06] text-rose-400 border border-white/10 active:scale-95 transition-all"
+                      title="Eliminar beneficiario"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="py-12 text-center text-slate-500 bg-slate-950/50 rounded-3xl border border-white/5 p-6">
+              <p className="font-semibold text-xs">No se encontraron beneficiarios con este filtro.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table Container */}
+        <div className="hidden md:block overflow-x-auto border border-slate-800 rounded-2xl bg-slate-950/50">
           <table className="w-full text-left text-xs border-collapse min-w-[950px]">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900 text-slate-400 font-extrabold uppercase tracking-wider text-[11px]">

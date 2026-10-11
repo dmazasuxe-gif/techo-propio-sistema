@@ -24,17 +24,25 @@ interface FullRegistrationFormProps {
   beneficiarios?: Beneficiario[];
 }
 
-import DniLookupModal from "./DniLookupModal";
-
 export default function FullRegistrationForm({ onSave, nextId, editingData, onCancelEdit, beneficiarios = [] }: FullRegistrationFormProps) {
-  const [isDniModalOpen, setIsDniModalOpen] = useState(false);
+  const [isConsultingDni, setIsConsultingDni] = useState(false);
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
   const departamentosList = Object.keys(UBIGEO_PERU);
 
+  const formatFecha = (value: string) => {
+    const v = value.replace(/\D/g, '').slice(0, 8);
+    if (v.length >= 5) {
+      return `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    } else if (v.length >= 3) {
+      return `${v.slice(0, 2)}/${v.slice(2)}`;
+    }
+    return v;
+  };
+
   const getInitialState = (): Beneficiario => {
-    const defaultDep = "SAN MARTIN";
-    const defaultProv = Object.keys(UBIGEO_PERU[defaultDep] || {})[0] || "SAN MARTIN";
-    const defaultDist = (UBIGEO_PERU[defaultDep]?.[defaultProv] || [])[0] || "TARAPOTO";
+    const defaultDep = "";
+    const defaultProv = "";
+    const defaultDist = "";
 
     return {
       id: nextId || `REG-${String(Math.floor(Math.random() * 9000) + 1000)}`,
@@ -90,35 +98,27 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Cascading UBIGEO options
-  const provinciasObj = UBIGEO_PERU[form.departamento] || {};
+  const provinciasObj = form.departamento ? (UBIGEO_PERU[form.departamento] || {}) : {};
   const provinciasList = Object.keys(provinciasObj);
-  const distritosList = provinciasObj[form.provincia] || [];
+  const distritosList = form.provincia ? (provinciasObj[form.provincia] || []) : [];
 
   const handleDepartamentoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedDep = e.target.value;
-    const provs = UBIGEO_PERU[selectedDep] || {};
-    const firstProv = Object.keys(provs)[0] || "";
-    const dists = provs[firstProv] || [];
-    const firstDist = dists[0] || "";
-
     setForm(prev => ({
       ...prev,
       departamento: selectedDep,
-      provincia: firstProv,
-      distrito: firstDist,
+      provincia: "",
+      distrito: "",
       expediente: selectedDep
     }));
   };
 
   const handleProvinciaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedProv = e.target.value;
-    const dists = provinciasObj[selectedProv] || [];
-    const firstDist = dists[0] || "";
-
     setForm(prev => ({
       ...prev,
       provincia: selectedProv,
-      distrito: firstDist
+      distrito: ""
     }));
   };
 
@@ -334,10 +334,45 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                 {!editingData && (
                   <button
                     type="button"
-                    onClick={() => setIsDniModalOpen(true)}
-                    className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap"
+                    disabled={isConsultingDni}
+                    onClick={async () => {
+                      if (form.dniPostulante.length === 8) {
+                        const duplicate = beneficiarios.find(b => b.dniPostulante === form.dniPostulante);
+                        if (duplicate) {
+                          alert("Este DNI ya se encuentra registrado como beneficiario.");
+                          return;
+                        }
+                        setIsConsultingDni(true);
+                        try {
+                          const res = await fetch(`/api/consulta-dni?dni=${form.dniPostulante}`);
+                          const data = await res.json();
+                          if (res.ok && data.dni) {
+                            const nom = data.nombres || "";
+                            const pat = data.apellidoPaterno || "";
+                            const mat = data.apellidoMaterno || "";
+                            setForm(prev => ({ 
+                              ...prev, 
+                              nombres: nom, 
+                              apellidoPaterno: pat, 
+                              apellidoMaterno: mat,
+                              fechaNacimiento: data.fechaNacimiento ? formatFecha(data.fechaNacimiento) : prev.fechaNacimiento
+                            }));
+                            updateFullName(nom, pat, mat);
+                          } else {
+                            alert(data.error || "DNI no encontrado");
+                          }
+                        } catch (error) {
+                          alert("Error consultando DNI");
+                        } finally {
+                          setIsConsultingDni(false);
+                        }
+                      } else {
+                        alert("Ingrese 8 dígitos para el DNI");
+                      }
+                    }}
+                    className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    🔍 Consultar DNI
+                    {isConsultingDni ? "⏳" : "🔍"} Consultar DNI
                   </button>
                 )}
               </div>
@@ -352,7 +387,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                 inputMode="decimal"
                 placeholder="DD/MM/AAAA"
                 value={form.fechaNacimiento || ""}
-                onChange={(e) => setForm({ ...form, fechaNacimiento: e.target.value })}
+                onChange={(e) => setForm({ ...form, fechaNacimiento: formatFecha(e.target.value) })}
                 className="w-full mt-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none transition"
               />
             </div>
@@ -531,10 +566,11 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                     <input
                       type="tel"
                       inputMode="decimal"
+                      placeholder="DD/MM/AAAA"
                       value={integrante.fechaNacimiento || ""}
                       onChange={(e) => {
                         const newCarga = [...(form.cargaFamiliar || [])];
-                        newCarga[index].fechaNacimiento = e.target.value;
+                        newCarga[index].fechaNacimiento = formatFecha(e.target.value);
                         setForm({ ...form, cargaFamiliar: newCarga });
                       }}
                       className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2 py-2 text-xs text-white font-mono focus:outline-none"
@@ -582,6 +618,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                   onChange={handleDepartamentoChange}
                   className="w-full bg-slate-950 border border-sky-500/50 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none transition shadow-md shadow-sky-500/10"
                 >
+                  <option value="">Seleccione...</option>
                   {departamentosList.map(dep => (
                     <option key={dep} value={dep}>{dep}</option>
                   ))}
@@ -597,8 +634,10 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                 <select
                   value={form.provincia}
                   onChange={handleProvinciaChange}
-                  className="w-full bg-slate-950 border border-sky-500/50 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none transition shadow-md shadow-sky-500/10"
+                  disabled={!form.departamento}
+                  className="w-full bg-slate-950 border border-sky-500/50 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none transition shadow-md shadow-sky-500/10 disabled:opacity-50"
                 >
+                  <option value="">Seleccione...</option>
                   {provinciasList.map(prov => (
                     <option key={prov} value={prov}>{prov}</option>
                   ))}
@@ -614,8 +653,10 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
                 <select
                   value={form.distrito}
                   onChange={(e) => setForm({ ...form, distrito: e.target.value })}
-                  className="w-full bg-slate-950 border border-sky-500/50 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none transition shadow-md shadow-sky-500/10"
+                  disabled={!form.provincia}
+                  className="w-full bg-slate-950 border border-sky-500/50 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs text-white font-bold appearance-none focus:outline-none transition shadow-md shadow-sky-500/10 disabled:opacity-50"
                 >
+                  <option value="">Seleccione...</option>
                   {distritosList.map(dist => (
                     <option key={dist} value={dist}>{dist}</option>
                   ))}
@@ -927,7 +968,7 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
         <div className="flex items-center justify-end gap-3 pt-2">
           <button
             type="submit"
-            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl transition duration-150 shadow-lg shadow-sky-600/30"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-extrabold text-xs px-6 py-3.5 rounded-2xl transition duration-150 shadow-lg shadow-sky-600/30 active:scale-95"
           >
             <Save className="w-4 h-4" /> {editingData ? "Guardar Cambios del Expediente" : "Guardar Registro de Beneficiario"}
           </button>
@@ -935,29 +976,6 @@ export default function FullRegistrationForm({ onSave, nextId, editingData, onCa
 
       </form>
 
-      <DniLookupModal
-        isOpen={isDniModalOpen}
-        onClose={() => setIsDniModalOpen(false)}
-        title="Consultar DNI - Beneficiario"
-        confirmText="SÍ, REGISTRAR BENEFICIARIO"
-        onConfirm={(data) => {
-          // Check for duplicates before filling form
-          const duplicate = beneficiarios.find(b => b.dniPostulante === data.dni);
-          if (duplicate) {
-            alert("Este DNI ya se encuentra registrado como beneficiario.");
-            return;
-          }
-          setForm(prev => ({
-            ...prev,
-            dniPostulante: data.dni,
-            nombres: data.nombres,
-            apellidoPaterno: data.apellidoPaterno || "",
-            apellidoMaterno: data.apellidoMaterno || "",
-            fechaNacimiento: data.fechaNacimiento || prev.fechaNacimiento
-          }));
-          setIsDniModalOpen(false);
-        }}
-      />
     </div>
   );
 }
