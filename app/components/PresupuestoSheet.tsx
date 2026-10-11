@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Dimensiones, Insumo, PartidaAPU } from "../types";
 import { TrendingUp, Trees, Coins, Edit3, ShieldCheck, Plus, Trash2, FileText, Download, Loader2 } from "lucide-react";
+import { printHtmlDocument } from "@/lib/print-document";
 
 interface CustomBudgetItem {
   id: string;
@@ -139,13 +140,6 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu, on
   const handleExportToPDF = () => {
     setIsExporting(true);
     
-    const printWindow = window.open("", "_blank", "width=900,height=700");
-    if (!printWindow) {
-      alert("Por favor permite ventanas emergentes para descargar el PDF.");
-      setIsExporting(false);
-      return;
-    }
-
     const allItems = [
       ...basePresupuestoItems.map(item => ({ ...item, isCustom: false })),
       ...customItems.map(item => ({ ...item, isCustom: true })),
@@ -268,18 +262,13 @@ export default function PresupuestoSheet({ dimensiones, insumos, partidasApu, on
     <div class="footer-left">Sistema Techo Propio — Constructora Maza Quiroz &nbsp;|&nbsp; Generado el ${new Date().toLocaleString("es-PE")}</div>
   </div>
 
-  <script>
-    window.onload = function() {
-      setTimeout(() => {
-        window.print();
-      }, 500);
-    };
-  </script>
 </body>
 </html>`;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
+    printHtmlDocument({
+      title: `Presupuesto_Obra_TechoPropio_${new Date().toISOString().slice(0, 10)}`,
+      htmlContent: printContent,
+    });
     setIsExporting(false);
   };
 

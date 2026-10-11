@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Beneficiario } from "../types";
 import { UBIGEO_PERU } from "../constants/ubigeoPeru";
 import { getExpedienteStatusBadge } from "@/lib/status-helper";
+import { printHtmlDocument } from "@/lib/print-document";
 import {
   ArrowLeft, Save, ShieldCheck, Download,
   User, MapPin, FolderCheck, Ruler, FileText, ChevronDown, UserPlus
@@ -64,12 +65,6 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
 
   // ── PDF / Print handler ────────────────────────────────────────────────────
   const handleDownloadPDF = () => {
-    const printWindow = window.open("", "_blank", "width=900,height=700");
-    if (!printWindow) {
-      alert("Por favor permite ventanas emergentes para descargar el PDF.");
-      return;
-    }
-
     const printContent = `
 <!DOCTYPE html>
 <html lang="es">
@@ -318,18 +313,13 @@ export default function BeneficiaryFicha({ beneficiario, onSave, onBack }: Benef
     <div class="footer-right">Expediente: <strong>${form.id}</strong></div>
   </div>
 
-  <script>
-    window.onload = function() {
-      window.print();
-      setTimeout(function() { window.close(); }, 800);
-    };
-  </script>
 </body>
 </html>`;
 
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
+    printHtmlDocument({
+      title: `Ficha_Beneficiario_${(form.postulante || form.id || "Expediente").replace(/\s+/g, "_")}`,
+      htmlContent: printContent,
+    });
   };
 
   // Helper: map estado to HTML status badge

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Hourglass, TrendingUp } from "lucide-react";
+import { printHtmlDocument } from "@/lib/print-document";
 
 export interface TareaGantt {
   id: string;
@@ -64,12 +65,6 @@ export default function CronogramaObra({ tareas: initialTareas, onSave }: Cronog
   );
 
   const handleDownloadPDF = () => {
-    const printWindow = window.open("", "_blank", "width=900,height=700");
-    if (!printWindow) {
-      alert("Por favor permite ventanas emergentes para descargar el PDF.");
-      return;
-    }
-
     const itemsHtml = tareas.map(t => {
       const avance = t.avancePct || 0;
       const bgClass = avance === 100 ? 'bg-emerald' : (avance > 0 ? 'bg-sky' : 'bg-slate');
@@ -146,18 +141,13 @@ export default function CronogramaObra({ tareas: initialTareas, onSave }: Cronog
     <div>Generado el ${new Date().toLocaleString("es-PE")}</div>
   </div>
 
-  <script>
-    window.onload = function() {
-      setTimeout(() => {
-        window.print();
-      }, 500);
-    };
-  </script>
 </body>
 </html>`;
 
-    printWindow.document.write(printContent);
-    printWindow.document.close();
+    printHtmlDocument({
+      title: `Cronograma_General_Obra_${new Date().toISOString().slice(0, 10)}`,
+      htmlContent: printContent,
+    });
   };
 
   return (

@@ -21,6 +21,7 @@ import {
   Download,
 } from "lucide-react";
 import DniLookupModal from "./DniLookupModal";
+import { printHtmlDocument } from "@/lib/print-document";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -239,12 +240,6 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
     .filter(p => p.estado === "Pagado")
     .reduce((s, p) => s + p.monto, 0);
   const handleDownloadPDF = (maestro: Maestro) => {
-    const printWindow = window.open("", "_blank", "width=900,height=700");
-    if (!printWindow) {
-      alert("Por favor permite ventanas emergentes para descargar el PDF.");
-      return;
-    }
-
     const nViviendas = maestro.beneficiariosAsignados.length || 0;
     const contratoTotal = maestro.montoPorVivienda * nViviendas;
     const pagado = maestro.pagos
@@ -352,12 +347,10 @@ export default function CronogramaMaestros({ beneficiarios }: CronogramaMaestros
 </html>
     `;
 
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+    printHtmlDocument({
+      title: `Ficha_Maestro_${(maestro.nombre || "Maestro").replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}`,
+      htmlContent: htmlContent,
+    });
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────

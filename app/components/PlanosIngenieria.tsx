@@ -95,17 +95,26 @@ export default function PlanosIngenieria({ planos: initialPlanos, onSave }: Plan
     }
   };
 
-  const handleDownload = (plano: PlanoItem) => {
+  const handleDownload = async (plano: PlanoItem) => {
     if (!plano.fileUrl) {
       setToast({ msg: "⚠️ No hay archivo subido para descargar.", type: "error" });
       return;
     }
-    const link = document.createElement("a");
-    link.href = plano.fileUrl;
-    link.download = plano.fileName || "archivo";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const res = await fetch(plano.fileUrl);
+      if (!res.ok) throw new Error("Error en descarga");
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = plano.fileName || "plano_ingenieria";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    } catch {
+      window.open(plano.fileUrl, "_blank");
+    }
   };
 
   const handleDelete = async (planoId: string) => {

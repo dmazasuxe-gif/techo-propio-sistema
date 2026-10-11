@@ -210,6 +210,25 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
       console.error("Error eliminando documento:", err);
     }
   };
+
+  const handleDescargaDirecta = async (url: string, nombre: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error al descargar archivo");
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = nombre || "documento_beneficiario";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
@@ -419,14 +438,13 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                           </button>
                           
                           {doc.url ? (
-                            <a
-                              href={doc.url}
-                              download={doc.nombre}
+                            <button
+                              onClick={() => handleDescargaDirecta(doc.url!, doc.nombre || "documento")}
                               className="p-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition active:scale-95 transition-transform duration-150"
-                              title="Descargar"
+                              title="Descargar Archivo"
                             >
                               <Download className="w-4 h-4" />
-                            </a>
+                            </button>
                           ) : (
                             <button
                               onClick={() => alert(`Descargando copia local de: ${doc.nombre}`)}
@@ -557,15 +575,12 @@ export default function DocumentManager({ beneficiarios, onRefresh }: DocumentMa
                   : rawUrl;
 
                 return (
-                  <a
-                    href={downloadUrl}
-                    download={previewDoc.nombre || "documento"}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => handleDescargaDirecta(downloadUrl, previewDoc.nombre || "documento")}
                     className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-sky-600/20 transition-all active:scale-95"
                   >
                     <Download className="w-5 h-5" /> Descargar Archivo Original
-                  </a>
+                  </button>
                 );
               })()}
             </div>
