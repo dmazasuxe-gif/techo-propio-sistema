@@ -4,6 +4,17 @@
 1. **Eliminación Definitiva de Telegram Bot:** Se removieron de forma completa todas las funciones, webhooks (`/api/telegram`), librerías (`node-telegram-bot-api`), utilidades (`telegram-sender.ts`), scripts (`scripts/telegram-bot.js`), herramientas de IA de Telegram (`ai-tools.ts`, `nlu-engine.ts`) y pruebas asociadas, aislando el sistema de cualquier dependencia o riesgo futuro.
 2. **Chatbot Web Inteligente Preservado:** El asistente virtual del Landing Page (con video Chroma Key a 60 fps en canvas acelerado y LLM seguro en `/api/landing-bot`) se mantiene 100% operativo y autónomo.
 3. **Experiencia Móvil y Tablet Nativa iOS:** Se eliminó la barra inferior fija sobrecargada y se implementó una interfaz nativa de iPhone/iPadOS con barra superior de vidrio esmerilado (`backdrop-blur-2xl`), cajón lateral flotante con microinteracciones hápticas, y listas de tarjetas adaptativas de alta densidad.
+4. **Icono Web y PWA Nativo de iPhone (Apple Touch Icon):** Se generaron todos los assets de iconos (`apple-touch-icon.png`, `apple-touch-icon-precomposed.png`, `icon-192.png`, `icon-512.png`) con márgenes seguros para el squircle de iOS, y se configuró `manifest.json` y `layout.tsx` en modo `standalone` con `viewport-fit=cover`.
+5. **Limpieza de Cabecera en `/sistema`:** Se eliminó el botón `+` en la cabecera que causaba redirecciones accidentales a la Ficha de Registro.
+6. **Módulo Contable Inteligente con IA (`/api/documentos-contables/procesar`):**
+   - Lector robusto de facturas en PDF (con extractor nativo en memoria de streams zlib) y fotos (JPG/PNG/WebP) usando OpenAI Visión (`gpt-4o-mini`).
+   - Extracción de RUC de 11 dígitos, emisor/proveedor vendedor, fecha, monto decimal, y desglose íntegro de productos/cantidades adquiridas en `concepto`.
+   - Almacenamiento permanente en Supabase Storage (`documentos_beneficiarios/facturas/...`).
+   - Diagnóstico de facturas de Telegram antiguas: Se identificó que Telegram purgaba sus links temporales con 404; el sistema ahora detecta esos enlaces y ofrece el botón "Adjuntar Archivo" para re-subirlos a Supabase Storage permanente.
+7. **Control de Plazos al Contador (25 Días) y Alertas al Celular:**
+   - Cada factura calcula automáticamente su fecha límite de entrega al contador (fecha de emisión + 25 días).
+   - Semáforo de estados: Al día (verde), Por vencer en ≤ 5 días (amarillo), Vence hoy / Vencido (rojo parpadeante) y Entregado (púrpura).
+   - Botón directo para marcar entregado (`PATCH /api/documentos-contables`), compartir al contador por WhatsApp en 1 clic, y botón de notificaciones push web para el celular (`Notification.requestPermission()`).
 
 ## Resumen de la Sesión Previa (Agosto 2026 - Extensión Escritorio en Excel)
 Iniciamos la **Primera Etapa** de la creación de una extensión de escritorio para el sistema utilizando Microsoft Excel con Macros (.xlsm). El objetivo es registrar, editar y administrar beneficiarios, predios, ubicaciones y cargas familiares offline. La arquitectura de tablas en Excel es idéntica a Supabase (`BD_BENEFICIARIOS`, `BD_CARGA_FAMILIAR`, etc.) para una futura integración.

@@ -28,3 +28,19 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - Drawer lateral deslizable con secciones agrupadas y microinteracciones táctiles hápticas.
   - Vista adaptativa de tarjetas en móvil para el listado de expedientes/beneficiarios en `ExpedientesView.tsx` evitando scroll horizontal en teléfonos.
 - **Mejoras UX/UI de Registro**: Formularios con formato automático de fecha (auto-slashes) y consultas directas de DNI (sin modales secundarios) para un flujo de registro ininterrumpido.
+- **Icono Web y PWA Nativo para iPhone (Apple Touch Icon)**:
+  - Generado a partir del logo oficial en alta resolución (`MAZA QUIROZ CONSTRUCTORA`) con margen seguro (*safe area* de 12%) en un lienzo cuadrado 1:1, evitando que el *squircle* de iOS recorte bordes o tipografía.
+  - Archivos: `public/apple-touch-icon.png`, `public/apple-touch-icon-precomposed.png`, `app/apple-icon.png`, `public/icon-192.png`, `public/icon-512.png`.
+  - Configurado en `public/manifest.json` y `app/layout.tsx` con modo `standalone`, `apple-mobile-web-app-capable: yes` y `viewport-fit=cover`.
+- **Limpieza de Cabecera en el Panel `/sistema`**:
+  - Eliminado definitivamente el botón `+` ("Nuevo") de la cabecera superior de `app/sistema/page.tsx` que causaba redirecciones accidentales a la Ficha de Registro.
+- **Módulo de Contabilidad Inteligente con IA (`DocumentosContables.tsx` y `/api/documentos-contables/procesar`)**:
+  - **Lector Híbrido de Facturas (PDF y Fotos)**: Extractor nativo en memoria de streams PDF (`zlib.inflateSync`) que decodifica operadores `Tj` y `TJ`, resolviendo bloqueos de workers en Vercel Linux.
+  - **Requisito de Bundling**: `pdf-parse` agregado a `serverExternalPackages` en `next.config.ts`.
+  - **Reglas SUNAT Perú en Prompt**: Distingue rigurosamente el proveedor emisor (vendedor) frente a Constructora Maza Quiroz (cliente), extrayendo RUC (11 dígitos), emisor, monto decimal, fecha YYYY-MM-DD y el desglose íntegro de productos/cantidades en `concepto`.
+  - **Almacenamiento Permanente**: Archivos subidos directamente a Supabase Storage (`documentos_beneficiarios/facturas/...`), garantizando URLs inmutables en `url_archivo`.
+  - **Tratamiento de Facturas Previas de Telegram**: El bot anterior guardaba links temporales `api.telegram.org` que expiraban con 404. El sistema ahora detecta estos links y ofrece el botón "Adjuntar Archivo" para migrarlos a Supabase Storage definitivo.
+  - **Alerta de Entrega al Contador (Plazo 25 Días)**:
+    - Cálculo automático de fecha límite sumando 25 días a la fecha de la factura (`[ENTREGA_CONTADOR: YYYY-MM-DD]`).
+    - Semáforo de plazos: Al día (verde), Próximo a vencer en ≤ 5 días (amarillo), Vencido / Vence hoy (rojo parpadeante) y Entregado (púrpura con check).
+    - Botones de acción rápida: "Marcar Entregado" (actualiza estado vía `PATCH /api/documentos-contables`), "WhatsApp al Contador" (mensaje preformateado con datos y link) y "🔔 Activar Alertas en el Celular" (Web Push Notifications para iPhone y Android).
