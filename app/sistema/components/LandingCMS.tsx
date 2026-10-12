@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LandingContent, LandingConfig, BotCharacter } from '@/lib/landing_db';
-import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
+import { DEFAULT_LANDING_CONTENT, DEFAULT_NAV_LINKS } from '@/lib/landing_db';
 import { EditableText } from './VisualEditor/EditableText';
 import { EditableImage } from './VisualEditor/EditableImage';
 import ChromaVideoAvatar from '@/app/components/ChromaVideoAvatar';
@@ -97,6 +97,15 @@ export function LandingCMS() {
       .then(r => r.json())
       .then((data: LandingConfig) => {
         if (data && data.content) {
+          let loadedLinks = Array.isArray(data.content.nav?.links) ? data.content.nav.links : DEFAULT_NAV_LINKS;
+          loadedLinks = loadedLinks.filter((l: any) => 
+            !l.label?.toLowerCase().includes('consulta') && 
+            !l.href?.toLowerCase().includes('consulta')
+          );
+          if (loadedLinks.length <= 3 && !loadedLinks.some((l: any) => l.label?.includes('Estándar') || l.href?.includes('estandar'))) {
+            loadedLinks = DEFAULT_NAV_LINKS;
+          }
+
           setConfig({
             ...DEFAULT_LANDING_CONTENT,
             ...data.content,
@@ -104,7 +113,7 @@ export function LandingCMS() {
             nav: { 
               ...DEFAULT_LANDING_CONTENT.nav, 
               ...(data.content.nav || {}),
-              links: Array.isArray(data.content.nav?.links) ? data.content.nav.links : DEFAULT_LANDING_CONTENT.nav.links
+              links: loadedLinks
             },
             hero: { 
               ...DEFAULT_LANDING_CONTENT.hero, 
@@ -690,8 +699,10 @@ export function LandingCMS() {
 
             {/* Links */}
             <div className="hidden lg:flex items-center gap-6 text-[14px] font-semibold text-[#43474c]">
-              {(config.nav.links || []).map((link, i) => (
-                <div key={i} className="flex items-center gap-1 group/lnk">
+              {(config.nav.links || [])
+                .filter(l => !l.label?.toLowerCase().includes('consulta') && !l.href?.toLowerCase().includes('consulta'))
+                .map((link, i) => (
+                <div key={i} className="flex items-center gap-1 group/lnk whitespace-nowrap">
                   <EditableText 
                     value={link.label}
                     onChange={(v) => {
@@ -703,6 +714,18 @@ export function LandingCMS() {
                     onFontChange={(f) => updateNestedConfig(['fonts', `nav.links.${i}.label`], f)}
                     color={config.colors?.[`nav.links.${i}.label`]}
                     onColorChange={(c) => updateNestedConfig(['colors', `nav.links.${i}.label`], c)}
+                  />
+                  <input 
+                    type="text" 
+                    value={link.href}
+                    title="Destino del enlace (ID o URL)"
+                    placeholder="#seccion"
+                    onChange={(e) => {
+                      const newLinks = [...config.nav.links];
+                      newLinks[i].href = e.target.value;
+                      updateNestedConfig(['nav', 'links'], newLinks);
+                    }}
+                    className="opacity-0 group-hover/lnk:opacity-100 transition-opacity bg-black/40 text-[10px] font-mono text-slate-200 px-1 py-0.5 rounded border border-white/20 w-16 outline-none focus:opacity-100"
                   />
                   <button 
                     onClick={() => {
@@ -719,16 +742,19 @@ export function LandingCMS() {
                   const newLinks = [...(config.nav.links || []), { label: "Nuevo Enlace", href: "#" }];
                   updateNestedConfig(['nav', 'links'], newLinks);
                 }}
-                className="text-xs text-[#e67e22] font-bold hover:underline"
+                className="text-xs text-[#e67e22] font-bold hover:underline whitespace-nowrap"
               >+ Enlace</button>
             </div>
 
             {/* CTA and WhatsApp info */}
             <div className="flex items-center gap-3">
-              <div className="px-5 py-2.5 rounded-full bg-[#162839] text-white text-[13px] font-bold shadow-sm flex items-center gap-2">
+              <div 
+                className="px-5 py-2.5 rounded-full bg-[#162839] text-white text-[13px] font-bold shadow-sm flex items-center gap-2"
+                style={{ color: config.colors?.['nav.ctaText'] || '#ffffff' }}
+              >
                 <PhoneCall className="w-4 h-4 text-[#fc8f34]" />
                 <EditableText 
-                  value={config.nav.ctaText}
+                  value={config.nav.ctaText || "Contáctanos"}
                   onChange={(v) => updateNestedConfig(['nav', 'ctaText'], v)}
                   fontFamily={config.fonts?.['nav.ctaText']}
                   onFontChange={(f) => updateNestedConfig(['fonts', 'nav.ctaText'], f)}
@@ -746,10 +772,28 @@ export function LandingCMS() {
            ======================================================================= */}
         {(config.hero.enabled ?? true) && (
           <section className="relative w-full overflow-hidden bg-[#162839] text-white border-b border-[#2c3e50] py-16 md:py-20 px-4 md:px-8">
-            <div className="max-w-[1360px] mx-auto">
+            
+            {/* Visual background image + dynamic dark overlay in CMS editor */}
+            <div className="absolute inset-0 z-0 bg-[#162839]">
+              {config.hero.images?.[currentImageIndex] && (
+                <img 
+                  src={config.hero.images[currentImageIndex]} 
+                  alt="Hero background" 
+                  className="w-full h-full object-cover"
+                />
+              )}
+              {/* Dynamic dark overlay: higher opacity slider = darker overlay (hides image); lower slider = reveals image */}
+              <div 
+                className="absolute inset-0 bg-[#162839] pointer-events-none transition-opacity duration-200"
+                style={{ opacity: Math.min(1, Math.max(0, (config.hero.bgOpacity ?? 30) / 100)) }}
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(230,126,34,0.12),transparent_60%)] pointer-events-none"></div>
+            </div>
+
+            <div className="max-w-[1360px] mx-auto relative z-10">
               
               {/* Controls bar for Hero */}
-              <div className="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-4">
+              <div className="mb-6 p-4 rounded-2xl bg-[#162839]/90 border border-white/20 backdrop-blur-md flex flex-wrap items-center justify-between gap-4 shadow-xl">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-[#fc8f34] uppercase tracking-wider">Fondo Hero ({config.hero.images?.length || 0} fotos):</span>
                   <div className="flex flex-wrap gap-2">
@@ -786,19 +830,21 @@ export function LandingCMS() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-slate-300">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300">
                   <div className="flex items-center gap-1.5">
                     <span>Teléfono WhatsApp:</span>
                     <EditableText value={config.hero.phone} onChange={(v) => updateNestedConfig(['hero', 'phone'], v)} className="bg-white/10 px-2 py-0.5 rounded text-white font-mono" />
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span>Opacidad:</span>
+                  <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-xl border border-white/15">
+                    <span className="font-semibold text-slate-200">Oscuridad / Capa Fondo:</span>
                     <input 
-                      type="range" min="10" max="90" 
+                      type="range" min="0" max="100" 
                       value={config.hero.bgOpacity ?? 30} 
                       onChange={(e) => updateNestedConfig(['hero', 'bgOpacity'], Number(e.target.value))} 
-                      className="accent-[#e67e22] w-20"
+                      className="accent-[#e67e22] w-24 cursor-pointer"
                     />
+                    <span className="font-mono font-bold text-[#fc8f34] w-9">{config.hero.bgOpacity ?? 30}%</span>
+                    <span className="text-[10px] text-slate-400 hidden sm:inline">(0% clara / 100% oculta)</span>
                   </div>
                 </div>
               </div>

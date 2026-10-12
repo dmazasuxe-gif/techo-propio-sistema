@@ -282,10 +282,16 @@ export default function LandingPage() {
     }
   };
 
-  const getStyle = (key: string) => ({
-    fontFamily: config.fonts?.[key] || 'inherit',
-    color: config.colors?.[key] || 'inherit',
-  });
+  const getStyle = (key: string): React.CSSProperties => {
+    const s: React.CSSProperties = {};
+    if (config.fonts?.[key]) {
+      s.fontFamily = config.fonts[key];
+    }
+    if (config.colors?.[key]) {
+      s.color = config.colors[key];
+    }
+    return s;
+  };
 
   if (isLoadingConfig) {
     return (
@@ -553,16 +559,18 @@ export default function LandingPage() {
           </div>
 
           {/* Nav links */}
-          <div className="hidden lg:flex items-center gap-8 text-[14px] font-semibold text-[#43474c]">
-            {(config.nav.links || []).map((link, i) => (
-              <a 
-                key={i} 
-                href={link.href} 
-                className="hover:text-[#162839] transition-colors py-1"
-                style={getStyle(`nav.links.${i}.label`)}
-              >
-                {link.label}
-              </a>
+          <div className="hidden lg:flex items-center gap-7 text-[14px] font-semibold text-[#43474c]">
+            {(config.nav.links || [])
+              .filter(link => !link.label?.toLowerCase().includes('consulta') && !link.href?.toLowerCase().includes('consulta'))
+              .map((link, i) => (
+                <a 
+                  key={i} 
+                  href={link.href} 
+                  className="hover:text-[#162839] transition-colors py-1 whitespace-nowrap"
+                  style={getStyle(`nav.links.${i}.label`)}
+                >
+                  {link.label}
+                </a>
             ))}
           </div>
 
@@ -577,8 +585,12 @@ export default function LandingPage() {
               style={getStyle('nav.ctaText')}
             >
               <PhoneCall className="w-4 h-4 text-[#fc8f34]" />
-              <span className="hidden sm:inline">{config.nav.ctaText || "Postular al Bono"}</span>
-              <span className="sm:hidden">Postular</span>
+              <span 
+                className="whitespace-nowrap font-bold"
+                style={{ color: config.colors?.['nav.ctaText'] || '#ffffff', fontFamily: config.fonts?.['nav.ctaText'] || 'inherit' }}
+              >
+                {config.nav.ctaText || "Contáctanos"}
+              </span>
             </a>
           </div>
         </nav>
@@ -596,12 +608,12 @@ export default function LandingPage() {
           <section className="relative w-full overflow-hidden bg-[#162839] text-white border-b border-[#2c3e50]">
             
             {/* Background image slider with dark blueprint gradient */}
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-0 bg-[#162839]">
               <AnimatePresence>
                 <motion.div
                   key={currentImageIndex}
                   initial={{ opacity: 0, scale: 1.08 }}
-                  animate={{ opacity: (config.hero.bgOpacity ?? 30) / 100, scale: 1 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 1.8, ease: "easeInOut" }}
                   className="absolute inset-0 w-full h-full"
@@ -617,7 +629,12 @@ export default function LandingPage() {
                   />
                 </motion.div>
               </AnimatePresence>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#162839] via-[#162839]/90 to-[#162839]/60 pointer-events-none"></div>
+              
+              {/* Dynamic dark overlay: higher opacity slider = darker overlay (hides image); lower slider = reveals image */}
+              <div 
+                className="absolute inset-0 bg-[#162839] pointer-events-none transition-opacity duration-300"
+                style={{ opacity: Math.min(1, Math.max(0, (config.hero.bgOpacity ?? 30) / 100)) }}
+              />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(230,126,34,0.12),transparent_60%)] pointer-events-none"></div>
             </div>
 

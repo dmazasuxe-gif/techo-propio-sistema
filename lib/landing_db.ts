@@ -130,6 +130,15 @@ export interface LandingConfig {
   updated_at: string;
 }
 
+export const DEFAULT_NAV_LINKS = [
+  { label: "Servicios", href: "#servicios" },
+  { label: "El Estándar", href: "#estandar" },
+  { label: "Modelos 3D", href: "#modelos-3d" },
+  { label: "Paso a Paso", href: "#proceso" },
+  { label: "Obras Entregadas", href: "#proyectos" },
+  { label: "Nosotros", href: "#nosotros" }
+];
+
 export const DEFAULT_LANDING_CONTENT: LandingContent = {
   topBar: {
     enabled: true,
@@ -139,17 +148,10 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   },
   nav: {
     logoImage: "",
-    logoText: "MAZA QUIROZ",
+    logoText: "CONSTRUCTORA MAZA QUIROZ",
     logoSubtitle: "CONSTRUCTORA & ET",
-    links: [
-      { label: "Servicios", href: "#servicios" },
-      { label: "El Estándar", href: "#estandar" },
-      { label: "Modelos 3D", href: "#modelos-3d" },
-      { label: "Paso a Paso", href: "#proceso" },
-      { label: "Obras Entregadas", href: "#proyectos" },
-      { label: "Consulta DNI", href: "#consulta-estado" }
-    ],
-    ctaText: "Postular al Bono"
+    links: DEFAULT_NAV_LINKS,
+    ctaText: "Contáctanos"
   },
   hero: {
     enabled: true,
@@ -159,7 +161,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     subtitle: "Accede al Bono Familiar Habitacional (BFH) modalidad Construcción en Sitio Propio. Transformamos tu lote en una vivienda moderna y 100% antisísmica sin cuota inicial ni préstamos bancarios.",
     ctaPrimaryText: "Consultar Estado DNI",
     ctaSecondaryText: "Postular por WhatsApp",
-    phone: "+51999999999",
+    phone: "+51985863448",
     whatsappMessage: "Hola, deseo información para postular al Bono Techo Propio con Constructora Maza Quiroz.",
     images: [
       "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
@@ -178,9 +180,9 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     title: "Nuestra Experiencia Constructiva",
     subtitle: "Ingeniería de precisión aplicada con rigor normativo para garantizar solidez, habitabilidad y durabilidad de por vida.",
     items: [
-      { iconType: 'hammer', title: 'Diseño y Planificación', desc: 'Desarrollamos planos arquitectónicos y distribución eficiente del espacio respetando la normativa.', images: [], statNum: '10+', statText: 'Años de Experiencia' },
-      { iconType: 'hard-hat', title: 'Construcción Segura', desc: 'Utilizamos materiales certificados y mano de obra calificada para garantizar la durabilidad de tu vivienda.', images: [], statNum: '500+', statText: 'Casas Construidas' },
-      { iconType: 'ruler', title: 'Acabados de Primera', desc: 'Entregamos viviendas listas para habitar con acabados estéticos y funcionales que mejoran tu calidad de vida.', images: [], statNum: '98%', statText: 'Clientes Satisfechos' }
+      { iconType: 'Building2', title: 'Viviendas Techo Propio', desc: 'Construcción de viviendas destinadas a familias beneficiarias del programa Techo Propio, ejecutadas en terreno propio y bajo los requerimientos establecidos.', images: [], statNum: '100%', statText: 'Viviendas Techo Propio' },
+      { iconType: 'HardHat', title: 'Construcción Integral', desc: 'Acompañamos el proyecto desde la preparación y planificación hasta la ejecución de la vivienda, cuidando cada etapa de la construcción.', images: [], statNum: '100%', statText: 'Acompañamiento y orientación' },
+      { iconType: 'ShieldCheck', title: 'Calidad y Compromiso', desc: 'Trabajamos con responsabilidad y atención en cada proyecto, buscando entregar viviendas seguras, funcionales y adecuadas para cada familia.', images: [], statNum: '100%', statText: 'Calidad y seguridad' }
     ]
   },
   standard: {
@@ -312,6 +314,19 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
     };
   }
   
+  // Clean & migrate nav links: remove any duplicate "Consulta DNI" from header links, and ensure full sections
+  let cleanedLinks = Array.isArray(data.content.nav?.links) ? data.content.nav.links : DEFAULT_NAV_LINKS;
+  // Always filter out any link that mentions "consulta" or "dni" in the navbar
+  cleanedLinks = cleanedLinks.filter((l: any) => 
+    !l.label?.toLowerCase().includes('consulta') && 
+    !l.href?.toLowerCase().includes('consulta')
+  );
+
+  // If links are only the legacy 3 links or missing sections, upgrade to default 6 links
+  if (cleanedLinks.length <= 3 && !cleanedLinks.some((l: any) => l.label.includes('Estándar') || l.href.includes('estandar'))) {
+    cleanedLinks = DEFAULT_NAV_LINKS;
+  }
+
   // Merge loaded content with default content to ensure missing keys are present
   const mergedContent: LandingContent = {
     ...DEFAULT_LANDING_CONTENT,
@@ -321,7 +336,8 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
       ...DEFAULT_LANDING_CONTENT.nav, 
       ...(data.content.nav || {}),
       logoSubtitle: data.content.nav?.logoSubtitle || DEFAULT_LANDING_CONTENT.nav.logoSubtitle,
-      links: Array.isArray(data.content.nav?.links) ? data.content.nav.links : DEFAULT_LANDING_CONTENT.nav.links
+      ctaText: data.content.nav?.ctaText || DEFAULT_LANDING_CONTENT.nav.ctaText,
+      links: cleanedLinks
     },
     hero: { 
       ...DEFAULT_LANDING_CONTENT.hero, 

@@ -27,6 +27,11 @@
    - Edición WYSIWYG de textos, fuentes (Montserrat, Work Sans, Outfit, Inter, etc.), colores predeterminados y HEX personalizado en cada elemento.
    - Gestión dinámica de tarjetas: agregar, reordenar y eliminar tarjetas de estadísticas Bento, servicios, pilares del Estándar, pasos del cronograma, y proyectos con carruseles de fotos.
    - Sincronización inmutable mediante `lib/landing_db.ts` y persistencia en Supabase.
+10. **Alineación Total de Cabecera y Config Landing:**
+   - Menús unificados en Landing Page y Config Landing (`Servicios`, `El Estándar`, `Modelos 3D`, `Paso a Paso`, `Obras Entregadas`, `Nosotros`).
+   - Eliminación definitiva del enlace "Consulta DNI" de la barra superior para evitar textos apilados; todos los enlaces usan `whitespace-nowrap`.
+   - Control de Opacidad del Hero: Capa oscura dinámica sobre la foto (`style={{ opacity: bgOpacity / 100 }}`). Subir el porcentaje aumenta la cobertura oscura y oculta la foto; bajarlo aclara y revela la fotografía con total nitidez.
+   - Sincronización 100% de Colores: El botón "Contáctanos" y todos los textos respetan de forma estricta los colores configurados en el CMS (`#ffffff` puro sin opacidades no deseadas).
 
 ## Resumen de la Sesión Previa (Agosto 2026 - Extensión Escritorio en Excel)
 Iniciamos la **Primera Etapa** de la creación de una extensión de escritorio para el sistema utilizando Microsoft Excel con Macros (.xlsm). El objetivo es registrar, editar y administrar beneficiarios, predios, ubicaciones y cargas familiares offline. La arquitectura de tablas en Excel es idéntica a Supabase (`BD_BENEFICIARIOS`, `BD_CARGA_FAMILIAR`, etc.) para una futura integración.
