@@ -99,18 +99,18 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 md:p-6 transition-opacity">
-      <div className="bg-white w-full max-w-6xl h-[85vh] md:h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 md:p-6 transition-opacity">
+      <div className="bg-white w-full max-w-6xl h-[88vh] md:h-[90vh] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative animate-in fade-in zoom-in-95 duration-300">
         
         {/* Header del Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white z-10">
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900">{nombre}</h3>
-            <p className="text-sm text-gray-500">Interactúa con el modelo usando el mouse o pantalla táctil</p>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 bg-white z-10 gap-3">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-xl font-bold text-gray-900 truncate">{nombre}</h3>
+            <p className="text-xs sm:text-sm text-gray-500 truncate">Interactúa con el modelo arrastrando y haciendo zoom</p>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
+            className="p-2 sm:p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Cerrar visor 3D"
           >
             <X className="w-6 h-6" />
@@ -127,33 +127,33 @@ export default function Visor3DModal({ isOpen, onClose, modeloUrl, nombre, image
           />
           
           {/* Top floating controls */}
-          <div className="absolute top-6 right-6 flex flex-col gap-3 z-10">
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-10">
             <button 
               onClick={() => setShowRoof(!showRoof)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-800 transition-all hover:scale-105 active:scale-95 font-semibold text-sm border border-gray-200"
+              className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-white/95 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-800 transition-all hover:scale-105 active:scale-95 font-bold text-xs sm:text-sm border border-gray-200"
             >
-              <Box className="w-4 h-4 text-primary" />
-              {showRoof ? 'Ver Interior' : 'Poner Techo'}
+              <Box className="w-4 h-4 text-blue-600" />
+              <span>{showRoof ? 'Ver Interior' : 'Poner Techo'}</span>
             </button>
           </div>
 
           {/* Controles sobre el visor */}
-          <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-10">
+          <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-10">
             <button 
               onClick={handleReset}
-              className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-700 transition-all hover:scale-105 active:scale-95"
+              className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center bg-white/95 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-700 transition-all hover:scale-105 active:scale-95"
               aria-label="Restablecer vista"
               title="Restablecer vista"
             >
-              <RotateCcw className="w-5 h-5" />
+              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <button 
               onClick={handleFullscreen}
-              className="p-3 bg-white/90 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-700 transition-all hover:scale-105 active:scale-95"
+              className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center bg-white/95 backdrop-blur-sm shadow-lg rounded-full hover:bg-white text-gray-700 transition-all hover:scale-105 active:scale-95"
               aria-label="Pantalla completa"
               title="Pantalla completa"
             >
-              <Maximize className="w-5 h-5" />
+              <Maximize className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>

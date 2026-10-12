@@ -8,7 +8,7 @@ import {
   Ruler, Building2, Hammer, ArrowRight, ShieldCheck, Clock, Award, 
   LucideIcon, HardHat, Pickaxe, Shovel, Truck, Warehouse, Wrench, Paintbrush,
   X, ChevronLeft, ChevronRight, CheckCircle2, FileSearch, Home, PhoneCall, 
-  Sparkles, MapPin, BadgeCheck, FileText, Check, ArrowUpRight
+  Sparkles, MapPin, BadgeCheck, FileText, Check, ArrowUpRight, Menu
 } from 'lucide-react';
 import type { LandingContent, LandingConfig } from '@/lib/landing_db';
 import { DEFAULT_LANDING_CONTENT } from '@/lib/landing_db';
@@ -109,11 +109,24 @@ export default function LandingPage() {
   const [searchResult, setSearchResult] = useState<any[] | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Modal States
+  // Modal & Menu States
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [viewingGalleryIndex, setViewingGalleryIndex] = useState<number | null>(null);
   const [galleryImageIndex, setGalleryImageIndex] = useState(0);
   const tracked = React.useRef(false);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
   const trackInteraction = useCallback((btnName: string) => {
     fetch('/api/track-visit', {
@@ -435,26 +448,27 @@ export default function LandingPage() {
             exit={{ opacity: 0 }} 
             className="fixed inset-0 z-[300] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4"
           >
-            <div className="bg-white rounded-3xl w-full max-w-4xl p-6 md:p-8 relative overflow-hidden shadow-2xl arch-border">
+            <div className="bg-white rounded-3xl w-full max-w-4xl p-5 sm:p-6 md:p-8 relative overflow-y-auto max-h-[88vh] shadow-2xl arch-border">
               <button 
                 onClick={() => setSearchResult(null)} 
-                className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-700 transition-colors"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2.5 sm:p-2 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-full text-slate-700 transition-colors z-20 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Cerrar resultados"
               >
                 <X className="w-6 h-6" />
               </button>
               
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-[#162839] text-white flex items-center justify-center">
-                  <BadgeCheck className="w-7 h-7 text-[#fc8f34]" />
+              <div className="flex items-center gap-3 mb-5 sm:mb-6 pr-10">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#162839] text-white flex items-center justify-center shrink-0">
+                  <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#fc8f34]" />
                 </div>
                 <div>
-                  <span className="text-xs uppercase tracking-wider font-bold text-[#e67e22]">Resultado Oficial</span>
-                  <h2 className="text-2xl font-bold text-[#162839] font-[family-name:var(--font-montserrat)] tracking-tight">Estado de Expediente</h2>
+                  <span className="text-[11px] sm:text-xs uppercase tracking-wider font-bold text-[#e67e22]">Resultado Oficial</span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#162839] font-[family-name:var(--font-montserrat)] tracking-tight">Estado de Expediente</h2>
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              {/* Vista para pantallas grandes: Tabla estructurada */}
+              <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
                 <table className="w-full text-left whitespace-nowrap text-[14px]">
                   <thead>
                     <tr className="bg-[#f6f3f0] text-[#162839] font-bold border-b border-slate-200">
@@ -486,15 +500,54 @@ export default function LandingPage() {
                 </table>
               </div>
 
+              {/* Vista optimizada para celulares: Tarjetas verticales con alta legibilidad */}
+              <div className="md:hidden space-y-3">
+                {searchResult.map((res, i) => {
+                  const badge = getExpedienteStatusBadge(res.estado);
+                  return (
+                    <div key={i} className="bg-[#fcf9f6] rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Postulante</span>
+                          <h4 className="font-bold text-base text-[#162839]">{res.postulante}</h4>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border shrink-0 ${badge.colorClass}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-200/60 text-xs">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-semibold">DNI Postulante</span>
+                          <span className="font-mono font-bold text-slate-800 text-sm">{res.dni_postulante}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-semibold">Actualización</span>
+                          <span className="text-slate-600">{res.created_at ? new Date(res.created_at).toLocaleDateString() : '-'}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/60 text-xs">
+                        <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Ubicación Registrada</span>
+                        <span className="text-slate-700 font-medium flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-[#e67e22] shrink-0" />
+                          {[res.departamento, res.provincia, res.distrito].filter(Boolean).join(' · ') || 'No especificada'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="mt-6 p-4 rounded-2xl bg-[#fcf9f6] border border-[#c4c6cd]/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-xs text-slate-600">
+                <div className="text-xs text-slate-600 text-center sm:text-left">
                   ¿Necesitas acelerar tu expediente o consultar observaciones?
                 </div>
                 <a 
                   href={wppLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-full bg-[#162839] hover:bg-[#2c3e50] text-white text-xs font-bold transition-all flex items-center gap-2"
+                  className="w-full sm:w-auto px-5 py-3 rounded-full bg-[#162839] hover:bg-[#2c3e50] active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   <PhoneCall className="w-3.5 h-3.5 text-[#e67e22]" /> Contactar a un Asesor Técnico
                 </a>
@@ -505,24 +558,24 @@ export default function LandingPage() {
       </AnimatePresence>
 
       {/* =========================================================================
-          TOP INSTITUTIONAL BAR (Configurable)
+          TOP INSTITUTIONAL BAR (Configurable & Mobile-Optimized)
          ========================================================================= */}
       {(config.topBar?.enabled ?? true) && (
-        <div className="bg-[#162839] text-white text-[12px] font-medium py-2 px-4 md:px-8 border-b border-[#2c3e50]">
-          <div className="max-w-[1360px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="font-semibold text-slate-200 tracking-wide uppercase" style={getStyle('topBar.badgeText')}>
+        <div className="bg-[#162839] text-white text-[11px] sm:text-[12px] font-medium py-1.5 sm:py-2 px-3 sm:px-6 md:px-8 border-b border-[#2c3e50] relative z-40">
+          <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span className="font-semibold text-slate-200 tracking-wide uppercase truncate" style={getStyle('topBar.badgeText')}>
                 {config.topBar?.badgeText || "Entidad Técnica Autorizada"}
               </span>
-              <span className="text-slate-400 hidden md:inline">|</span>
-              <span className="text-slate-300 hidden md:inline" style={getStyle('topBar.description')}>
+              <span className="text-slate-400 hidden lg:inline">|</span>
+              <span className="text-slate-300 hidden lg:inline truncate" style={getStyle('topBar.description')}>
                 {config.topBar?.description || "Programa Techo Propio · Fondo MIVIVIENDA (Construcción en Sitio Propio)"}
               </span>
             </div>
-            <div className="flex items-center gap-6 text-slate-300 text-xs">
-              <span className="hidden sm:inline">Atención directa: <strong className="text-white font-mono" style={getStyle('hero.phone')}>{config.hero.phone}</strong></span>
-              <span className="bg-[#e67e22]/20 text-[#fc8f34] px-2.5 py-0.5 rounded-full font-bold border border-[#e67e22]/30" style={getStyle('topBar.subsidioText')}>
+            <div className="flex items-center gap-2 sm:gap-6 text-slate-300 text-[11px] sm:text-xs shrink-0">
+              <span className="hidden md:inline">Atención: <strong className="text-white font-mono" style={getStyle('hero.phone')}>{config.hero.phone}</strong></span>
+              <span className="bg-[#e67e22]/20 text-[#fc8f34] px-2 sm:px-2.5 py-0.5 rounded-full font-bold border border-[#e67e22]/30 whitespace-nowrap text-[10px] sm:text-xs" style={getStyle('topBar.subsidioText')}>
                 {config.topBar?.subsidioText || "Bono 100% Gratuito"}
               </span>
             </div>
@@ -531,35 +584,35 @@ export default function LandingPage() {
       )}
 
       {/* =========================================================================
-          NAVIGATION BAR (Sticky Architectural Nav)
+          NAVIGATION BAR (Sticky Architectural Nav with Mobile Drawer)
          ========================================================================= */}
-      <header className="sticky top-0 z-50 bg-[#fcf9f6]/90 backdrop-blur-md border-b border-[#c4c6cd]/60 transition-all duration-300">
-        <nav className="max-w-[1360px] mx-auto px-4 md:px-8 py-3.5 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-50 bg-[#fcf9f6]/95 backdrop-blur-md border-b border-[#c4c6cd]/60 transition-all duration-300">
+        <nav className="max-w-[1360px] mx-auto px-3 sm:px-6 md:px-8 py-3 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo with secret triple click to admin */}
           <div 
-            className="flex items-center gap-3 cursor-pointer select-none group" 
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none group min-w-0" 
             onClick={handleLogoClick}
             title="Constructora Maza Quiroz"
           >
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-[#162839] text-white flex items-center justify-center shadow-sm border border-[#2c3e50] overflow-hidden group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#162839] text-white flex items-center justify-center shadow-sm border border-[#2c3e50] overflow-hidden group-hover:scale-105 transition-transform shrink-0">
               {config.nav.logoImage ? (
                 <img src={config.nav.logoImage} alt="Logo" className="w-full h-full object-contain p-1" />
               ) : (
-                <Building2 className="w-6 h-6 text-[#fc8f34]" />
+                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#fc8f34]" />
               )}
             </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-black text-lg md:text-xl font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight" style={getStyle('nav.logoText')}>
+            <div className="flex flex-col leading-tight min-w-0">
+              <span className="font-black text-[12px] xs:text-[14px] sm:text-lg md:text-xl font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight leading-none" style={getStyle('nav.logoText')}>
                 {config.nav.logoText || "MAZA QUIROZ"}
               </span>
-              <span className="text-[10px] tracking-widest uppercase text-[#e67e22] font-bold mt-0.5" style={getStyle('nav.logoSubtitle')}>
+              <span className="text-[8px] xs:text-[9px] sm:text-[10px] tracking-widest uppercase text-[#e67e22] font-bold mt-0.5" style={getStyle('nav.logoSubtitle')}>
                 {config.nav.logoSubtitle || "CONSTRUCTORA & ET"}
               </span>
             </div>
           </div>
 
-          {/* Nav links */}
+          {/* Desktop Nav links */}
           <div className="hidden lg:flex items-center gap-7 text-[14px] font-semibold text-[#43474c]">
             {(config.nav.links || [])
               .filter(link => !link.label?.toLowerCase().includes('consulta') && !link.href?.toLowerCase().includes('consulta'))
@@ -575,27 +628,146 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Action Button */}
-          <div className="flex items-center gap-3">
+          {/* Action Buttons & Hamburger Toggle for Mobile */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <a 
               href={wppLink}
               target="_blank" 
               rel="noopener noreferrer" 
               onClick={() => trackInteraction('whatsapp_nav')}
-              className="px-5 py-2.5 rounded-full bg-[#162839] hover:bg-[#2c3e50] text-white text-[13px] md:text-[14px] font-bold transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2"
+              className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#162839] hover:bg-[#2c3e50] text-white text-xs sm:text-[13px] md:text-[14px] font-bold transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center gap-1.5 sm:gap-2 min-h-[40px]"
               style={getStyle('nav.ctaText')}
             >
-              <PhoneCall className="w-4 h-4 text-[#fc8f34]" />
+              <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#fc8f34]" />
               <span 
-                className="whitespace-nowrap font-bold"
+                className="hidden xs:inline whitespace-nowrap font-bold"
                 style={{ color: config.colors?.['nav.ctaText'] || '#ffffff', fontFamily: config.fonts?.['nav.ctaText'] || 'inherit' }}
               >
                 {config.nav.ctaText || "Contáctanos"}
               </span>
             </a>
+
+            {/* Hamburger Button for Mobile & Tablets */}
+            <button 
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              className="p-2 sm:p-2.5 rounded-xl bg-[#162839] hover:bg-[#2c3e50] active:scale-95 text-white lg:hidden flex items-center justify-center transition-all shadow-sm border border-[#2c3e50] min-w-[40px] min-h-[40px]"
+              aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú de navegación"}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#fc8f34]" /> : <Menu className="w-5 h-5 text-white" />}
+            </button>
           </div>
         </nav>
       </header>
+
+      {/* =========================================================================
+          MOBILE NAVIGATION DRAWER (Full-screen architectural drawer for smartphones)
+         ========================================================================= */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+            className="fixed inset-0 z-[180] bg-[#162839]/98 backdrop-blur-2xl flex flex-col justify-between overflow-y-auto pt-[env(safe-area-inset-top,16px)] pb-[env(safe-area-inset-bottom,24px)] px-5 sm:px-8 text-white lg:hidden"
+          >
+            {/* Header of Drawer */}
+            <div className="flex items-center justify-between py-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+                  {config.nav.logoImage ? (
+                    <img src={config.nav.logoImage} alt="Logo" className="w-full h-full object-contain p-1" />
+                  ) : (
+                    <Building2 className="w-5 h-5 text-[#fc8f34]" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-black text-lg font-[family-name:var(--font-montserrat)] text-white tracking-tight">
+                    {config.nav.logoText || "MAZA QUIROZ"}
+                  </div>
+                  <div className="text-[10px] tracking-widest uppercase text-[#fc8f34] font-bold">
+                    {config.nav.logoSubtitle || "CONSTRUCTORA & ET"}
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Cerrar menú"
+              >
+                <X className="w-6 h-6 text-[#fc8f34]" />
+              </button>
+            </div>
+
+            {/* Quick Action: Consulta DNI */}
+            <div className="py-4">
+              <a 
+                href="#consulta-estado"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#e67e22] to-[#fc8f34] text-white font-bold flex items-center justify-between shadow-xl active:scale-95 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                    <FileSearch className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-[10px] uppercase tracking-wider block text-white/80 font-bold">Verificación Oficial</span>
+                    <span className="text-base font-extrabold font-[family-name:var(--font-montserrat)]">Consulta de DNI</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-white" />
+              </a>
+            </div>
+
+            {/* Navigation Links with Smooth Jump */}
+            <nav className="flex-1 py-1 flex flex-col divide-y divide-white/5">
+              {(config.nav.links || [
+                { label: "Servicios", href: "#servicios" },
+                { label: "Estándar", href: "#estandar" },
+                { label: "Modelos 3D", href: "#modelos-3d" },
+                { label: "Proceso", href: "#proceso" },
+                { label: "Proyectos", href: "#proyectos" },
+                { label: "Nosotros", href: "#nosotros" },
+                { label: "Contacto", href: "#contacto" }
+              ])
+                .filter(link => !link.label?.toLowerCase().includes('consulta') && !link.href?.toLowerCase().includes('consulta'))
+                .map((link, i) => (
+                  <a 
+                    key={i}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-3 py-3.5 rounded-xl hover:bg-white/10 active:bg-white/15 transition-all font-semibold text-base sm:text-lg flex items-center justify-between text-slate-100"
+                  >
+                    <span>{link.label}</span>
+                    <ChevronRight className="w-4 h-4 text-[#fc8f34]/80" />
+                  </a>
+                ))}
+            </nav>
+
+            {/* Bottom Actions and Credentials */}
+            <div className="pt-4 pb-2 border-t border-white/10 space-y-3">
+              <a 
+                href={wppLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => { trackInteraction('whatsapp_drawer'); setMobileMenuOpen(false); }}
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all min-h-[48px]"
+              >
+                <PhoneCall className="w-4 h-4 text-emerald-200" />
+                <span>Postular por WhatsApp</span>
+              </a>
+
+              <div className="text-center text-xs text-slate-300 pt-1">
+                <span>Central Telefónica: </span>
+                <a href={`tel:${formattedPhone}`} className="text-[#fc8f34] font-mono font-bold hover:underline">
+                  {config.hero.phone}
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* =========================================================================
           MAIN CONTENT
@@ -639,19 +811,19 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(230,126,34,0.12),transparent_60%)] pointer-events-none"></div>
             </div>
 
-            <div className="relative z-10 max-w-[1360px] mx-auto px-4 md:px-8 py-16 md:py-24 lg:py-28 flex flex-col">
+            <div className="relative z-10 max-w-[1360px] mx-auto px-4 md:px-8 py-10 sm:py-16 md:py-24 lg:py-28 flex flex-col">
               
               <div className="max-w-3xl">
                 {/* Institution badge */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md mb-6">
-                  <ShieldCheck className="w-4 h-4 text-[#fc8f34]" />
-                  <span className="text-xs uppercase tracking-wider font-bold text-slate-200" style={getStyle('hero.badgeText')}>
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md mb-5 sm:mb-6 max-w-full">
+                  <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#fc8f34] shrink-0" />
+                  <span className="text-[10px] xs:text-[11px] sm:text-xs uppercase tracking-wider font-bold text-slate-200" style={getStyle('hero.badgeText')}>
                     {config.hero.badgeText || "Entidad Técnica Autorizada Fondo MIVIVIENDA"}
                   </span>
                 </div>
 
-                {/* Headline */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-[family-name:var(--font-montserrat)] tracking-tight leading-[1.1] mb-6 text-white" style={getStyle('hero.title')}>
+                {/* Headline responsive for all phones */}
+                <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-[family-name:var(--font-montserrat)] tracking-tight leading-[1.15] mb-4 sm:mb-6 text-white" style={getStyle('hero.title')}>
                   {config.hero.title ? (
                     config.hero.titleHighlight && config.hero.title.includes(config.hero.titleHighlight) ? (
                       <>
@@ -668,15 +840,15 @@ export default function LandingPage() {
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-base sm:text-lg md:text-xl text-slate-300 font-[family-name:var(--font-work-sans)] leading-relaxed mb-8 max-w-2xl" style={getStyle('hero.subtitle')}>
+                <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 font-[family-name:var(--font-work-sans)] leading-relaxed mb-6 sm:mb-8 max-w-2xl" style={getStyle('hero.subtitle')}>
                   {config.hero.subtitle || "Accede al Bono Familiar Habitacional (BFH) modalidad Construcción en Sitio Propio. Transformamos tu lote en una vivienda moderna y 100% antisísmica sin cuota inicial ni préstamos bancarios."}
                 </p>
 
-                {/* CTAs */}
-                <div className="flex flex-wrap items-center gap-4 mb-14">
+                {/* CTAs full-width on mobile */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-8 sm:mb-14 w-full sm:w-auto">
                   <a 
                     href="#consulta-estado"
-                    className="px-7 py-3.5 rounded-full bg-[#e67e22] hover:bg-[#fc8f34] text-white font-bold text-sm md:text-base transition-all shadow-lg hover:shadow-orange-500/25 active:scale-95 flex items-center gap-2.5"
+                    className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-[#e67e22] hover:bg-[#fc8f34] text-white font-bold text-sm md:text-base transition-all shadow-lg hover:shadow-orange-500/25 active:scale-95 flex items-center gap-2.5 min-h-[48px]"
                     style={getStyle('hero.ctaPrimaryText')}
                   >
                     <FileSearch className="w-5 h-5" />
@@ -688,7 +860,7 @@ export default function LandingPage() {
                     target="_blank" 
                     rel="noopener noreferrer" 
                     onClick={() => trackInteraction('whatsapp_hero')}
-                    className="px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm md:text-base transition-all backdrop-blur-md active:scale-95 flex items-center gap-2.5"
+                    className="w-full sm:w-auto justify-center px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm md:text-base transition-all backdrop-blur-md active:scale-95 flex items-center gap-2.5 min-h-[48px]"
                     style={getStyle('hero.ctaSecondaryText')}
                   >
                     <PhoneCall className="w-5 h-5 text-[#fc8f34]" />
@@ -699,16 +871,16 @@ export default function LandingPage() {
 
               {/* Bento Grid Stats from Config */}
               {(config.hero.showStats ?? true) && Array.isArray(config.hero.stats) && config.hero.stats.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-white/10">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 pt-6 sm:pt-8 border-t border-white/10">
                   {config.hero.stats.map((st, sIdx) => (
-                    <div key={sIdx} className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-                      <div className="text-3xl md:text-4xl font-black font-[family-name:var(--font-montserrat)] text-[#fc8f34] mb-1" style={getStyle(`hero.stats.${sIdx}.num`)}>
+                    <div key={sIdx} className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 sm:p-5 border border-white/10 flex flex-col justify-between">
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-black font-[family-name:var(--font-montserrat)] text-[#fc8f34] mb-1 leading-none" style={getStyle(`hero.stats.${sIdx}.num`)}>
                         {st.num}
                       </div>
-                      <div className="text-xs uppercase font-bold text-slate-300 tracking-wider" style={getStyle(`hero.stats.${sIdx}.label`)}>
+                      <div className="text-[10px] sm:text-xs uppercase font-bold text-slate-200 tracking-wider leading-tight" style={getStyle(`hero.stats.${sIdx}.label`)}>
                         {st.label}
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-1" style={getStyle(`hero.stats.${sIdx}.sublabel`)}>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 line-clamp-2" style={getStyle(`hero.stats.${sIdx}.sublabel`)}>
                         {st.sublabel}
                       </p>
                     </div>
@@ -724,7 +896,7 @@ export default function LandingPage() {
             CONSULTA DNI INTERACTIVA
            ======================================================================= */}
         {(config.statusSearch?.enabled ?? true) && (
-          <section className="w-full py-16 md:py-20 bg-[#f6f3f0] border-b border-[#c4c6cd]/50" id="consulta-estado">
+          <section className="w-full py-12 sm:py-16 md:py-20 bg-[#f6f3f0] border-b border-[#c4c6cd]/50" id="consulta-estado">
             <div className="max-w-[1360px] mx-auto px-4 md:px-8">
               
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -737,7 +909,7 @@ export default function LandingPage() {
                       {config.statusSearch.sectionBadge || "Portal Oficial de Verificación"}
                     </span>
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-extrabold font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-4" style={getStyle('statusSearch.sectionTitle')}>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-3 sm:mb-4" style={getStyle('statusSearch.sectionTitle')}>
                     {config.statusSearch.sectionTitle || "Consulta el Estado de tu Postulación"}
                   </h2>
                   <p className="text-slate-600 text-sm md:text-base leading-relaxed mb-6 font-[family-name:var(--font-work-sans)]" style={getStyle('statusSearch.sectionDesc')}>
@@ -760,15 +932,15 @@ export default function LandingPage() {
 
                 {/* Right Interactive Search Card */}
                 <div className="lg:col-span-7">
-                  <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-[#c4c6cd]/60 relative overflow-hidden">
+                  <div className="bg-white rounded-3xl p-5 sm:p-8 md:p-10 shadow-xl border border-[#c4c6cd]/60 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <FileSearch className="w-5 h-5 text-[#162839]" />
-                        <h3 className="text-lg md:text-xl font-bold text-[#162839] font-[family-name:var(--font-montserrat)]" style={getStyle('statusSearch.title')}>
+                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#162839] font-[family-name:var(--font-montserrat)]" style={getStyle('statusSearch.title')}>
                           {config.statusSearch.title || "Ingresa tu Documento Nacional de Identidad"}
                         </h3>
                       </div>
-                      <span className="text-[11px] font-mono font-bold bg-[#f6f3f0] text-slate-700 px-2.5 py-1 rounded-full border border-slate-200">
+                      <span className="text-[10px] sm:text-[11px] font-mono font-bold bg-[#f6f3f0] text-slate-700 px-2.5 py-1 rounded-full border border-slate-200 shrink-0">
                         DNI (8 dígitos)
                       </span>
                     </div>
@@ -782,12 +954,13 @@ export default function LandingPage() {
                         <input 
                           type="text" 
                           inputMode="numeric"
+                          pattern="[0-9]*"
                           maxLength={8}
                           value={searchDni}
                           onChange={(e) => setSearchDni(e.target.value.replace(/\D/g, '').slice(0, 8))}
                           onKeyDown={(e) => e.key === 'Enter' && handleStatusSearch()}
                           placeholder={config.statusSearch.placeholder || "Ej: 71234567"} 
-                          className="w-full bg-[#fcf9f6] border-2 border-slate-200 focus:border-[#162839] rounded-2xl px-5 py-4 text-[#162839] placeholder:text-slate-400 font-mono text-base font-semibold transition-all outline-none"
+                          className="w-full bg-[#fcf9f6] border-2 border-slate-200 focus:border-[#162839] rounded-2xl px-5 py-3.5 sm:py-4 text-[#162839] placeholder:text-slate-400 font-mono text-base font-semibold transition-all outline-none min-h-[50px]"
                           disabled={searchLoading}
                         />
                         {searchDni.length === 8 && (
@@ -800,7 +973,7 @@ export default function LandingPage() {
                       <button 
                         onClick={handleStatusSearch}
                         disabled={searchLoading || searchDni.length !== 8}
-                        className="bg-[#162839] hover:bg-[#2c3e50] text-white font-bold px-8 py-4 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap text-sm"
+                        className="w-full sm:w-auto bg-[#162839] hover:bg-[#2c3e50] text-white font-bold px-8 py-3.5 sm:py-4 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap text-sm min-h-[50px]"
                         style={getStyle('statusSearch.buttonText')}
                       >
                         {searchLoading ? (
@@ -849,23 +1022,23 @@ export default function LandingPage() {
             NUESTRA EXPERIENCIA (SERVICIOS Y CAPACIDADES TÉCNICAS)
            ======================================================================= */}
         {(config.services?.enabled ?? true) && (
-          <section className="w-full py-20 md:py-28 bg-[#fcf9f6]" id="servicios">
+          <section className="w-full py-14 sm:py-20 md:py-28 bg-[#fcf9f6]" id="servicios">
             <div className="max-w-[1360px] mx-auto px-4 md:px-8">
               
-              <div className="mb-14 max-w-3xl">
+              <div className="mb-10 sm:mb-14 max-w-3xl">
                 <span className="text-xs uppercase font-bold tracking-widest text-[#e67e22] block mb-2" style={getStyle('services.badgeText')}>
                   {config.services.badgeText || "Ingeniería Estructural & Especialidad"}
                 </span>
-                <h2 className="text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-4" style={getStyle('services.title')}>
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-3 sm:mb-4" style={getStyle('services.title')}>
                   {config.services.title || "Nuestra Experiencia Constructiva"}
                 </h2>
-                <div className="w-16 h-1.5 bg-[#e67e22] mb-6"></div>
-                <p className="text-slate-600 text-base md:lg leading-relaxed font-[family-name:var(--font-work-sans)]" style={getStyle('services.subtitle')}>
+                <div className="w-16 h-1.5 bg-[#e67e22] mb-5 sm:mb-6"></div>
+                <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed font-[family-name:var(--font-work-sans)]" style={getStyle('services.subtitle')}>
                   {config.services.subtitle || "Ingeniería de precisión aplicada con rigor normativo para garantizar solidez, habitabilidad y durabilidad de por vida."}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
                 {(config?.services?.items || []).map((service, i) => {
                   const Icon = iconMap[service.iconType] || Hammer;
                   const hasImages = service.images && service.images.length > 0;
@@ -881,11 +1054,11 @@ export default function LandingPage() {
                           setViewingGalleryIndex(i);
                         }
                       }}
-                      className={`bg-white rounded-3xl p-8 arch-border flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group ${hasImages ? 'cursor-pointer ring-1 ring-transparent hover:ring-[#e67e22]/50' : ''}`}
+                      className={`bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 arch-border flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group ${hasImages ? 'cursor-pointer ring-1 ring-transparent hover:ring-[#e67e22]/50' : ''}`}
                     >
                       <div>
-                        <div className="w-14 h-14 rounded-2xl bg-[#f6f3f0] border border-[#c4c6cd]/50 flex items-center justify-center mb-6 group-hover:bg-[#162839] group-hover:text-white transition-colors">
-                          <Icon className="w-7 h-7 text-[#162839] group-hover:text-[#fc8f34] transition-colors" strokeWidth={1.75} />
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#f6f3f0] border border-[#c4c6cd]/50 flex items-center justify-center mb-5 sm:mb-6 group-hover:bg-[#162839] group-hover:text-white transition-colors">
+                          <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#162839] group-hover:text-[#fc8f34] transition-colors" strokeWidth={1.75} />
                         </div>
 
                         <h3 className="text-xl md:text-2xl font-bold font-[family-name:var(--font-montserrat)] text-[#162839] mb-3" style={getStyle(`services.items.${i}.title`)}>
@@ -926,32 +1099,32 @@ export default function LandingPage() {
             EL ESTÁNDAR MAZA QUIROZ (PILARES DE CALIDAD INSTITUCIONAL STITCH)
            ======================================================================= */}
         {(config.standard?.enabled ?? true) && (
-          <section className="w-full py-20 md:py-28 bg-[#f6f3f0] border-y border-[#c4c6cd]/60" id="estandar">
+          <section className="w-full py-14 sm:py-20 md:py-28 bg-[#f6f3f0] border-y border-[#c4c6cd]/60" id="estandar">
             <div className="max-w-[1360px] mx-auto px-4 md:px-8">
               
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
                 
                 {/* Left Column: Pillars */}
                 <div className="lg:col-span-6">
                   <span className="text-xs uppercase font-bold tracking-widest text-[#e67e22] block mb-2" style={getStyle('standard.badgeText')}>
                     {config.standard.badgeText || "Garantía y Credibilidad"}
                   </span>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-4" style={getStyle('standard.titleHtml')}>
+                  <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-3 sm:mb-4" style={getStyle('standard.titleHtml')}>
                     {config.standard.titleHtml || "El Estándar Maza Quiroz"}
                   </h2>
-                  <div className="w-16 h-1.5 bg-[#e67e22] mb-6"></div>
+                  <div className="w-16 h-1.5 bg-[#e67e22] mb-5 sm:mb-6"></div>
                   
-                  <p className="text-slate-600 text-base md:text-lg leading-relaxed font-[family-name:var(--font-work-sans)] mb-10" style={getStyle('standard.subtitle')}>
+                  <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed font-[family-name:var(--font-work-sans)] mb-8 sm:mb-10" style={getStyle('standard.subtitle')}>
                     {config.standard.subtitle || "No solo construimos paredes; diseñamos estabilidad para tu familia. Cada vivienda del programa Techo Propio ejecutada por nuestra constructora cumple estrictamente con las normas técnicas E-030 (Sismorresistente) y E-070 (Albañilería Confinada)."}
                   </p>
 
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {(config.standard?.items || []).map((pillar, pIdx) => {
                       const Icon = iconMap[pillar.iconType] || Award;
                       return (
-                        <div key={pIdx} className="flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#c4c6cd]/50 shadow-sm">
-                          <div className="w-12 h-12 rounded-xl bg-[#162839] text-[#fc8f34] flex items-center justify-center shrink-0">
-                            <Icon className="w-6 h-6" />
+                        <div key={pIdx} className="flex items-start gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-[#c4c6cd]/50 shadow-sm">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#162839] text-[#fc8f34] flex items-center justify-center shrink-0">
+                            <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                           </div>
                           <div>
                             <h4 className="font-bold text-base md:text-lg font-[family-name:var(--font-montserrat)] text-[#162839] mb-1" style={getStyle(`standard.items.${pIdx}.title`)}>
@@ -970,8 +1143,8 @@ export default function LandingPage() {
 
                 {/* Right Column: Architectural Blueprint Visual from Config */}
                 <div className="lg:col-span-6">
-                  <div className="relative rounded-3xl overflow-hidden arch-border shadow-2xl bg-slate-900 group">
-                    <div className="relative h-[480px] sm:h-[560px] w-full">
+                  <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden arch-border shadow-2xl bg-slate-900 group">
+                    <div className="relative h-[280px] xs:h-[340px] sm:h-[480px] md:h-[560px] w-full">
                       <img 
                         src={config.standard?.image || "https://lh3.googleusercontent.com/aida-public/AB6AXuB7hbgxJs7cmzk4DNztVWwB95QHZz4gSUo8W8pdnbK0Y8d-Qmm1G6TPUybh2lmrHq-oKGM4BL2xG2E3dYE6UxLKPBjA22uKzTEjqPSiAfQacwRoCgMNFI5vdo4LHPtYJmG_C9FTY_U8Z05Vr-A5iS11BcjhdfuEWZZA2OHdStHDSSGUaL_Pgr9Dsx6LPl6OsAThghy2uHRY12p58zwARdIADtw8DSWTWLiIIeEbhfFvX7TEPM2FElbx"} 
                         alt="Planos arquitectónicos y rigor de ingeniería Constructora Maza Quiroz" 
@@ -981,14 +1154,14 @@ export default function LandingPage() {
                     </div>
 
                     {/* Architectural Badge in corner */}
-                    <div className="absolute bottom-6 left-6 right-6 p-6 rounded-2xl bg-[#162839]/90 backdrop-blur-md border border-white/10 text-white">
+                    <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 p-4 sm:p-6 rounded-2xl bg-[#162839]/90 backdrop-blur-md border border-white/10 text-white">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs uppercase tracking-wider font-bold text-[#fc8f34]" style={getStyle('standard.qualityBadgeTitle')}>
+                        <span className="text-[11px] sm:text-xs uppercase tracking-wider font-bold text-[#fc8f34]" style={getStyle('standard.qualityBadgeTitle')}>
                           {config.standard?.qualityBadgeTitle || "Control de Calidad Riguroso"}
                         </span>
-                        <span className="text-[11px] font-mono text-slate-300">ISO / RNE</span>
+                        <span className="text-[10px] sm:text-[11px] font-mono text-slate-300">ISO / RNE</span>
                       </div>
-                      <div className="font-bold text-sm md:text-base font-[family-name:var(--font-montserrat)]" style={getStyle('standard.qualityBadgeSubtitle')}>
+                      <div className="font-bold text-xs sm:text-sm md:text-base font-[family-name:var(--font-montserrat)]" style={getStyle('standard.qualityBadgeSubtitle')}>
                         {config.standard?.qualityBadgeSubtitle || "Ensayos de probeta de concreto y resistencia de compresión en cada vaciado."}
                       </div>
                     </div>
@@ -1013,43 +1186,43 @@ export default function LandingPage() {
             PROCESO PASO A PASO (CÓMO POSTULAR Y OBTENER TU CASA)
            ======================================================================= */}
         {(config.process?.enabled ?? true) && (
-          <section className="w-full py-20 md:py-28 bg-[#fcf9f6]" id="proceso">
+          <section className="w-full py-14 sm:py-20 md:py-28 bg-[#fcf9f6]" id="proceso">
             <div className="max-w-[1360px] mx-auto px-4 md:px-8">
               
-              <div className="text-center max-w-3xl mx-auto mb-16">
+              <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
                 <span className="text-xs uppercase font-bold tracking-widest text-[#e67e22] block mb-2" style={getStyle('process.badgeText')}>
                   {config.process?.badgeText || "Paso a Paso"}
                 </span>
-                <h2 className="text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-4" style={getStyle('process.title')}>
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-3 sm:mb-4" style={getStyle('process.title')}>
                   {config.process?.title || "¿Cómo Obtener tu Vivienda Techo Propio?"}
                 </h2>
-                <div className="w-16 h-1.5 bg-[#e67e22] mx-auto mb-6"></div>
-                <p className="text-slate-600 text-base md:text-lg leading-relaxed font-[family-name:var(--font-work-sans)]" style={getStyle('process.subtitle')}>
+                <div className="w-16 h-1.5 bg-[#e67e22] mx-auto mb-5 sm:mb-6"></div>
+                <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed font-[family-name:var(--font-work-sans)]" style={getStyle('process.subtitle')}>
                   {config.process?.subtitle || "Nosotros nos encargamos de todo el trámite técnico y administrativo ante el Fondo MIVIVIENDA."}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 relative">
                 {(config.process?.steps || []).map((step, sIdx) => {
                   const stepIcons = [FileText, Ruler, BadgeCheck, Home];
                   const StepIcon = stepIcons[sIdx % stepIcons.length];
                   return (
-                    <div key={sIdx} className="bg-white rounded-3xl p-7 arch-border flex flex-col justify-between hover:shadow-lg transition-all relative group">
-                      <div className="text-5xl font-black text-[#162839]/10 font-[family-name:var(--font-montserrat)] absolute top-4 right-5 group-hover:text-[#e67e22]/20 transition-colors" style={getStyle(`process.steps.${sIdx}.number`)}>
+                    <div key={sIdx} className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 arch-border flex flex-col justify-between hover:shadow-lg transition-all relative group">
+                      <div className="text-4xl sm:text-5xl font-black text-[#162839]/10 font-[family-name:var(--font-montserrat)] absolute top-4 right-5 group-hover:text-[#e67e22]/20 transition-colors" style={getStyle(`process.steps.${sIdx}.number`)}>
                         {step.number}
                       </div>
                       <div>
-                        <div className="w-12 h-12 rounded-xl bg-[#162839] text-[#fc8f34] flex items-center justify-center mb-5">
-                          <StepIcon className="w-6 h-6" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#162839] text-[#fc8f34] flex items-center justify-center mb-4 sm:mb-5">
+                          <StepIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
-                        <h3 className="text-lg font-bold font-[family-name:var(--font-montserrat)] text-[#162839] mb-2" style={getStyle(`process.steps.${sIdx}.title`)}>
+                        <h3 className="text-base sm:text-lg font-bold font-[family-name:var(--font-montserrat)] text-[#162839] mb-2" style={getStyle(`process.steps.${sIdx}.title`)}>
                           {step.title}
                         </h3>
                         <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-[family-name:var(--font-work-sans)]" style={getStyle(`process.steps.${sIdx}.desc`)}>
                           {step.desc}
                         </p>
                       </div>
-                      <div className="mt-6 pt-4 border-t border-slate-100 text-xs font-semibold text-[#e67e22]" style={getStyle(`process.steps.${sIdx}.badge`)}>
+                      <div className="mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-100 text-xs font-semibold text-[#e67e22]" style={getStyle(`process.steps.${sIdx}.badge`)}>
                         {step.badge}
                       </div>
                     </div>
@@ -1058,12 +1231,12 @@ export default function LandingPage() {
               </div>
 
               {/* Bottom CTA to WhatsApp */}
-              <div className="mt-14 p-8 rounded-3xl bg-[#162839] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+              <div className="mt-10 sm:mt-14 p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-[#162839] text-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-5 sm:gap-6 shadow-xl">
                 <div>
-                  <h4 className="text-xl md:text-2xl font-bold font-[family-name:var(--font-montserrat)] mb-1" style={getStyle('process.bannerTitle')}>
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-bold font-[family-name:var(--font-montserrat)] mb-1" style={getStyle('process.bannerTitle')}>
                     {config.process?.bannerTitle || "¿Tienes un terreno propio y deseas construir tu casa?"}
                   </h4>
-                  <p className="text-sm text-slate-300" style={getStyle('process.bannerSubtitle')}>
+                  <p className="text-xs sm:text-sm text-slate-300" style={getStyle('process.bannerSubtitle')}>
                     {config.process?.bannerSubtitle || "Comunícate hoy mismo con nuestros ingenieros y asesores autorizados para validar tu postulación."}
                   </p>
                 </div>
@@ -1073,7 +1246,7 @@ export default function LandingPage() {
                   target="_blank" 
                   rel="noopener noreferrer" 
                   onClick={() => trackInteraction('whatsapp_banner_proceso')}
-                  className="px-8 py-4 rounded-full bg-[#e67e22] hover:bg-[#fc8f34] text-white font-bold text-sm md:text-base transition-all shadow-lg active:scale-95 shrink-0 flex items-center gap-2"
+                  className="w-full md:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#e67e22] hover:bg-[#fc8f34] text-white font-bold text-sm md:text-base transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center gap-2 min-h-[48px]"
                   style={getStyle('process.bannerCta')}
                 >
                   <PhoneCall className="w-5 h-5" />
@@ -1089,32 +1262,32 @@ export default function LandingPage() {
             OBRAS ENTREGADAS (PROYECTOS RECIENTES)
            ======================================================================= */}
         {(config.projects?.enabled ?? true) && (
-          <section className="w-full py-20 md:py-28 bg-[#f6f3f0] border-t border-[#c4c6cd]/60" id="proyectos">
+          <section className="w-full py-14 sm:py-20 md:py-28 bg-[#f6f3f0] border-t border-[#c4c6cd]/60" id="proyectos">
             <div className="max-w-[1360px] mx-auto px-4 md:px-8">
               
-              <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-14 gap-4 sm:gap-6">
                 <div>
                   <span className="text-xs uppercase font-bold tracking-widest text-[#e67e22] block mb-2" style={getStyle('projects.badgeText')}>
                     {config.projects.badgeText || "Galería de Viviendas Reales"}
                   </span>
-                  <h2 className="text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight" style={getStyle('projects.title')}>
+                  <h2 className="text-2xl sm:text-3xl md:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight" style={getStyle('projects.title')}>
                     {config.projects.title || "Obras Entregadas & En Ejecución"}
                   </h2>
-                  <div className="w-16 h-1.5 bg-[#e67e22] mt-4"></div>
+                  <div className="w-16 h-1.5 bg-[#e67e22] mt-3 sm:mt-4"></div>
                 </div>
 
-                <p className="text-slate-600 text-sm md:text-base max-w-md font-[family-name:var(--font-work-sans)]" style={getStyle('projects.subtitle')}>
+                <p className="text-slate-600 text-xs sm:text-sm md:text-base max-w-md font-[family-name:var(--font-work-sans)]" style={getStyle('projects.subtitle')}>
                   {config.projects.subtitle || "Evidencia tangible de nuestro compromiso estructural. Familias que ya disfrutan de su vivienda digna y segura."}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
                 {(config?.projects?.items || []).map((item, idx) => (
                   <div 
                     key={idx} 
-                    className="group bg-white rounded-3xl overflow-hidden arch-border shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+                    className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden arch-border shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
                   >
-                    <div className="w-full h-[260px] sm:h-[300px] overflow-hidden relative">
+                    <div className="w-full h-[220px] xs:h-[260px] sm:h-[300px] overflow-hidden relative">
                       <ProjectCarousel images={item.images} />
                       <div className="absolute top-4 left-4 z-20">
                         <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#162839]/90 text-white backdrop-blur-md border border-white/20">
@@ -1123,9 +1296,9 @@ export default function LandingPage() {
                       </div>
                     </div>
                     
-                    <div className="p-6 md:p-7 flex-1 flex flex-col justify-between">
+                    <div className="p-5 sm:p-6 md:p-7 flex-1 flex flex-col justify-between">
                       <div>
-                        <h4 className="text-lg md:text-xl font-bold text-[#162839] font-[family-name:var(--font-montserrat)] mb-2" style={getStyle(`projects.items.${idx}.title`)}>
+                        <h4 className="text-base sm:text-lg md:text-xl font-bold text-[#162839] font-[family-name:var(--font-montserrat)] mb-2" style={getStyle(`projects.items.${idx}.title`)}>
                           {item.title}
                         </h4>
                         <p className="text-xs md:text-sm text-slate-500 font-[family-name:var(--font-work-sans)] leading-relaxed">
@@ -1133,7 +1306,7 @@ export default function LandingPage() {
                         </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <div className="mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
                         <span className="text-slate-500 font-medium flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-[#e67e22]" /> Terreno Propio
                         </span>
@@ -1154,40 +1327,40 @@ export default function LandingPage() {
             NOSOTROS (QUIÉNES SOMOS)
            ======================================================================= */}
         {config.about?.enabled && (
-          <section className="w-full py-20 md:py-28 bg-[#fcf9f6]" id="nosotros">
+          <section className="w-full py-14 sm:py-20 md:py-28 bg-[#fcf9f6]" id="nosotros">
             <div className="max-w-[1360px] mx-auto px-4 md:px-8">
               
-              <div className="bg-white rounded-3xl p-8 md:p-14 arch-border shadow-xl flex flex-col lg:flex-row gap-10 lg:gap-14 items-center">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-14 arch-border shadow-xl flex flex-col lg:flex-row gap-8 sm:gap-10 lg:gap-14 items-center">
                 
                 <div className="w-full lg:w-1/2">
                   <span className="text-xs uppercase font-bold tracking-widest text-[#e67e22] block mb-2" style={getStyle('about.badgeText')}>
                     {config.about.badgeText || "Trayectoria y Compromiso"}
                   </span>
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-3" style={getStyle('about.title')}>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black font-[family-name:var(--font-montserrat)] text-[#162839] tracking-tight mb-2 sm:mb-3" style={getStyle('about.title')}>
                     {config.about.title || "Sobre Constructora Maza Quiroz"}
                   </h2>
-                  <h3 className="text-lg md:text-xl font-bold text-[#e67e22] mb-6 font-[family-name:var(--font-montserrat)]" style={getStyle('about.subtitle')}>
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#e67e22] mb-4 sm:mb-6 font-[family-name:var(--font-montserrat)]" style={getStyle('about.subtitle')}>
                     {config.about.subtitle || "Entidad Técnica Autorizada para hacer realidad el sueño de tu casa propia"}
                   </h3>
-                  <div className="w-16 h-1.5 bg-[#e67e22] mb-6"></div>
+                  <div className="w-16 h-1.5 bg-[#e67e22] mb-5 sm:mb-6"></div>
                   
-                  <p className="text-sm md:text-base text-slate-600 leading-relaxed font-[family-name:var(--font-work-sans)] whitespace-pre-wrap" style={getStyle('about.content')}>
+                  <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-[family-name:var(--font-work-sans)] whitespace-pre-wrap" style={getStyle('about.content')}>
                     {config.about.content}
                   </p>
 
-                  <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-6 text-xs md:text-sm font-semibold text-slate-700">
+                  <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-xs md:text-sm font-semibold text-slate-700">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-[#e67e22]" />
+                      <ShieldCheck className="w-5 h-5 text-[#e67e22] shrink-0" />
                       <span>Registro Oficial de Entidad Técnica</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Award className="w-5 h-5 text-[#162839]" />
+                      <Award className="w-5 h-5 text-[#162839] shrink-0" />
                       <span>Supervisión de Calidad Continua</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="w-full lg:w-1/2 rounded-2xl overflow-hidden arch-border shadow-md h-72 sm:h-96 md:h-[420px] relative">
+                <div className="w-full lg:w-1/2 rounded-2xl overflow-hidden arch-border shadow-md h-64 sm:h-80 md:h-[420px] relative">
                   <AboutCarousel images={config.about.images || (config.about.image ? [config.about.image] : [])} />
                 </div>
 
@@ -1202,16 +1375,16 @@ export default function LandingPage() {
       {/* =========================================================================
           FOOTER (Architectural Deep Slate with Trust Credentials)
          ========================================================================= */}
-      <footer className="w-full bg-[#162839] text-white border-t border-[#2c3e50] pt-16 pb-12" id="contacto">
+      <footer className="w-full bg-[#162839] text-white border-t border-[#2c3e50] pt-12 sm:pt-16 pb-10 sm:pb-12" id="contacto">
         <div className="max-w-[1360px] mx-auto px-4 md:px-8">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 pb-10 sm:pb-12 border-b border-white/10">
             
             {/* Col 1: Brand & Credentials */}
             <div className="lg:col-span-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={handleLogoClick}>
-                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
                     {config.footer.logoImage ? (
                       <img src={config.footer.logoImage} alt="Logo" className="w-full h-full object-contain p-1" />
                     ) : (
@@ -1219,7 +1392,7 @@ export default function LandingPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-xl font-[family-name:var(--font-montserrat)] text-white tracking-tight" style={getStyle('footer.companyName')}>
+                    <h3 className="font-extrabold text-lg sm:text-xl font-[family-name:var(--font-montserrat)] text-white tracking-tight" style={getStyle('footer.companyName')}>
                       {config.footer.companyName || "CONSTRUCTORA MAZA QUIROZ"}
                     </h3>
                     <span className="text-[10px] tracking-widest uppercase text-[#fc8f34] font-bold" style={getStyle('footer.subtitle')}>
@@ -1244,10 +1417,10 @@ export default function LandingPage() {
               <h4 className="text-sm font-bold uppercase tracking-wider text-slate-200 font-[family-name:var(--font-montserrat)] mb-4">
                 Navegación Rápida
               </h4>
-              <ul className="space-y-2.5 text-xs md:text-sm text-slate-300">
+              <ul className="space-y-3 text-xs md:text-sm text-slate-300">
                 {(config.footer.links || []).map((link, lIdx) => (
                   <li key={lIdx}>
-                    <a href={link.href} className="hover:text-white transition-colors" style={getStyle(`footer.links.${lIdx}.label`)}>
+                    <a href={link.href} className="hover:text-white transition-colors block py-0.5" style={getStyle(`footer.links.${lIdx}.label`)}>
                       {link.label}
                     </a>
                   </li>
@@ -1262,13 +1435,13 @@ export default function LandingPage() {
               </h4>
               
               <div className="space-y-3 text-xs md:text-sm text-slate-300 mb-6 font-mono">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <PhoneCall className="w-4 h-4 text-[#fc8f34] shrink-0" />
-                  <span>Central: <strong className="text-white" style={getStyle('hero.phone')}>{config.hero.phone}</strong></span>
+                  <span>Central: <a href={`tel:${formattedPhone}`} className="text-white hover:underline font-bold" style={getStyle('hero.phone')}>{config.hero.phone}</a></span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <span className="text-[#fc8f34] font-bold font-sans">@</span>
-                  <span style={getStyle('footer.email')}>{config.footer.email}</span>
+                  <a href={`mailto:${config.footer.email || 'contacto@mazaquiroz.com'}`} className="hover:underline" style={getStyle('footer.email')}>{config.footer.email}</a>
                 </div>
               </div>
 
@@ -1280,7 +1453,7 @@ export default function LandingPage() {
                     target="_blank" 
                     rel="noopener noreferrer" 
                     onClick={() => trackInteraction(social.platform)}
-                    className="w-9 h-9 rounded-xl bg-white/10 hover:bg-[#fc8f34] hover:text-[#162839] border border-white/10 flex items-center justify-center transition-all text-xs font-bold text-white"
+                    className="w-10 h-10 rounded-xl bg-white/10 hover:bg-[#fc8f34] hover:text-[#162839] active:scale-95 border border-white/10 flex items-center justify-center transition-all text-xs font-bold text-white min-w-[40px] min-h-[40px]"
                     aria-label={social.platform}
                   >
                     {social.platform === 'facebook' && 'FB'}
@@ -1297,7 +1470,7 @@ export default function LandingPage() {
                 href={wppLink}
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#fc8f34] hover:bg-[#e67e22] text-[#162839] hover:text-white font-bold text-xs uppercase tracking-wider transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-[#fc8f34] hover:bg-[#e67e22] text-[#162839] hover:text-white font-bold text-xs uppercase tracking-wider transition-all min-h-[48px] active:scale-95 shadow-md"
               >
                 <span>Chatear con un Asesor Técnico</span>
               </a>
