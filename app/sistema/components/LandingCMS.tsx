@@ -118,7 +118,8 @@ export function LandingCMS() {
             hero: { 
               ...DEFAULT_LANDING_CONTENT.hero, 
               ...(data.content.hero || {}),
-              stats: Array.isArray(data.content.hero?.stats) && data.content.hero.stats.length > 0
+              showStats: data.content.hero?.showStats ?? (Array.isArray(data.content.hero?.stats) ? data.content.hero.stats.length > 0 : true),
+              stats: Array.isArray(data.content.hero?.stats)
                 ? data.content.hero.stats
                 : DEFAULT_LANDING_CONTENT.hero.stats
             },
@@ -442,12 +443,23 @@ export function LandingCMS() {
 
             {/* Hero */}
             <label className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700 hover:border-slate-500 cursor-pointer">
-              <span className="text-xs font-bold text-white">Portada Hero & Bento Stats</span>
+              <span className="text-xs font-bold text-white">Portada Hero Principal</span>
               <input 
                 type="checkbox" 
                 className="w-4 h-4 accent-[#e67e22]" 
                 checked={config.hero.enabled ?? true}
                 onChange={(e) => updateNestedConfig(['hero', 'enabled'], e.target.checked)}
+              />
+            </label>
+
+            {/* Tarjetas Bento Hero */}
+            <label className="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700 hover:border-slate-500 cursor-pointer">
+              <span className="text-xs font-bold text-white">Tarjetas Estadísticas (Hero)</span>
+              <input 
+                type="checkbox" 
+                className="w-4 h-4 accent-[#e67e22]" 
+                checked={config.hero.showStats ?? (Array.isArray(config.hero.stats) && config.hero.stats.length > 0)}
+                onChange={(e) => updateNestedConfig(['hero', 'showStats'], e.target.checked)}
               />
             </label>
 
@@ -916,74 +928,142 @@ export function LandingCMS() {
               </div>
 
               {/* Bento Stats Grid */}
-              <div className="pt-8 border-t border-white/10">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-xs uppercase font-bold text-slate-300 tracking-wider">Tarjetas Estadísticas Bento ({config.hero.stats?.length || 0})</h4>
-                  <button 
-                    onClick={() => {
-                      const newStats = [...(config.hero.stats || []), { num: "100%", label: "Nueva Métrica", sublabel: "Descripción breve" }];
-                      updateNestedConfig(['hero', 'stats'], newStats);
-                    }}
-                    className="text-xs text-[#fc8f34] font-bold hover:underline"
-                  >+ Añadir Tarjeta Estadística</button>
-                </div>
+              <div className="pt-8 border-t border-white/10 mt-8">
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-4 p-3 bg-white/5 rounded-2xl border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs uppercase font-bold text-[#fc8f34] tracking-wider">
+                      Tarjetas Bento Hero ({config.hero.stats?.length || 0})
+                    </span>
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300 bg-black/40 px-2.5 py-1 rounded-lg border border-white/10">
+                      <input 
+                        type="checkbox" 
+                        checked={config.hero.showStats ?? (Array.isArray(config.hero.stats) && config.hero.stats.length > 0)}
+                        onChange={(e) => updateNestedConfig(['hero', 'showStats'], e.target.checked)}
+                        className="accent-[#e67e22] w-3.5 h-3.5"
+                      />
+                      <span>Mostrar en la web</span>
+                    </label>
+                  </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {(config.hero.stats || []).map((st, sIdx) => (
-                    <div key={sIdx} className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 relative group">
+                  <div className="flex items-center gap-2">
+                    {config.hero.stats && config.hero.stats.length > 0 && (
                       <button 
                         onClick={() => {
-                          const newStats = config.hero.stats!.filter((_, idx) => idx !== sIdx);
-                          updateNestedConfig(['hero', 'stats'], newStats);
+                          if (confirm("¿Seguro que deseas eliminar todas las tarjetas estadísticas de la portada?")) {
+                            updateNestedConfig(['hero', 'stats'], []);
+                            updateNestedConfig(['hero', 'showStats'], false);
+                          }
                         }}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-600/80 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Eliminar métrica"
-                      >×</button>
-                      <div className="text-3xl md:text-4xl font-black font-[family-name:var(--font-montserrat)] text-[#fc8f34] mb-1">
-                        <EditableText 
-                          value={st.num} 
-                          onChange={(v) => {
-                            const newStats = [...config.hero.stats!];
-                            newStats[sIdx].num = v;
-                            updateNestedConfig(['hero', 'stats'], newStats);
-                          }}
-                          fontFamily={config.fonts?.[`hero.stats.${sIdx}.num`]}
-                          onFontChange={(f) => updateNestedConfig(['fonts', `hero.stats.${sIdx}.num`], f)}
-                          color={config.colors?.[`hero.stats.${sIdx}.num`]}
-                          onColorChange={(c) => updateNestedConfig(['colors', `hero.stats.${sIdx}.num`], c)}
-                        />
-                      </div>
-                      <div className="text-xs uppercase font-bold text-slate-300 tracking-wider">
-                        <EditableText 
-                          value={st.label} 
-                          onChange={(v) => {
-                            const newStats = [...config.hero.stats!];
-                            newStats[sIdx].label = v;
-                            updateNestedConfig(['hero', 'stats'], newStats);
-                          }}
-                          fontFamily={config.fonts?.[`hero.stats.${sIdx}.label`]}
-                          onFontChange={(f) => updateNestedConfig(['fonts', `hero.stats.${sIdx}.label`], f)}
-                          color={config.colors?.[`hero.stats.${sIdx}.label`]}
-                          onColorChange={(c) => updateNestedConfig(['colors', `hero.stats.${sIdx}.label`], c)}
-                        />
-                      </div>
-                      <p className="text-[11px] text-slate-400 mt-1">
-                        <EditableText 
-                          value={st.sublabel} 
-                          onChange={(v) => {
-                            const newStats = [...config.hero.stats!];
-                            newStats[sIdx].sublabel = v;
-                            updateNestedConfig(['hero', 'stats'], newStats);
-                          }}
-                          fontFamily={config.fonts?.[`hero.stats.${sIdx}.sublabel`]}
-                          onFontChange={(f) => updateNestedConfig(['fonts', `hero.stats.${sIdx}.sublabel`], f)}
-                          color={config.colors?.[`hero.stats.${sIdx}.sublabel`]}
-                          onColorChange={(c) => updateNestedConfig(['colors', `hero.stats.${sIdx}.sublabel`], c)}
-                        />
-                      </p>
-                    </div>
-                  ))}
+                        className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow"
+                        title="Eliminar todas las tarjetas"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar Todas</span>
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => {
+                        const newStats = [...(config.hero.stats || []), { num: "100%", label: "Nueva Métrica", sublabel: "Descripción breve" }];
+                        updateNestedConfig(['hero', 'stats'], newStats);
+                        updateNestedConfig(['hero', 'showStats'], true);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[#e67e22] hover:bg-[#fc8f34] text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Añadir Tarjeta</span>
+                    </button>
+                  </div>
                 </div>
+
+                {!(config.hero.showStats ?? (Array.isArray(config.hero.stats) && config.hero.stats.length > 0)) ? (
+                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between">
+                    <span>⚠️ Las tarjetas estadísticas están ocultas y no se mostrarán en la portada de la Landing Page.</span>
+                    <button 
+                      onClick={() => updateNestedConfig(['hero', 'showStats'], true)}
+                      className="text-xs font-bold text-[#fc8f34] hover:underline"
+                    >
+                      Activar Tarjetas
+                    </button>
+                  </div>
+                ) : (!config.hero.stats || config.hero.stats.length === 0) ? (
+                  <div className="p-6 rounded-2xl bg-white/5 border border-dashed border-white/20 text-center">
+                    <p className="text-xs text-slate-400 mb-3">No hay tarjetas estadísticas configuradas en la portada.</p>
+                    <button 
+                      onClick={() => {
+                        updateNestedConfig(['hero', 'stats'], [
+                          { num: "15+", label: "Años de Trayectoria", sublabel: "Experiencia técnica en ingeniería" },
+                          { num: "500+", label: "Viviendas Entregadas", sublabel: "Familias peruanas beneficiadas" },
+                          { num: "S/ 0", label: "Cuota Inicial", sublabel: "Subsidio cubierto al 100%" },
+                          { num: "100%", label: "Antisísmico & RNE", sublabel: "Ingeniería colegiada CIP/CAP" }
+                        ]);
+                        updateNestedConfig(['hero', 'showStats'], true);
+                      }}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all"
+                    >
+                      Restaurar Tarjetas Predeterminadas
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {config.hero.stats.map((st, sIdx) => (
+                      <div key={sIdx} className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 relative group">
+                        {/* Botón de eliminar tarjeta visible y directo */}
+                        <button 
+                          onClick={() => {
+                            const newStats = config.hero.stats!.filter((_, idx) => idx !== sIdx);
+                            updateNestedConfig(['hero', 'stats'], newStats);
+                          }}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-red-600/90 hover:bg-red-600 text-white text-xs flex items-center justify-center transition-all shadow-md z-20 cursor-pointer"
+                          title="Eliminar esta tarjeta"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <div className="text-3xl md:text-4xl font-black font-[family-name:var(--font-montserrat)] text-[#fc8f34] mb-1 pr-6">
+                          <EditableText 
+                            value={st.num} 
+                            onChange={(v) => {
+                              const newStats = [...config.hero.stats!];
+                              newStats[sIdx].num = v;
+                              updateNestedConfig(['hero', 'stats'], newStats);
+                            }}
+                            fontFamily={config.fonts?.[`hero.stats.${sIdx}.num`]}
+                            onFontChange={(f) => updateNestedConfig(['fonts', `hero.stats.${sIdx}.num`], f)}
+                            color={config.colors?.[`hero.stats.${sIdx}.num`]}
+                            onColorChange={(c) => updateNestedConfig(['colors', `hero.stats.${sIdx}.num`], c)}
+                          />
+                        </div>
+                        <div className="text-xs uppercase font-bold text-slate-300 tracking-wider">
+                          <EditableText 
+                            value={st.label} 
+                            onChange={(v) => {
+                              const newStats = [...config.hero.stats!];
+                              newStats[sIdx].label = v;
+                              updateNestedConfig(['hero', 'stats'], newStats);
+                            }}
+                            fontFamily={config.fonts?.[`hero.stats.${sIdx}.label`]}
+                            onFontChange={(f) => updateNestedConfig(['fonts', `hero.stats.${sIdx}.label`], f)}
+                            color={config.colors?.[`hero.stats.${sIdx}.label`]}
+                            onColorChange={(c) => updateNestedConfig(['colors', `hero.stats.${sIdx}.label`], c)}
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          <EditableText 
+                            value={st.sublabel} 
+                            onChange={(v) => {
+                              const newStats = [...config.hero.stats!];
+                              newStats[sIdx].sublabel = v;
+                              updateNestedConfig(['hero', 'stats'], newStats);
+                            }}
+                            fontFamily={config.fonts?.[`hero.stats.${sIdx}.sublabel`]}
+                            onFontChange={(f) => updateNestedConfig(['fonts', `hero.stats.${sIdx}.sublabel`], f)}
+                            color={config.colors?.[`hero.stats.${sIdx}.sublabel`]}
+                            onColorChange={(c) => updateNestedConfig(['colors', `hero.stats.${sIdx}.sublabel`], c)}
+                          />
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

@@ -145,7 +145,8 @@ export default function LandingPage() {
             hero: { 
               ...DEFAULT_LANDING_CONTENT.hero, 
               ...(data.content.hero || {}),
-              stats: Array.isArray(data.content.hero?.stats) && data.content.hero.stats.length > 0 
+              showStats: data.content.hero?.showStats ?? (Array.isArray(data.content.hero?.stats) ? data.content.hero.stats.length > 0 : true),
+              stats: Array.isArray(data.content.hero?.stats)
                 ? data.content.hero.stats 
                 : DEFAULT_LANDING_CONTENT.hero.stats
             },
@@ -697,7 +698,7 @@ export default function LandingPage() {
               </div>
 
               {/* Bento Grid Stats from Config */}
-              {Array.isArray(config.hero.stats) && config.hero.stats.length > 0 && (
+              {(config.hero.showStats ?? true) && Array.isArray(config.hero.stats) && config.hero.stats.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-white/10">
                   {config.hero.stats.map((st, sIdx) => (
                     <div key={sIdx} className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">

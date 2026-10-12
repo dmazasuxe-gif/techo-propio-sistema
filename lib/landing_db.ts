@@ -36,6 +36,7 @@ export interface LandingContent {
     whatsappMessage?: string;
     images: string[];
     bgOpacity: number;
+    showStats?: boolean;
     stats?: { num: string; label: string; sublabel: string }[];
   };
   services: {
@@ -167,6 +168,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
       "https://images.unsplash.com/photo-1541888081622-15cb343d3b40?q=80&w=2070&auto=format&fit=crop"
     ],
     bgOpacity: 30,
+    showStats: true,
     stats: [
       { num: "15+", label: "Años de Trayectoria", sublabel: "Experiencia técnica en ingeniería" },
       { num: "500+", label: "Viviendas Entregadas", sublabel: "Familias peruanas beneficiadas" },
@@ -346,8 +348,8 @@ export async function getLandingConfig(): Promise<LandingConfig | null> {
       titleHighlight: data.content.hero?.titleHighlight || DEFAULT_LANDING_CONTENT.hero.titleHighlight,
       subtitle: data.content.hero?.subtitle || DEFAULT_LANDING_CONTENT.hero.subtitle,
       ctaPrimaryText: data.content.hero?.ctaPrimaryText || DEFAULT_LANDING_CONTENT.hero.ctaPrimaryText,
-      ctaSecondaryText: data.content.hero?.ctaSecondaryText || DEFAULT_LANDING_CONTENT.hero.ctaSecondaryText,
-      stats: Array.isArray(data.content.hero?.stats) && data.content.hero.stats.length > 0 
+      showStats: data.content.hero?.showStats ?? (Array.isArray(data.content.hero?.stats) ? data.content.hero.stats.length > 0 : true),
+      stats: Array.isArray(data.content.hero?.stats)
         ? data.content.hero.stats 
         : DEFAULT_LANDING_CONTENT.hero.stats,
       whatsappMessage: data.content.hero?.whatsappMessage || DEFAULT_LANDING_CONTENT.hero.whatsappMessage
